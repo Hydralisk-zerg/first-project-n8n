@@ -1,0 +1,92 @@
+{
+  "updatedAt": "2025-11-06T17:36:08.707Z",
+  "createdAt": "2025-11-06T17:32:17.612Z",
+  "id": "Ca2HnZjmf7YGHDpZ",
+  "name": "Child: Append phrase",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "82d24c16-2a09-4830-b19a-489b5da52cb2",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -96
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "output",
+              "value": "={{ ($json.input ?? $json.message?.text ?? '') + ' вставка из другого воркфлоу' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0e586411-0d19-4161-b730-c88a678935c4",
+      "name": "Set output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -96
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Execute Workflow Trigger": [
+      {
+        "json": {}
+      }
+    ]
+  },
+  "versionId": "045d8a34-5be8-4115-b2eb-cbbfb9d2b22b",
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-06T17:32:17.612Z",
+      "createdAt": "2025-11-06T17:32:17.612Z",
+      "role": "workflow:owner",
+      "workflowId": "Ca2HnZjmf7YGHDpZ",
+      "projectId": "h4l9I70OGsrgTeq4",
+      "project": {
+        "updatedAt": "2025-11-06T16:46:31.182Z",
+        "createdAt": "2025-11-06T16:30:15.421Z",
+        "id": "h4l9I70OGsrgTeq4",
+        "name": "alex ila <aleksey.ilchenko.m@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

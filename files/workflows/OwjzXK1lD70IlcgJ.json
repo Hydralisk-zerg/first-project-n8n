@@ -1,0 +1,901 @@
+{
+  "updatedAt": "2025-11-06T17:34:58.512Z",
+  "createdAt": "2025-11-06T17:34:58.512Z",
+  "id": "OwjzXK1lD70IlcgJ",
+  "name": "My workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        240
+      ],
+      "id": "befbf422-3ef0-43f6-a9e3-22564830d425",
+      "name": "Telegram Trigger",
+      "webhookId": "a16c0b71-189e-4726-986d-c9d2526f95ea",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ea2eccfc-841d-4f65-95cd-b55a21d22036",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -160,
+        240
+      ],
+      "id": "459ae4c5-af25-4048-a3d5-87c2fa9805e3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Я получил текст: {{ $json.message.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "32f50ac6-1016-4be0-8389-1ab75acdad1f",
+      "name": "Send a text message",
+      "webhookId": "d95284d5-9f94-42df-8244-0e35f6a5ccff",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Документ получен успешно!\n\nИмя файла: {{ $json.message.document.file_name || 'без имени' }}\nРазмер: {{ Math.round($json.message.document.file_size / 1024) }} KB\nТип: {{ $json.message.document.mime_type }}\n\nНачинаю обработку...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        496
+      ],
+      "id": "3d0e0a4c-b9c3-4de1-bf03-f07495efb8ed",
+      "name": "Send a text message1",
+      "webhookId": "c09d0721-7f10-462b-9995-20ebc1e47213",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.document.file_id }}",
+        "additionalFields": {
+          "mimeType": ""
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        704
+      ],
+      "id": "081de40d-bf21-439a-8339-ce5e6c5ec80b",
+      "name": "Get a file",
+      "webhookId": "ec5bd239-3364-4b30-a288-ebea3aaadb14",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ocr-api:3001/ocr-binary?async=1",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        704
+      ],
+      "name": "HTTP POST OCR (async)",
+      "id": "f8376957-5cf4-44a2-8458-530aea532ab2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const delayMs = 2000;\nawait new Promise(res => setTimeout(res, delayMs));\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        704
+      ],
+      "name": "Delay 2s (Code)",
+      "id": "30fbbff3-58a6-4812-8a12-1a3d562465ee"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'http://ocr-api:3001/result/' + $json.jobId }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        704
+      ],
+      "name": "HTTP GET OCR Result",
+      "id": "3f7d4253-84e7-4189-bf5f-859e71c09edd"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              },
+              "id": "cond-status-processing"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        688
+      ],
+      "name": "IF Processing?",
+      "id": "1097d9e3-bee8-402a-b6ef-ff0ce34b5afd"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "Ты — модель маршрутизации (роутинга) документов.\nНа вход ты получаешь текст документа (например: договор, акт выполненных работ, счёт субподрядчика, коносамент).\nТвоя задача — определить, к какому из перечисленных типов относится документ, и вернуть результат строго в JSON-формате без дополнительных комментариев, пояснений или форматирования.\n\nВозможные варианты ответов:\nдоговор → {\"result\":\"contract  No. (номер)\"}\nакт выполненных работ → {\"result\":\"act  No. (номер)\"}\nсчёт субподрядчика → {\"result\":\"invoice  No. (номер)\"}\nконосамент → {\"result\":\"BL  No. (номер)\"}\nесли тип не распознан → {\"result\":\"unknown\"}\nВыведи только JSON-объект, без лишних символов, текста или Markdown. "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1296,
+        224
+      ],
+      "id": "41047128-e42f-4c2e-9ebf-7f5ce0d0bc68",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1296,
+        400
+      ],
+      "id": "f1750994-7cee-4ad1-94c3-fe06f375bd18",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "7Ayyk7HZyABdO8Gg",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return (() => {\n  // Ищем pages[] в любом входном элементе\n  let pages = [];\n  for (const it of $input.all()) {\n    const p = it.json?.result?.pages;\n    if (Array.isArray(p) && p.length) {\n      pages = p;\n      break;\n    }\n  }\n\n  // Если pages нет — вернём пустой массив (или включите \"Always Output Data\" в настройках узла)\n  if (!pages.length) {\n    return [];\n  }\n\n  // Возвращаем массив { json: { text } } по количеству страниц\n  return pages.map(p => ({\n    json: {\n      text: String(p?.text ?? ''),\n    },\n  }));\n})();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        224
+      ],
+      "id": "ce2a9e7c-7a9c-4afc-a646-47dd1c5d95d0",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1648,
+        224
+      ],
+      "id": "403709f9-79c5-4cb1-82f8-ed55a0e9192a",
+      "name": "Send a text message2",
+      "webhookId": "ea8f2d08-f1e9-4139-a3ef-249597abdcce",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return (() => {\n  // Ищем pages[] в любом входном элементе\n  let pages = [];\n  for (const it of $input.all()) {\n    const p = it.json?.result?.pages;\n    if (Array.isArray(p) && p.length) {\n      pages = p;\n      break;\n    }\n  }\n\n  // Если pages нет — вернём пустой массив (или включите \"Always Output Data\" в настройках узла)\n  if (!pages.length) {\n    return [];\n  }\n\n  // Возвращаем массив { json: { text } } по количеству страниц\n  return pages.map(p => ({\n    json: {\n      text: String(p?.text ?? ''),\n    },\n  }));\n})();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        496
+      ],
+      "id": "85969413-dd5d-4cb4-b6d7-c82437e99042",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        496
+      ],
+      "id": "3eab5b3a-896c-43c6-a10c-6122ce4f7e62",
+      "name": "Send a text message3",
+      "webhookId": "ea8f2d08-f1e9-4139-a3ef-249597abdcce",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c3d62e57-0bf9-44d1-a2d3-5f1bee21b4c7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "698599e8-6666-4f15-9bee-ad8263d0ebaa",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "word",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b989a563-e6f8-4758-ad90-191521b94b42",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "sheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "91a0ed9d-d198-475b-aab6-389eeb18df3c",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "text/plain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cce89a53-fd4c-42d4-b33a-56e9cf98c631",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        992,
+        656
+      ],
+      "id": "f2c5dc00-1080-4892-a903-590130a76b17",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c3d62e57-0bf9-44d1-a2d3-5f1bee21b4c7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "698599e8-6666-4f15-9bee-ad8263d0ebaa",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "word",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b989a563-e6f8-4758-ad90-191521b94b42",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "sheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "91a0ed9d-d198-475b-aab6-389eeb18df3c",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "text/plain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cce89a53-fd4c-42d4-b33a-56e9cf98c631",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -144,
+        688
+      ],
+      "id": "667a78b7-c211-41be-a3b6-177d0281654e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "function normalize(input) {\n  // Вход может быть: {result:{text,pages...}}, или [{...}], или сразу {text,pages}\n  let root = input;\n  if (Array.isArray(root) && root.length > 0) root = root[0];\n\n  // Если это конверт \"job/status/result\"\n  if (root && root.result && (typeof root.result === 'object')) {\n    return {\n      jobId: root.jobId ?? null,\n      status: root.status ?? null,\n      fileName: root.result.fileName ?? null,\n      text: typeof root.result.text === 'string' ? root.result.text : '',\n      pages: Array.isArray(root.result.pages) ? root.result.pages : [],\n    };\n  }\n\n  // Если пришёл уже плоский объект { text, pages }\n  return {\n    jobId: root.jobId ?? null,\n    status: root.status ?? null,\n    fileName: root.fileName ?? null,\n    text: typeof root.text === 'string' ? root.text : '',\n    pages: Array.isArray(root.pages) ? root.pages : [],\n  };\n}\n\nfunction cleanText(s) {\n  if (!s) return '';\n  return String(s).replace(/\\r/g, '').trim();\n}\n\n// Пробегаем по всем входным items и нормализуем в единый формат\nconst out = [];\nfor (const item of items) {\n  const n = normalize(item.json);\n  const text = cleanText(n.text);\n  const pages = Array.isArray(n.pages)\n    ? n.pages.map((p) => ({\n        pageNumber: p.pageNumber ?? null,\n        text: cleanText(p.text ?? ''),\n        textLength: typeof p.text === 'string' ? p.text.length : 0,\n        imageFile: p.imageFile ?? null,\n        error: p.error ?? undefined,\n      }))\n    : [];\n\n  out.push({\n    json: {\n      success: true,\n      source: 'ocr',\n      jobId: n.jobId,\n      status: n.status,\n      fileName: n.fileName,\n      text,\n      pages,\n      pageCount: pages.length,\n    },\n  });\n}\nreturn out;"
+      },
+      "name": "Extract OCR Text (robust)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        704
+      ],
+      "id": "844224a6-49ad-4657-be3b-205d27142ec2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = [];\n\nfor (const item of items) {\n  const pages = Array.isArray(item.json?.pages) ? item.json.pages : [];\n\n  if (pages.length === 0) {\n    const t = item.json?.text ?? '';\n    out.push({\n      json: {\n        pageNumber: 1,\n        text: t,\n        textLength: typeof t === 'string' ? t.length : 0,\n        jobId: item.json?.jobId,\n        fileName: item.json?.fileName,\n      },\n    });\n    continue;\n  }\n\n  let i = 0;\n  for (const p of pages) {\n    i += 1;\n    const t = p?.text ?? '';\n    out.push({\n      json: {\n        pageNumber: p?.pageNumber ?? i,\n        text: t,\n        textLength: typeof t === 'string' ? t.length : 0,\n        jobId: item.json?.jobId,\n        fileName: item.json?.fileName,\n      },\n    });\n  }\n}\n\nreturn out;"
+      },
+      "name": "Fan-out Pages (optional)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        704
+      ],
+      "id": "6f817c33-f6c9-45d7-8663-552a6c9caff0"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=текст из таблицы:  {{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1648,
+        704
+      ],
+      "id": "59b93015-6c5d-4c9f-a5ab-d14db8a26f8e",
+      "name": "Send a text message4",
+      "webhookId": "96754d5c-467c-41e5-9489-011accbe0f4d",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "HTTP POST OCR (async)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP POST OCR (async)": {
+      "main": [
+        [
+          {
+            "node": "Delay 2s (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay 2s (Code)": {
+      "main": [
+        [
+          {
+            "node": "HTTP GET OCR Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP GET OCR Result": {
+      "main": [
+        [
+          {
+            "node": "IF Processing?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Processing?": {
+      "main": [
+        [
+          {
+            "node": "Delay 2s (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract OCR Text (robust)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract OCR Text (robust)": {
+      "main": [
+        [
+          {
+            "node": "Fan-out Pages (optional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fan-out Pages (optional)": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "4b328bd4-f72e-48d8-bb9e-f702089299b3",
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-06T17:34:58.512Z",
+      "createdAt": "2025-11-06T17:34:58.512Z",
+      "role": "workflow:owner",
+      "workflowId": "OwjzXK1lD70IlcgJ",
+      "projectId": "h4l9I70OGsrgTeq4",
+      "project": {
+        "updatedAt": "2025-11-06T16:46:31.182Z",
+        "createdAt": "2025-11-06T16:30:15.421Z",
+        "id": "h4l9I70OGsrgTeq4",
+        "name": "alex ila <aleksey.ilchenko.m@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

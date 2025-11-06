@@ -40,6 +40,7 @@
       - N8N_BLOCK_FILE_ACCESS_IN_NODE=false
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - EXTERNAL_HOOK_FILES=/files/hooks/workflow-hooks.js
     volumes:
       - ./data/n8n:/home/node/.n8n
       - ./files:/files
