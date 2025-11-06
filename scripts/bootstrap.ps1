@@ -17,7 +17,8 @@ function Ensure-Admin {
     Write-Host "Elevating to Administrator..." -ForegroundColor Yellow
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = "powershell.exe"
-    $psi.Arguments = "-ExecutionPolicy Bypass -NoProfile -File `"$PSCommandPath`"" + ($NoPull ? " -NoPull" : "")
+    $additionalArgs = if ($NoPull) { " -NoPull" } else { "" }
+    $psi.Arguments = "-ExecutionPolicy Bypass -NoProfile -File `"$PSCommandPath`"" + $additionalArgs
     $psi.Verb = "runas"
     [System.Diagnostics.Process]::Start($psi) | Out-Null
     exit 0

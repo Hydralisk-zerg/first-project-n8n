@@ -39,6 +39,7 @@
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_BLOCK_FILE_ACCESS_IN_NODE=false
       - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
     volumes:
       - ./data/n8n:/home/node/.n8n
       - ./files:/files
