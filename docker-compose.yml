@@ -1,0 +1,83 @@
+﻿services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - N8N_HOST=n8n.node.od.ua
+      - TZ=${TZ}
+      - N8N_METRICS=false
+      - N8N_LOG_LEVEL=debug
+      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
+      - N8N_PROXY_MODE=true
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - N8N_TRUSTED_PROXIES=${N8N_TRUSTED_PROXIES}
+      - NODE_OPTIONS=--max-old-space-size=1536
+      - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
+      - N8N_BLOCK_FILE_ACCESS_IN_NODE=false
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+      - ./files:/files
+    restart: unless-stopped
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    # Даем доступ к тем же шаблонам (фон: file:///files/template.png)
+    volumes:
+      - ./files:/files:ro
+    restart: unless-stopped
+
+  tesseract:
+    image: tesseractshadow/tesseract4re
+    volumes:
+      - ./files:/files
+    restart: unless-stopped
+    command: ["tail", "-f", "/dev/null"]
+
+  ocr-api:
+    image: node:18-alpine
+    volumes:
+      - ./files:/files
+      - ./ocr-server:/app
+    working_dir: /app
+    restart: unless-stopped
+    command: ["sh", "-c", "apk add --no-cache tesseract-ocr tesseract-ocr-data-rus tesseract-ocr-data-eng tesseract-ocr-data-ukr poppler-utils imagemagick wget curl && npm install && node server.js"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3001/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    depends_on: [n8n]
+    # Вариант 1 (рекомендуется): именованный Tunnel с токеном
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
+    # Вариант 2 (быстрый тест, без токена): проброс на n8n
+    # command: tunnel --no-autoupdate --url http://n8n:5678
+    restart: unless-stopped

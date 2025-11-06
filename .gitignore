@@ -1,0 +1,33 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Environment
+.env
+*.local
+
+# Node
+node_modules/
+
+# n8n runtime data (contains secrets, credentials, executions)
+data/n8n/
+
+# Postgres data (database files)
+data/postgres/
+
+# Logs and temp
+*.log
+logs/
+tmp/
+
+# Docker artifacts
+**/.docker/**
+**/.cache/**
+
+# Custom nodes build outputs (if any)
+data/n8n/nodes/node_modules/
+
+# Binary data storage
+data/n8n/binaryData/
