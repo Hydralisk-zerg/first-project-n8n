@@ -15,6 +15,8 @@
 - Аккаунт Cloudflare и токен именованного туннеля
 - Токен Telegram‑бота (BotFather)
 
+Примечание по путям в Windows: убедитесь, что вы работаете в одном и том же профиле пользователя (например, `C:\Users\Oleksii\...`). Если у вас несколько профилей (`Oleksii` и `oleks`), скрипты ищут `.env` относительно пути репозитория. Запускайте `scripts\deploy.ps1` из того же клона, где лежит `.env`.
+
 ## Быстрый старт (Windows PowerShell)
 
 1) Клонируйте репозиторий и откройте терминал в его каталоге.
@@ -197,6 +199,8 @@ The script will:
 - Pull and start containers
 - Print the n8n URL when ready
 
+Windows path note: run `scripts\deploy.ps1` from the same clone that contains your `.env`. If you accidentally run a script from another user profile path (e.g. `C:\Users\oleks\...`) where `.env` is missing, you’ll see the error: `.env is missing and .env.example not found.` In that case, either run from the correct clone (with `.env`) or copy `.env.example` → `.env` there and edit values.
+
 Then open n8n at your domain and activate the Telegram workflow.
 
 Optional: set the Telegram webhook via helper script
@@ -295,6 +299,32 @@ docker compose logs n8n --tail 200
 ```powershell
 docker compose config
 ```
+
+### n8n node paste issues (copy/paste JSON)
+
+Если вставка узла/сниппета в редактор n8n не работает:
+
+- Проверьте, что копируете валидный JSON блок узла/нод (из контекстного меню Copy → Node или из официальных примеров). Обычный текст без полей `parameters`, `type`, `id` n8n не примет.
+- Убедитесь, что вставляете через контекстное меню канваса (Right click → Paste) или Ctrl/Cmd+V при фокусе на канвасе. Вставка в поле ввода не сработает.
+- Если JSON слишком большой, попробуйте вставлять по частям (несколько нод вместо целого workflow).
+- Очистите форматирование буфера обмена: скопируйте в чистый текстовый редактор и обратно (удалит скрытые символы/кавычки smart quotes).
+- Блокировки браузера/расширения: отключите auto‑formatter/clipboard‑manager, попробуйте в приватном окне.
+- Кодировка: убедитесь, что текст в UTF‑8 без BOM, кавычки обычные `"`.
+
+Если ошибка сохраняется, откройте DevTools (F12) → Console и посмотрите сообщение об ошибке при вставке — пришлите текст, мы подскажем дальше.
+
+### Versioning workflows
+
+Авто‑сохранение: у нас подключён внешний хук n8n, который при `Save` экспортирует JSON каждого воркфлоу в `files/workflows`. Чтобы быстро зафиксировать изменения в Git:
+
+```powershell
+powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -File scripts/commit-workflows.ps1 -Push
+```
+
+Скрипт:
+- добавит изменения в `files/workflows`,
+- сформирует коммит с временем,
+- по флагу `-Push` отправит в текущую ветку.
 
 ## License
 
