@@ -37,6 +37,12 @@ Copy-Item .env.example .env -Force
 scripts\deploy.ps1
 ```
 
+Или полностью автоматический bootstrap (+ установка Docker Desktop):
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; scripts\bootstrap.ps1
+```
+
 Скрипт выполнит:
 - Проверит наличие `.env` (создаст из шаблона при отсутствии)
 - Сгенерирует ENCRYPTION_KEY, если оставлен плейсхолдер
@@ -141,6 +147,12 @@ Copy-Item .env.example .env -Force
 scripts\deploy.ps1
 ```
 
+Or a fully automated bootstrap (installs Docker Desktop too):
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; scripts\bootstrap.ps1
+```
+
 The script will:
 - Ensure a `.env` exists (create from template if missing)
 - Generate ENCRYPTION_KEY if it’s the placeholder
@@ -158,6 +170,26 @@ scripts\set-telegram-webhook.ps1 -Url "https://YOUR_DOMAIN/webhook/<path>/webhoo
 # Inspect current webhook info
 scripts\set-telegram-webhook.ps1 -InfoOnly
 ```
+
+## Linux / macOS bootstrap
+
+Use the `scripts/bootstrap.sh` helper:
+
+```bash
+bash scripts/bootstrap.sh
+```
+
+The script attempts to install Docker where possible, start the engine, and deploy the project. On macOS, Docker Desktop requires user confirmation.
+
+## Linux / macOS bootstrap
+
+Для Linux/macOS можно использовать скрипт `scripts/bootstrap.sh`:
+
+```bash
+bash scripts/bootstrap.sh
+```
+
+Скрипт попытается установить Docker (где возможно), запустить сервис и развернуть проект. На macOS потребуется Docker Desktop и подтверждение пользователем.
 
 ## Services
 
