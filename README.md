@@ -87,6 +87,32 @@ scripts\set-telegram-webhook.ps1 -InfoOnly
 - Установите вебхук Telegram ровно на этот URL. Если видите 404 — переактивируйте воркфлоу и скопируйте обновленный Production URL.
 - За Cloudflare мы доверяем прокси‑заголовкам через `N8N_TRUSTED_PROXIES`.
 
+## Ветка Word (DOC/DOCX) в n8n — быстрая настройка
+
+Чтобы распознавать DOC/DOCX, используйте уже запущенный OCR API и отправляйте файл в multipart на `/ocr?async=1`:
+
+1) После узла Telegram → Get File добавьте Move Binary Data:
+- Mode: Move
+- Source: data
+- Destination: file
+- Binary Property: file
+
+2) Добавьте HTTP Request:
+- Method: POST
+- URL: http://ocr-api:3001/ocr?async=1
+- Send Binary Data: ON
+- Binary Property: file
+- Response: JSON
+
+3) Далее опрос результата (если нужен строгий async-паттерн):
+- HTTP Request (GET) → URL: http://ocr-api:3001/result/{{$json.jobId}}
+- IF: status == "done" → на ветку обработки; иначе Delay 2–3s → цикл запроса
+
+Заметки:
+- `/ocr` принимает multipart с любым именем поля (file/data/…), берётся первый файл.
+- DOC/DOCX автоматически конвертируется в PDF через Gotenberg внутри сети docker.
+- Результат содержит `result.text` и массив `result.pages[].text` для фан‑аута по страницам.
+
 ## Данные и безопасность
 
 - Рабочие данные и секреты хранятся в `data/n8n` и `data/postgres` и исключены из Git через `.gitignore`.
@@ -216,6 +242,32 @@ bash scripts/bootstrap.sh
 - The Telegram Trigger node provides a Production URL for webhooks once the workflow is activated.
 - Set Telegram’s webhook to that exact URL. In case of 404s, re-activate the workflow and copy the fresh Production URL.
 - Behind Cloudflare, we set proxy trust via `N8N_TRUSTED_PROXIES`.
+
+## Word (DOC/DOCX) branch in n8n — quick setup
+
+To OCR DOC/DOCX, post the file as multipart to `/ocr?async=1` on the internal OCR API:
+
+1) After Telegram → Get File, add Move Binary Data:
+- Mode: Move
+- Source: data
+- Destination: file
+- Binary Property: file
+
+2) Add HTTP Request:
+- Method: POST
+- URL: http://ocr-api:3001/ocr?async=1
+- Send Binary Data: ON
+- Binary Property: file
+- Response: JSON
+
+3) Poll for completion (optional strict async):
+- HTTP Request (GET) → URL: http://ocr-api:3001/result/{{$json.jobId}}
+- IF: status == "done" → continue; else Delay 2–3s → repeat
+
+Notes:
+- `/ocr` accepts multipart with any field name (file/data/…), it uses the first file.
+- DOC/DOCX are converted to PDF via Gotenberg on the Docker network.
+- The result includes `result.text` and `result.pages[].text` for per‑page fan‑out.
 
 ## Data and security
 

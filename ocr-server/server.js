@@ -3,6 +3,8 @@ const multer = require('multer');
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const JSZip = require('jszip');
+const { XMLParser } = require('fast-xml-parser');
 
 const app = express();
 const port = 3001;
@@ -67,64 +69,164 @@ app.use(express.json());
     }
 });
 
-// Endpoint для multipart form data
-app.post('/ocr', upload.single('file'), (req, res) => {
+// ===== DOCX text extraction helper =====
+async function extractDocxTextFromBuffer(buffer) {
+    const zip = await JSZip.loadAsync(buffer);
+    const docFile = zip.file('word/document.xml');
+    if (!docFile) throw new Error('DOCX document.xml not found');
+    const xml = await docFile.async('string');
+    const parser = new XMLParser({ ignoreAttributes: false, trimValues: true });
+    const json = parser.parse(xml);
+    const out = [];
+    (function collect(node) {
+        if (node == null) return;
+        if (typeof node === 'string') { out.push(node); return; }
+        if (Array.isArray(node)) { node.forEach(collect); return; }
+        for (const [k, v] of Object.entries(node)) {
+            if (k === 'w:t') {
+                if (typeof v === 'string') out.push(v);
+                else collect(v);
+            } else {
+                collect(v);
+            }
+        }
+    })(json);
+    const text = out.join(' ').replace(/[ \t]+/g, ' ').replace(/\s+\n/g, '\n').trim();
+    return text;
+}
+
+// Endpoint для multipart form data (поддержка PDF / DOC / DOCX / изображений; sync и async)
+// Принимаем любой ключ поля (file/data/...), берём первый файл
+app.post('/ocr', upload.any(), (req, res) => {
     const timestamp = Date.now();
     let tempFilePath = null;
-    
+    let isAsync = false;
+
     try {
-        if (!req.file) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'No file uploaded' 
+        let file = null;
+        if (Array.isArray(req.files) && req.files.length > 0) file = req.files[0];
+        if (!file && req.file) file = req.file;
+        if (!file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+
+        // Детектируем тип по сигнатуре
+        const buf = file.buffer;
+        if (!Buffer.isBuffer(buf) || buf.length === 0) {
+            return res.status(400).json({ success: false, error: 'Empty file buffer' });
+        }
+        const b0 = buf[0];
+        const b1 = buf[1];
+        const b2 = buf[2];
+        const b3 = buf[3];
+        const header5 = buf.slice(0, 5).toString('ascii');
+        const isPdf = header5 === '%PDF-';
+        const isDocOle = (b0 === 0xD0 && b1 === 0xCF && b2 === 0x11 && b3 === 0xE0);
+        const isZipPk = (b0 === 0x50 && b1 === 0x4B);
+        let imageExt = 'png';
+        if (b0 === 0x89 && b1 === 0x50 && b2 === 0x4E && b3 === 0x47) imageExt = 'png';
+        else if (b0 === 0xFF && b1 === 0xD8 && b2 === 0xFF) imageExt = 'jpg';
+        else if (header5.slice(0, 4) === 'RIFF') imageExt = 'webp';
+
+        const fileKind = isPdf ? 'pdf' : (isDocOle ? 'doc' : (isZipPk ? 'docx' : 'image'));
+
+        // Сохраняем файл с подходящим расширением
+        const tempFileName = fileKind === 'pdf' ? `temp_${timestamp}.pdf`
+                         : fileKind === 'doc' ? `temp_${timestamp}.doc`
+                         : fileKind === 'docx' ? `temp_${timestamp}.docx`
+                         : `temp_${timestamp}.${imageExt}`;
+        tempFilePath = `/files/uploads/${tempFileName}`;
+    fs.writeFileSync(tempFilePath, buf);
+        console.log(`Multipart file saved: ${tempFilePath} (kind=${fileKind}, size=${buf.length})`);
+
+        // async режим
+        isAsync = req.query.async === '1' || req.headers['x-async'] === '1' || req.headers['x-async'] === 'true';
+        if (isAsync) {
+            const jobId = createJob();
+            console.log(`Async mode enabled on /ocr, jobId=${jobId}`);
+            res.status(202).json({ success: true, accepted: true, jobId });
+
+            setImmediate(() => {
+                try {
+                    let result;
+                    if (fileKind === 'pdf') {
+                        result = runOcrForPdfFile(tempFilePath, timestamp, tempFileName, buf.length);
+                    } else if (fileKind === 'doc' || fileKind === 'docx') {
+                        const pdfPath = convertDocToPdf(tempFilePath, timestamp);
+                        result = runOcrForPdfFile(pdfPath, timestamp, path.basename(pdfPath), buf.length);
+                    } else {
+                        result = runOcrForImageFile(tempFilePath, timestamp, tempFileName, buf.length);
+                    }
+                    setJobResult(jobId, result);
+                } catch (e) {
+                    console.error('Async OCR error (/ocr):', e.message);
+                    setJobError(jobId, e.message);
+                } finally {
+                    cleanupTempArtifacts(timestamp, tempFilePath);
+                }
             });
+            return;
         }
 
-        // Сохраняем файл во временную папку
-        const fileName = req.file.originalname || `document_${timestamp}.pdf`;
-        const tempFileName = `temp_${timestamp}_${fileName}`;
-        tempFilePath = `/files/uploads/${tempFileName}`;
-        
-        fs.writeFileSync(tempFilePath, req.file.buffer);
-        console.log(`File saved: ${tempFilePath}`);
-
-        // Запускаем tesseract напрямую
-        console.log('Running OCR...');
-        const ocrResult = execSync(
-            `tesseract "${tempFilePath}" stdout -l ukr+rus+eng`, 
-            { 
-                encoding: 'utf8', 
-                timeout: 60000,
-                maxBuffer: 1024 * 1024
-            }
-        );
-
-        console.log(`OCR completed. Text length: ${ocrResult.length}`);
-
-        res.json({
-            success: true,
-            text: ocrResult.trim(),
-            fileName: fileName,
-            textLength: ocrResult.trim().length
-        });
+        // sync режим
+        let result;
+        if (fileKind === 'pdf') {
+            result = runOcrForPdfFile(tempFilePath, timestamp, tempFileName, buf.length);
+        } else if (fileKind === 'doc' || fileKind === 'docx') {
+            const pdfPath = convertDocToPdf(tempFilePath, timestamp);
+            result = runOcrForPdfFile(pdfPath, timestamp, path.basename(pdfPath), buf.length);
+        } else {
+            result = runOcrForImageFile(tempFilePath, timestamp, tempFileName, buf.length);
+        }
+        res.json(result);
 
     } catch (error) {
-        console.error('OCR Error:', error.message);
-        res.json({ 
-            success: false, 
-            error: error.message,
-            text: '',
-            fileName: req.file ? req.file.originalname : 'unknown'
-        });
+        console.error('OCR Error (/ocr):', error.message);
+        let originalName = 'unknown';
+        try {
+            const f = (Array.isArray(req.files) && req.files[0]) || req.file;
+            if (f && f.originalname) originalName = f.originalname;
+        } catch {}
+        res.json({ success: false, error: error.message, text: '', fileName: originalName });
     } finally {
-        // Очищаем временный файл
-        if (tempFilePath && fs.existsSync(tempFilePath)) {
-            try {
-                fs.unlinkSync(tempFilePath);
-            } catch (e) {
-                console.log('Error cleaning temp file:', e.message);
-            }
+        if (!isAsync) {
+            cleanupTempArtifacts(timestamp, tempFilePath);
         }
+    }
+});
+
+// Extract text from DOCX (multipart) — fast path for digitally-generated docs
+app.post('/extract-docx', upload.any(), async (req, res) => {
+    try {
+        let file = null;
+        if (Array.isArray(req.files) && req.files.length > 0) file = req.files[0];
+        if (!file && req.file) file = req.file;
+        if (!file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+        const buf = file.buffer;
+        if (!Buffer.isBuffer(buf) || buf.length === 0) {
+            return res.status(400).json({ success: false, error: 'Empty file buffer' });
+        }
+        const isZipPk = buf[0] === 0x50 && buf[1] === 0x4B;
+        if (!isZipPk) return res.status(400).json({ success: false, error: 'Not a DOCX (PK signature missing)' });
+
+        const text = await extractDocxTextFromBuffer(buf);
+        return res.json({ success: true, mode: 'docx-extract', text, pages: [{ pageNumber: 1, text }] });
+    } catch (e) {
+        console.error('DOCX extract error:', e.message);
+        return res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// Extract text from DOCX (binary body)
+app.post('/extract-docx-binary', express.raw({ limit: '50mb', type: '*/*' }), async (req, res) => {
+    try {
+        const buf = req.body;
+        if (!buf || !buf.length) return res.status(400).json({ success: false, error: 'No binary data received' });
+        const isZipPk = buf[0] === 0x50 && buf[1] === 0x4B;
+        if (!isZipPk) return res.status(400).json({ success: false, error: 'Not a DOCX (PK signature missing)' });
+        const text = await extractDocxTextFromBuffer(buf);
+        return res.json({ success: true, mode: 'docx-extract', text, pages: [{ pageNumber: 1, text }] });
+    } catch (e) {
+        console.error('DOCX extract error (binary):', e.message);
+        return res.status(500).json({ success: false, error: e.message });
     }
 });
 
@@ -449,6 +551,8 @@ const server = app.listen(port, '0.0.0.0', () => {
     console.log('Available endpoints:');
     console.log('  POST /ocr - multipart/form-data');
     console.log('  POST /ocr-binary - binary data (supports ?async=1 or x-async header)');
+    console.log('  POST /extract-docx - extract text from DOCX (multipart)');
+    console.log('  POST /extract-docx-binary - extract text from DOCX (binary)');
     console.log('  GET /result/:jobId - fetch async OCR result');
     console.log('  GET /health - health check');
 });
