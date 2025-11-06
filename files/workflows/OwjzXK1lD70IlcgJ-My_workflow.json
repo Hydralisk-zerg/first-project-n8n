@@ -1,10 +1,5 @@
 {
-  "updatedAt": "2025-11-06T17:34:58.512Z",
-  "createdAt": "2025-11-06T17:34:58.512Z",
-  "id": "OwjzXK1lD70IlcgJ",
   "name": "My workflow",
-  "active": false,
-  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -284,7 +279,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1648,
+        1600,
         224
       ],
       "id": "403709f9-79c5-4cb1-82f8-ed55a0e9192a",
@@ -639,6 +634,7 @@
       }
     }
   ],
+  "pinData": {},
   "connections": {
     "Telegram Trigger": {
       "main": [
@@ -864,38 +860,22 @@
           }
         ]
       ]
+    },
+    "Send a text message2": {
+      "main": [
+        []
+      ]
     }
   },
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "staticData": null,
+  "versionId": "51676095-28a8-4dff-8187-9e235db83a69",
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "pinData": {},
-  "versionId": "4b328bd4-f72e-48d8-bb9e-f702089299b3",
-  "versionCounter": 1,
-  "triggerCount": 0,
-  "tags": [],
-  "shared": [
-    {
-      "updatedAt": "2025-11-06T17:34:58.512Z",
-      "createdAt": "2025-11-06T17:34:58.512Z",
-      "role": "workflow:owner",
-      "workflowId": "OwjzXK1lD70IlcgJ",
-      "projectId": "h4l9I70OGsrgTeq4",
-      "project": {
-        "updatedAt": "2025-11-06T16:46:31.182Z",
-        "createdAt": "2025-11-06T16:30:15.421Z",
-        "id": "h4l9I70OGsrgTeq4",
-        "name": "alex ila <aleksey.ilchenko.m@gmail.com>",
-        "type": "personal",
-        "icon": null,
-        "description": null
-      }
-    }
-  ]
+  "id": "OwjzXK1lD70IlcgJ"
 }
