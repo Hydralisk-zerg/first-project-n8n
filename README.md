@@ -45,6 +45,16 @@ scripts\deploy.ps1
 
 Далее откройте n8n по вашему домену и активируйте Telegram‑воркфлоу.
 
+Опционально: установить вебхук Telegram из скрипта
+
+```powershell
+# URL берите из Production URL узла Telegram Trigger (после активации воркфлоу)
+scripts\set-telegram-webhook.ps1 -Url "https://YOUR_DOMAIN/webhook/<path>/webhook"
+
+# Проверить текущую настройку вебхука
+scripts\set-telegram-webhook.ps1 -InfoOnly
+```
+
 ## Сервисы
 
 - postgres:16-alpine → база данных n8n
@@ -138,6 +148,16 @@ The script will:
 - Print the n8n URL when ready
 
 Then open n8n at your domain and activate the Telegram workflow.
+
+Optional: set the Telegram webhook via helper script
+
+```powershell
+# Copy the Production URL from the Telegram Trigger node (after activating the workflow)
+scripts\set-telegram-webhook.ps1 -Url "https://YOUR_DOMAIN/webhook/<path>/webhook"
+
+# Inspect current webhook info
+scripts\set-telegram-webhook.ps1 -InfoOnly
+```
 
 ## Services
 
