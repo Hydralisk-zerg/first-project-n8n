@@ -1,0 +1,715 @@
+{
+  "name": "Word OCR Branch",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1008,
+        -96
+      ],
+      "id": "a6d84ad1-b29f-4602-b939-af348434a4cf",
+      "name": "Telegram Trigger",
+      "webhookId": "a16c0b71-189e-4726-986d-c9d2526f95ea",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ea2eccfc-841d-4f65-95cd-b55a21d22036",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -816,
+        -96
+      ],
+      "id": "3bc9b042-70e0-48f2-8be9-4d7e6843a033",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Я получил текст: {{ $json.message.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        -336
+      ],
+      "id": "9795c29c-0b9f-4d1a-9a15-54d97e104965",
+      "name": "Send a text message",
+      "webhookId": "d95284d5-9f94-42df-8244-0e35f6a5ccff",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger').item.json.message.document.file_id }}",
+        "additionalFields": {
+          "mimeType": ""
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        368
+      ],
+      "id": "a733d2b2-b0b1-41c6-b913-a1940672a3bc",
+      "name": "Get a file",
+      "webhookId": "ec5bd239-3364-4b30-a288-ebea3aaadb14",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ocr-api:3001/ocr-binary?async=1",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -176,
+        368
+      ],
+      "name": "HTTP POST OCR (async)",
+      "id": "40223f3e-f93f-4913-bf73-6c406835791e"
+    },
+    {
+      "parameters": {
+        "jsCode": "const delayMs = 2000;\nawait new Promise(res => setTimeout(res, delayMs));\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        368
+      ],
+      "name": "Delay 2s (Code)",
+      "id": "044d320c-b6a6-4ef8-bc06-e8d5e516a784"
+    },
+    {
+      "parameters": {
+        "url": "={{ 'http://ocr-api:3001/result/' + $json.jobId }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        368
+      ],
+      "name": "HTTP GET OCR Result",
+      "id": "2ef6fed9-88f4-4fa1-aedb-1ca6bd1008b8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "processing",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              },
+              "id": "cond-status-processing"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        352
+      ],
+      "name": "IF Processing?",
+      "id": "a3d28d3b-ddd2-4186-8dcc-3b7a2da2c91a"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.pages }}",
+        "options": {
+          "systemMessage": "Ты — сервис нормализации транспортных и деловых документов. На вход подаётся массив страниц из одного или нескольких документов. Твоя задача: правильно сгруппировать страницы по документам (многостраничные документы объединять), классифицировать тип каждого документа и извлечь ключевые поля.\n\nВход:\npages: массив страниц в порядке следования, каждая страница — объект { index: number, text: string }.\npages:\n{{ $json.pages }}\n\nЗадачи:\n\nСегментация: разбей pages на документы, объединяя смежные страницы одного документа.\nПризнаки начала нового документа:\n\nСильные заголовки/ключевые термины в начале страницы: \"ДОГОВОР\", \"КОНТРАКТ\", \"АКТ\", \"INVOICE/СЧЕТ\", \"Коносамент/Bill of Lading/B/L\" и т.п.\nНовые явные номера документов (Invoice No, Contract No, B/L No, \"№ …\") возле верхней части страницы.\nСброс нумерации \"Page 1 of N\", повторяющиеся шапки/реквизиты.\nЯвно другая структура (новые стороны, реквизиты, даты).\nЕсли нет явных признаков — продолжай предыдущий документ.\nКлассификация типа (result):\n\n\"contract\" — договор/контракт.\n\"act\" — акт выполненных работ/оказанных услуг.\n\"invoice\" — счёт/INVOICE.\n\"BL\" — коносамент (Bill of Lading / B/L).\nИначе \"unknown\".\nИзвлечение полей на уровне документа:\n\nnumber: номер документа (для BL — номер B/L). Если нет — null.\nПодсказки для BL: метки \"B/L No\", \"B/L №\", \"Bill of Lading No\", \"Коносамент №\", \"Номер коносамента\". Типичные паттерны: буквенно‑цифровой идентификатор 6–20 символов, допускающий - / . (пример: \"BL-2025-00127\", \"COSU-7894563\"). Не путай с контейнерным номером (часто 4 буквы + 7 цифр) без явных B/L‑меток.\ndate: норма в формате YYYY-MM-DD. Приводи из DD.MM.YYYY / DD/MM/YYYY / DD‑MMM‑YYYY / \"01 JAN 2025\" / русские месяцы (\"7 ноября 2025\"). Если неуверенно — null.\npageCount: количество страниц этого документа.\nВывод:\nВерни СТРОГО один JSON‑массив без Markdown и пояснений. Каждый элемент массива — один документ в формате:\n{\n\"result\": \"contract|act|invoice|BL|unknown\",\n\"number\": \"string|null\",\n\"date\": \"YYYY-MM-DD|null\",\n\"pageCount\": number\n}\n\nПравила:\n\nНикакого постраничного JSON; один объект на документ.\nЕсли документ многостраничный — объединяй контент всех его страниц перед извлечением.\nЕсли номер/дата не найдены — ставь null.\nНикаких лишних ключей и текста за пределами JSON‑массива."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        848,
+        -112
+      ],
+      "id": "e07c7877-91ef-4f18-b4cc-141ce32f5ca1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        64
+      ],
+      "id": "d73bbd95-e394-4e1b-906b-0ce578f35816",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6o3E6CtmYsqbpVFq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return (() => {\n  // Собираем все входные айтемы\n  const all = $input.all();\n\n  // Пытаемся найти pages в любом элементе: it.json.result.pages\n  let pages = [];\n  for (const it of all) {\n    const p = it.json?.result?.pages;\n    if (Array.isArray(p) && p.length) {\n      pages = p;\n      break;\n    }\n  }\n\n  // Если pages не нашли, попробуем собрать страницы из полей text/pageText\n  if (!pages.length) {\n    const candidates = [];\n    for (const it of all) {\n      const t =\n        it.json?.text ??\n        it.json?.pageText ??\n        it.json?.result?.text ??\n        null;\n      if (typeof t === 'string' && t.trim().length) {\n        candidates.push(t);\n      }\n    }\n    if (candidates.length) {\n      pages = candidates.map((t, i) => ({ index: i + 1, text: t }));\n    }\n  }\n\n  // Если всё ещё ничего — вернём пусто (или включите \"Always Output Data\")\n  if (!pages.length) {\n    return [];\n  }\n\n  // Нормализация структуры и текста\n  const normalize = (s) => String(s || '')\n    .replace(/\\u00A0/g, ' ')      // NBSP -> space\n    .replace(/[ \\t]+/g, ' ')      // сжать подряд идущие пробелы/табы\n    .replace(/\\r/g, '')           // убрать CR\n    .replace(/\\n{3,}/g, '\\n\\n')   // сжать лишние пустые строки\n    .trim();\n\n  // Приводим любой формат pages к [{ index, text }]\n  pages = pages.map((p, i) => {\n    const text = typeof p === 'string' ? p : (p?.text ?? '');\n    const index = (typeof p === 'object' && Number.isInteger(p?.index)) ? p.index : (i + 1);\n    return { index, text: normalize(text) };\n  })\n  // Убираем полностью пустые страницы после нормализации\n  .filter(p => p.text.length > 0);\n\n  // Опционально — ограничение длины страницы, чтобы не взрывать токены\n  const MAX_CHARS_PER_PAGE = 20000;\n  pages = pages.map(p => {\n    if (p.text.length > MAX_CHARS_PER_PAGE) {\n      return { ...p, text: p.text.slice(0, MAX_CHARS_PER_PAGE) + '\\n…[truncated]' };\n    }\n    return p;\n  });\n\n  const pageCount = pages.length;\n\n  // Возвращаем ОДИН айтем для LLM (исключает мультизапуск)\n  return [{\n    json: {\n      pages,\n      pageCount\n    }\n  }];\n})();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -112
+      ],
+      "id": "a5cbca6d-3e40-4ef5-a2f3-6ee6da9a96b5",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1408,
+        -112
+      ],
+      "id": "4b8e3aa1-3cb9-489c-8d0e-3ee76fb19d1d",
+      "name": "Send a text message2",
+      "webhookId": "ea8f2d08-f1e9-4139-a3ef-249597abdcce",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return (() => {\n  // Ищем pages[] в любом входном элементе\n  let pages = [];\n  for (const it of $input.all()) {\n    const p = it.json?.result?.pages;\n    if (Array.isArray(p) && p.length) {\n      pages = p;\n      break;\n    }\n  }\n\n  // Если pages нет — вернём пустой массив (или включите \"Always Output Data\" в настройках узла)\n  if (!pages.length) {\n    return [];\n  }\n\n  // Возвращаем массив { json: { text } } по количеству страниц\n  return pages.map(p => ({\n    json: {\n      text: String(p?.text ?? ''),\n    },\n  }));\n})();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        160
+      ],
+      "id": "51edb9cb-23a2-41f9-a706-ba7381598afc",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        160
+      ],
+      "id": "2a158cb6-28a8-486b-bd1b-8a3206439f60",
+      "name": "Send a text message3",
+      "webhookId": "ea8f2d08-f1e9-4139-a3ef-249597abdcce",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c3d62e57-0bf9-44d1-a2d3-5f1bee21b4c7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "698599e8-6666-4f15-9bee-ad8263d0ebaa",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "word",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b989a563-e6f8-4758-ad90-191521b94b42",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "sheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "91a0ed9d-d198-475b-aab6-389eeb18df3c",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "text/plain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cce89a53-fd4c-42d4-b33a-56e9cf98c631",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.document.mime_type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        544,
+        320
+      ],
+      "id": "b0b63925-a507-4bb4-8e93-c748e71acd00",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "jsCode": "function normalize(input) {\n  // Вход может быть: {result:{text,pages...}}, или [{...}], или сразу {text,pages}\n  let root = input;\n  if (Array.isArray(root) && root.length > 0) root = root[0];\n\n  // Если это конверт \"job/status/result\"\n  if (root && root.result && (typeof root.result === 'object')) {\n    return {\n      jobId: root.jobId ?? null,\n      status: root.status ?? null,\n      fileName: root.result.fileName ?? null,\n      text: typeof root.result.text === 'string' ? root.result.text : '',\n      pages: Array.isArray(root.result.pages) ? root.result.pages : [],\n    };\n  }\n\n  // Если пришёл уже плоский объект { text, pages }\n  return {\n    jobId: root.jobId ?? null,\n    status: root.status ?? null,\n    fileName: root.fileName ?? null,\n    text: typeof root.text === 'string' ? root.text : '',\n    pages: Array.isArray(root.pages) ? root.pages : [],\n  };\n}\n\nfunction cleanText(s) {\n  if (!s) return '';\n  return String(s).replace(/\\r/g, '').trim();\n}\n\n// Пробегаем по всем входным items и нормализуем в единый формат\nconst out = [];\nfor (const item of items) {\n  const n = normalize(item.json);\n  const text = cleanText(n.text);\n  const pages = Array.isArray(n.pages)\n    ? n.pages.map((p) => ({\n        pageNumber: p.pageNumber ?? null,\n        text: cleanText(p.text ?? ''),\n        textLength: typeof p.text === 'string' ? p.text.length : 0,\n        imageFile: p.imageFile ?? null,\n        error: p.error ?? undefined,\n      }))\n    : [];\n\n  out.push({\n    json: {\n      success: true,\n      source: 'ocr',\n      jobId: n.jobId,\n      status: n.status,\n      fileName: n.fileName,\n      text,\n      pages,\n      pageCount: pages.length,\n    },\n  });\n}\nreturn out;"
+      },
+      "name": "Extract OCR Text (robust)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        368
+      ],
+      "id": "f6dd0efb-f4f4-4f17-bcb0-e8326ef92755"
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = [];\n\nfor (const item of items) {\n  const pages = Array.isArray(item.json?.pages) ? item.json.pages : [];\n\n  if (pages.length === 0) {\n    const t = item.json?.text ?? '';\n    out.push({\n      json: {\n        pageNumber: 1,\n        text: t,\n        textLength: typeof t === 'string' ? t.length : 0,\n        jobId: item.json?.jobId,\n        fileName: item.json?.fileName,\n      },\n    });\n    continue;\n  }\n\n  let i = 0;\n  for (const p of pages) {\n    i += 1;\n    const t = p?.text ?? '';\n    out.push({\n      json: {\n        pageNumber: p?.pageNumber ?? i,\n        text: t,\n        textLength: typeof t === 'string' ? t.length : 0,\n        jobId: item.json?.jobId,\n        fileName: item.json?.fileName,\n      },\n    });\n  }\n}\n\nreturn out;"
+      },
+      "name": "Fan-out Pages (optional)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        368
+      ],
+      "id": "9f20b1db-5466-4074-b012-eaae8ec35509"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=текст из таблицы:  {{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        368
+      ],
+      "id": "975d9fde-46a0-4e22-b254-1245a5d8d9f2",
+      "name": "Send a text message4",
+      "webhookId": "96754d5c-467c-41e5-9489-011accbe0f4d",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=докумкент  {{ $json.message.document.file_name }} в обработке .... ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        0
+      ],
+      "id": "d0721062-9ffe-4d37-b707-31154153da3d",
+      "name": "Send a text message1",
+      "webhookId": "e51623f2-8b70-4103-adb8-f4b652bb2181",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "HTTP POST OCR (async)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP POST OCR (async)": {
+      "main": [
+        [
+          {
+            "node": "Delay 2s (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay 2s (Code)": {
+      "main": [
+        [
+          {
+            "node": "HTTP GET OCR Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP GET OCR Result": {
+      "main": [
+        [
+          {
+            "node": "IF Processing?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Processing?": {
+      "main": [
+        [
+          {
+            "node": "Delay 2s (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract OCR Text (robust)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract OCR Text (robust)": {
+      "main": [
+        [
+          {
+            "node": "Fan-out Pages (optional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fan-out Pages (optional)": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "851adea5-1bef-4d7f-84ba-6fa54df31454",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "JW2ABtyd1hK88XIQ"
+}
