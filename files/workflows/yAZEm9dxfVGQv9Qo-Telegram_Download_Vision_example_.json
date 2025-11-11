@@ -1,0 +1,389 @@
+{
+  "name": "Telegram Download Vision with PDF Support",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "id": "6e46fb43-19c2-45ac-becf-d293e705acc0",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -460,
+        200
+      ],
+      "webhookId": "813d96c9-3bed-466a-a84a-6c2d5e8590d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-telegram-token",
+              "name": "telegramToken",
+              "type": "string",
+              "value": "={{ $env.TELEGRAM_BOT_TOKEN || '1919338656:AAHthUfM6N6uFVY5MKODCz_bxsZ9JLr8X1Y' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "59677672-a35b-4b48-a3da-b3b06399111d",
+      "name": "Set Telegram Token",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Set Telegram Token').item.json.telegramToken }}/getFile?file_id={{ $('Telegram Trigger').item.json.message.document ? $('Telegram Trigger').item.json.message.document.file_id : ($('Telegram Trigger').item.json.message.photo && $('Telegram Trigger').item.json.message.photo.length ? $('Telegram Trigger').item.json.message.photo.slice(-1)[0].file_id : '') }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "0eb1a522-f3c5-4463-8cb8-3eb30504b8dc",
+      "name": "Get Path (getFile)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -40,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot{{ $('Set Telegram Token').item.json.telegramToken }}/{{ $json.result.file_path }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "e21b754f-11e4-4d41-bd2c-6c6d084296b4",
+      "name": "Download File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-pdf",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.document?.mime_type || '' }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0ef0ed50-057f-4d8a-8b5d-0c5d68eb0a51",
+      "name": "If PDF?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        360,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ocr-api:3001/convert/pdf-to-images",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "53f38326-574a-4cd0-a21d-7c779ab1793d",
+      "name": "Convert PDF to Images",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        560,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnce",
+        "jsCode": "const outputs = [];\nfor (const item of items) {\n  const images = item.json?.images ?? item.json?.result?.images ?? [];\n\n  if (!Array.isArray(images) || images.length === 0) {\n    // Не бросаем ошибку — возвращаем диагностический объект, чтобы нода не падала\n    outputs.push({ json: { _error: 'PDF conversion returned no images', originalJsonKeys: Object.keys(item.json ?? {}) } });\n    continue;\n  }\n\n  for (const image of images) {\n    let base64 = null;\n\n    if (typeof image.base64 === 'string' && image.base64.length > 0) {\n      base64 = image.base64;\n    } else if (typeof image.data === 'string' && image.data.length > 0) {\n      base64 = image.data;\n    } else if (image?.binary && typeof image.binary === 'object') {\n      try {\n        if (image.binary.data && Buffer.isBuffer(image.binary.data)) {\n          base64 = image.binary.data.toString('base64');\n        } else if (typeof image.binary.data === 'string') {\n          base64 = image.binary.data;\n        }\n      } catch (e) { /* ignore */ }\n    }\n\n    if (!base64) {\n      outputs.push({ json: { _warning: 'image has no base64/data', pageNumber: image.pageNumber ?? image.page ?? null, originalImageKeys: Object.keys(image ?? {}) } });\n      continue;\n    }\n\n    outputs.push({ json: { base64, pageNumber: image.pageNumber ?? image.page ?? null, mimeType: image.mimeType || 'image/jpeg' } });\n  }\n}\nreturn outputs;"
+      },
+      "id": "5f8f5446-ff19-4bba-ad70-e2f46ae98bee",
+      "name": "PDF Pages to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nreturn { json: { base64: buffer.toString('base64'), pageNumber: 1 } };"
+      },
+      "id": "5b4d4bb3-6f81-42ee-a3b0-fdc2336e92e6",
+      "name": "File to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-vision-key",
+              "name": "visionAPI",
+              "type": "string",
+              "value": "={{ $env.GOOGLE_VISION_API_KEY || 'AIzaSyDykvXMAD_piDUj50lIW9I6lFaYxWk6AVo' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "61b816e1-da05-46a0-96b8-5410a6d521a3",
+      "name": "Set Vision API",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://vision.googleapis.com/v1/images:annotate?key={{ $json.visionAPI }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"image\": { \"content\": \"{{ $json.base64 }}\" },\n      \"features\": [{ \"type\": \"DOCUMENT_TEXT_DETECTION\" }]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "70476768-5920-4fc7-9343-e52ea7221887",
+      "name": "HTTP Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1180,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Data is being processed ...",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b2f9493d-3ee8-461a-b6b5-4f4ed7532d71",
+      "name": "Notify Processing",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1180,
+        20
+      ],
+      "webhookId": "aa7da7f6-4460-46c7-915b-fdcf90244d06",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+    ,
+    {
+      "parameters": {
+        "mode": "runOnce",
+        "jsCode": "// Collect Vision Results into a single JSON array\nconst results = items.map(it => ({ pageNumber: it.json.pageNumber ?? null, vision: it.json }));\nreturn [{ json: { results } }];"
+      },
+      "id": "collect-vision-results-0001",
+      "name": "Collect Vision Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        1180
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Telegram Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Telegram Token": {
+      "main": [
+        [
+          {
+            "node": "Get Path (getFile)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Path (getFile)": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "If PDF?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If PDF?": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF to Images",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "File to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert PDF to Images": {
+      "main": [
+        [
+          {
+            "node": "PDF Pages to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF Pages to Base64": {
+      "main": [
+        [
+          {
+            "node": "Set Vision API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File to Base64": {
+      "main": [
+        [
+          {
+            "node": "Set Vision API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Vision": {
+      "main": [
+        [
+          {
+            "node": "Collect Vision Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Vision API": {
+      "main": [
+        [
+          {
+            "node": "HTTP Vision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f338b75d-8b2f-4caf-99f1-b8f803e055bd",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "yAZEm9dxfVGQv9Qo"
+}

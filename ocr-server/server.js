@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const JSZip = require('jszip');
@@ -8,6 +8,35 @@ const { XMLParser } = require('fast-xml-parser');
 
 const app = express();
 const port = 3001;
+
+// Configurable timeouts & DPI via env (fallbacks chosen for larger docs)
+const PDF_TIMEOUT = parseInt(process.env.OCR_PDF_TIMEOUT_MS || '120000', 10); // ms for pdf->images
+const TESS_TIMEOUT = parseInt(process.env.OCR_TESS_TIMEOUT_MS || '60000', 10); // ms per tesseract page
+const PDF_DPI = parseInt(process.env.OCR_PDF_DPI || '250', 10); // dpi for pdftoppm (300 may be slow on big files)
+const LARGE_PDF_SIZE_THRESHOLD = parseInt(process.env.OCR_LARGE_PDF_THRESHOLD || '10000000', 10); // 10MB
+const FALLBACK_DPI = parseInt(process.env.OCR_FALLBACK_DPI || '150', 10); // dpi if first pass times out
+
+function runWithTimeout(cmd, args, timeoutMs, options = {}) {
+    return new Promise((resolve, reject) => {
+        const child = spawn(cmd, args, { ...options });
+        let stdout = '';
+        let stderr = '';
+        if (child.stdout) child.stdout.on('data', d => stdout += d.toString());
+        if (child.stderr) child.stderr.on('data', d => stderr += d.toString());
+        const timer = setTimeout(() => {
+            try { child.kill('SIGKILL'); } catch {}
+            reject(new Error(`timeout ${timeoutMs}ms: ${cmd} ${args.join(' ')} stderr=${stderr.slice(0,300)}`));
+        }, timeoutMs);
+        child.on('error', reject);
+        child.on('close', code => {
+            clearTimeout(timer);
+            if (code !== 0) {
+                return reject(new Error(`exit ${code}: ${cmd} ${args.join(' ')} stderr=${stderr.slice(0,300)}`));
+            }
+            resolve(stdout);
+        });
+    });
+}
 
 // Простая in-memory очередь задач OCR (для async режима)
 const jobs = {}; // jobId -> { status: 'processing'|'done'|'error', createdAt, updatedAt, result?, error? }
@@ -97,7 +126,7 @@ async function extractDocxTextFromBuffer(buffer) {
 
 // Endpoint для multipart form data (поддержка PDF / DOC / DOCX / изображений; sync и async)
 // Принимаем любой ключ поля (file/data/...), берём первый файл
-app.post('/ocr', upload.any(), (req, res) => {
+app.post('/ocr', upload.any(), async (req, res) => {
     const timestamp = Date.now();
     let tempFilePath = null;
     let isAsync = false;
@@ -143,17 +172,16 @@ app.post('/ocr', upload.any(), (req, res) => {
             const jobId = createJob();
             console.log(`Async mode enabled on /ocr, jobId=${jobId}`);
             res.status(202).json({ success: true, accepted: true, jobId });
-
-            setImmediate(() => {
+            setImmediate(async () => {
                 try {
                     let result;
                     if (fileKind === 'pdf') {
-                        result = runOcrForPdfFile(tempFilePath, timestamp, tempFileName, buf.length);
+                        result = await runOcrForPdfFile(tempFilePath, timestamp, tempFileName, buf.length);
                     } else if (fileKind === 'doc' || fileKind === 'docx') {
                         const pdfPath = convertDocToPdf(tempFilePath, timestamp);
-                        result = runOcrForPdfFile(pdfPath, timestamp, path.basename(pdfPath), buf.length);
+                        result = await runOcrForPdfFile(pdfPath, timestamp, path.basename(pdfPath), buf.length);
                     } else {
-                        result = runOcrForImageFile(tempFilePath, timestamp, tempFileName, buf.length);
+                        result = await runOcrForImageFile(tempFilePath, timestamp, tempFileName, buf.length);
                     }
                     setJobResult(jobId, result);
                 } catch (e) {
@@ -166,15 +194,15 @@ app.post('/ocr', upload.any(), (req, res) => {
             return;
         }
 
-        // sync режим
+        // sync режим (ожидаем)
         let result;
         if (fileKind === 'pdf') {
-            result = runOcrForPdfFile(tempFilePath, timestamp, tempFileName, buf.length);
+            result = await runOcrForPdfFile(tempFilePath, timestamp, tempFileName, buf.length);
         } else if (fileKind === 'doc' || fileKind === 'docx') {
             const pdfPath = convertDocToPdf(tempFilePath, timestamp);
-            result = runOcrForPdfFile(pdfPath, timestamp, path.basename(pdfPath), buf.length);
+            result = await runOcrForPdfFile(pdfPath, timestamp, path.basename(pdfPath), buf.length);
         } else {
-            result = runOcrForImageFile(tempFilePath, timestamp, tempFileName, buf.length);
+            result = await runOcrForImageFile(tempFilePath, timestamp, tempFileName, buf.length);
         }
         res.json(result);
 
@@ -260,7 +288,7 @@ app.post('/test', express.raw({ limit: '20mb', type: '*/*' }), (req, res) => {
 });
 
 // Endpoint для binary data (альтернативный)
-app.post('/ocr-binary', express.raw({ limit: '50mb', type: '*/*' }), (req, res) => {
+app.post('/ocr-binary', express.raw({ limit: '50mb', type: '*/*' }), async (req, res) => {
     const timestamp = Date.now();
     let tempFilePath = null;
     let tempImagePath = null;
@@ -322,16 +350,16 @@ app.post('/ocr-binary', express.raw({ limit: '50mb', type: '*/*' }), (req, res) 
             res.status(202).json({ success: true, accepted: true, jobId });
 
             // Фоновая обработка
-            setImmediate(() => {
+            setImmediate(async () => {
                 try {
                     let result;
                     if (fileKind === 'pdf') {
-                        result = runOcrForPdfFile(tempFilePath, timestamp, tempFileName, req.body.length);
+                        result = await runOcrForPdfFile(tempFilePath, timestamp, tempFileName, req.body.length);
                     } else if (fileKind === 'doc' || fileKind === 'docx') {
                         const pdfPath = convertDocToPdf(tempFilePath, timestamp);
-                        result = runOcrForPdfFile(pdfPath, timestamp, pdfPath.split('/').pop(), req.body.length);
+                        result = await runOcrForPdfFile(pdfPath, timestamp, pdfPath.split('/').pop(), req.body.length);
                     } else {
-                        result = runOcrForImageFile(tempFilePath, timestamp, tempFileName, req.body.length);
+                        result = await runOcrForImageFile(tempFilePath, timestamp, tempFileName, req.body.length);
                     }
                     setJobResult(jobId, result);
                 } catch (e) {
@@ -348,12 +376,12 @@ app.post('/ocr-binary', express.raw({ limit: '50mb', type: '*/*' }), (req, res) 
         // Синхронная обработка (текущий стандартный путь)
         let result;
         if (fileKind === 'pdf') {
-            result = runOcrForPdfFile(tempFilePath, timestamp, tempFileName, req.body.length);
+            result = await runOcrForPdfFile(tempFilePath, timestamp, tempFileName, req.body.length);
         } else if (fileKind === 'doc' || fileKind === 'docx') {
             const pdfPath = convertDocToPdf(tempFilePath, timestamp);
-            result = runOcrForPdfFile(pdfPath, timestamp, pdfPath.split('/').pop(), req.body.length);
+            result = await runOcrForPdfFile(pdfPath, timestamp, pdfPath.split('/').pop(), req.body.length);
         } else {
-            result = runOcrForImageFile(tempFilePath, timestamp, tempFileName, req.body.length);
+            result = await runOcrForImageFile(tempFilePath, timestamp, tempFileName, req.body.length);
         }
         res.json(result);
 
@@ -373,79 +401,127 @@ app.post('/ocr-binary', express.raw({ limit: '50mb', type: '*/*' }), (req, res) 
     }
 });
 
+app.post('/convert/pdf-to-images', express.raw({ limit: '50mb', type: '*/*' }), async (req, res) => {
+    const timestamp = Date.now();
+    const tempPdfPath = `/files/uploads/convert_${timestamp}.pdf`;
+
+    try {
+        if (!req.body || req.body.length === 0) {
+            return res.status(400).json({ success: false, error: 'No binary data received' });
+        }
+
+        const header5 = req.body.slice(0, 5).toString('ascii');
+        if (header5 !== '%PDF-') {
+            return res.status(400).json({ success: false, error: 'Input is not a PDF document' });
+        }
+
+        fs.writeFileSync(tempPdfPath, req.body);
+
+        let dpi = PDF_DPI;
+        if (req.body.length >= LARGE_PDF_SIZE_THRESHOLD && dpi > 220) {
+            dpi = Math.max(180, Math.min(dpi, 220));
+            console.log(`PDF convert: large file detected (${req.body.length}) -> using reduced DPI ${dpi}`);
+        }
+
+        const imageBaseName = `/files/uploads/convert_${timestamp}`;
+
+        try {
+            await runWithTimeout('pdftoppm', ['-jpeg', '-r', String(dpi), tempPdfPath, imageBaseName], PDF_TIMEOUT);
+        } catch (e) {
+            if (/timeout/i.test(e.message)) {
+                console.error(`pdftoppm timeout at dpi=${dpi}. Fallback to dpi=${FALLBACK_DPI}`);
+                await runWithTimeout('pdftoppm', ['-jpeg', '-r', String(FALLBACK_DPI), tempPdfPath, imageBaseName], PDF_TIMEOUT * 2);
+            } else {
+                throw e;
+            }
+        }
+
+        const imageFiles = fs.readdirSync('/files/uploads')
+            .filter(f => f.startsWith(`convert_${timestamp}-`) && (f.endsWith('.jpg') || f.endsWith('.jpeg')))
+            .sort();
+
+        if (imageFiles.length === 0) {
+            throw new Error('No images created from PDF');
+        }
+
+        const images = imageFiles.map((file, index) => {
+            const imagePath = `/files/uploads/${file}`;
+            const buffer = fs.readFileSync(imagePath);
+            const base64 = buffer.toString('base64');
+            try { fs.unlinkSync(imagePath); } catch {}
+            return {
+                pageNumber: index + 1,
+                mimeType: 'image/jpeg',
+                size: buffer.length,
+                base64
+            };
+        });
+
+        res.json({ success: true, pages: images.length, images });
+    } catch (err) {
+        console.error('PDF convert error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    } finally {
+        try { fs.unlinkSync(tempPdfPath); } catch {}
+    }
+});
+
 // Вспомогательная функция OCR для PDF-файла (возвращает объект результата)
-function runOcrForPdfFile(tempFilePath, timestamp, tempFileName, inputSize) {
-    // Конвертируем PDF в изображения
+async function runOcrForPdfFile(tempFilePath, timestamp, tempFileName, inputSize) {
+    // Decide DPI & timeouts dynamically
+    let dpi = PDF_DPI;
+    if (inputSize >= LARGE_PDF_SIZE_THRESHOLD && dpi > 220) {
+        dpi = Math.max(180, Math.min(dpi, 220));
+        console.log(`Large PDF detected (${inputSize} bytes) -> using reduced DPI ${dpi}`);
+    }
+
     const imageBaseName = `/files/uploads/temp_${timestamp}`;
-    const tempImagePath = `${imageBaseName}-%d.png`;
 
-    console.log('Converting PDF to images...');
-    execSync(`pdftoppm -png -r 300 "${tempFilePath}" "${imageBaseName}"`, { 
-        timeout: 30000 
-    });
+    console.log(`PDF->images pass1 dpi=${dpi} timeout=${PDF_TIMEOUT}ms`);
+    try {
+        await runWithTimeout('pdftoppm', ['-png','-r', String(dpi), tempFilePath, imageBaseName], PDF_TIMEOUT);
+    } catch (e) {
+        if (/timeout/i.test(e.message)) {
+            console.error(`pdftoppm timeout at dpi=${dpi}. Trying fallback dpi=${FALLBACK_DPI} timeout=${PDF_TIMEOUT*2}ms`);
+            await runWithTimeout('pdftoppm', ['-png','-r', String(FALLBACK_DPI), tempFilePath, imageBaseName], PDF_TIMEOUT * 2);
+        } else {
+            throw e;
+        }
+    }
 
-    // Ищем созданные изображения
     const imageFiles = fs.readdirSync('/files/uploads')
         .filter(f => f.startsWith(`temp_${timestamp}-`) && f.endsWith('.png'))
         .sort();
-
-    if (imageFiles.length === 0) {
-        throw new Error('No images created from PDF');
-    }
+    if (imageFiles.length === 0) throw new Error('No images created from PDF');
 
     console.log(`Created ${imageFiles.length} image(s), running OCR...`);
 
-    // Обрабатываем каждое изображение через OCR
     let allText = '';
     const pages = [];
-    
     for (let i = 0; i < imageFiles.length; i++) {
         const imageFile = imageFiles[i];
         const imagePath = `/files/uploads/${imageFile}`;
         try {
-            const pageText = execSync(
-                `tesseract "${imagePath}" stdout -l ukr+rus+eng`, 
-                { 
-                    encoding: 'utf8', 
-                    timeout: 30000,
-                    maxBuffer: 1024 * 1024
-                }
-            );
-            
-            const cleanPageText = pageText.trim();
+            const txt = await runWithTimeout('tesseract', [imagePath, 'stdout', '-l', 'ukr+rus+eng'], TESS_TIMEOUT, { env: process.env });
+            const cleanPageText = String(txt).trim();
             allText += cleanPageText + '\n\n';
-            
-            // Сохраняем текст каждой страницы отдельно
-            pages.push({
-                pageNumber: i + 1,
-                text: cleanPageText,
-                textLength: cleanPageText.length,
-                imageFile: imageFile
-            });
-            
-            // Удаляем обработанное изображение
-            fs.unlinkSync(imagePath);
+            pages.push({ pageNumber: i + 1, text: cleanPageText, textLength: cleanPageText.length, imageFile });
         } catch (ocrError) {
             console.log(`OCR error for ${imageFile}:`, ocrError.message);
-            pages.push({
-                pageNumber: i + 1,
-                text: '',
-                textLength: 0,
-                error: ocrError.message,
-                imageFile: imageFile
-            });
+            pages.push({ pageNumber: i + 1, text: '', textLength: 0, error: ocrError.message, imageFile });
+        } finally {
+            try { fs.unlinkSync(imagePath); } catch {}
         }
     }
 
     console.log(`OCR completed. Total text length: ${allText.length}, Pages: ${pages.length}`);
-
     return {
         success: true,
         text: allText.trim(),
-        pages: pages,
+        pages,
         fileName: tempFileName,
         textLength: allText.trim().length,
-        inputSize: inputSize,
+        inputSize,
         pagesProcessed: imageFiles.length,
         totalPages: pages.length
     };
@@ -471,20 +547,13 @@ function convertDocToPdf(inputPath, timestamp) {
 }
 
 // OCR для одного изображения
-function runOcrForImageFile(tempFilePath, timestamp, tempFileName, inputSize) {
+async function runOcrForImageFile(tempFilePath, timestamp, tempFileName, inputSize) {
     console.log('Running OCR on image...');
     let allText = '';
     const pages = [];
     try {
-        const pageText = execSync(
-            `tesseract "${tempFilePath}" stdout -l ukr+rus+eng`,
-            {
-                encoding: 'utf8',
-                timeout: 30000,
-                maxBuffer: 1024 * 1024
-            }
-        );
-        const cleanText = pageText.trim();
+        const pageText = await runWithTimeout('tesseract', [tempFilePath, 'stdout', '-l', 'ukr+rus+eng'], TESS_TIMEOUT, { env: process.env });
+        const cleanText = String(pageText).trim();
         allText = cleanText;
         pages.push({ pageNumber: 1, text: cleanText, textLength: cleanText.length, imageFile: tempFileName });
     } catch (e) {

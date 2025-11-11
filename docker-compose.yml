@@ -74,6 +74,12 @@
       timeout: 5s
       retries: 12
       start_period: 10s
+    environment:
+      - OCR_PDF_TIMEOUT_MS=180000
+      - OCR_TESS_TIMEOUT_MS=90000
+      - OCR_PDF_DPI=220
+      - OCR_FALLBACK_DPI=140
+      - OCR_LARGE_PDF_THRESHOLD=8000000
 
   cloudflared:
     image: cloudflare/cloudflared:latest

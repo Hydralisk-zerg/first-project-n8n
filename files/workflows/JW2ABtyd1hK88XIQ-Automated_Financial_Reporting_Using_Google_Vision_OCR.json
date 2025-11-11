@@ -1,5 +1,5 @@
 {
-  "name": "Word OCR Branch",
+  "name": "Automated Financial Reporting Using Google Vision OCR, Telegram & Google Sheets",
   "nodes": [
     {
       "parameters": {
@@ -11,8 +11,8 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -752,
-        160
+        -16,
+        576
       ],
       "id": "a6d84ad1-b29f-4602-b939-af348434a4cf",
       "name": "Telegram Trigger",
@@ -52,8 +52,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -576,
-        160
+        -1072,
+        -144
       ],
       "id": "3bc9b042-70e0-48f2-8be9-4d7e6843a033",
       "name": "If"
@@ -69,8 +69,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -384,
-        368
+        -1184,
+        96
       ],
       "id": "a733d2b2-b0b1-41c6-b913-a1940672a3bc",
       "name": "Get a file",
@@ -96,8 +96,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        -176,
-        368
+        -544,
+        -192
       ],
       "name": "HTTP POST OCR (async)",
       "id": "40223f3e-f93f-4913-bf73-6c406835791e"
@@ -109,8 +109,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        368
+        -496,
+        64
       ],
       "name": "Delay 2s (Code)",
       "id": "044d320c-b6a6-4ef8-bc06-e8d5e516a784"
@@ -125,8 +125,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        160,
-        368
+        -336,
+        64
       ],
       "name": "HTTP GET OCR Result",
       "id": "2ef6fed9-88f4-4fa1-aedb-1ca6bd1008b8"
@@ -159,8 +159,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        320,
-        368
+        -368,
+        -224
       ],
       "name": "IF Processing?",
       "id": "a3d28d3b-ddd2-4186-8dcc-3b7a2da2c91a"
@@ -471,8 +471,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -384,
-        176
+        -848,
+        -144
       ],
       "id": "d0721062-9ffe-4d37-b707-31154153da3d",
       "name": "Send a text \"Взято в работу\"",
@@ -495,8 +495,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -384,
-        -64
+        -880,
+        -368
       ],
       "id": "9795c29c-0b9f-4d1a-9a15-54d97e104965",
       "name": "Send a text из сообщения",
@@ -507,6 +507,365 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $json.telegramToken }}/getFile?file_id={{ $('Telegram Trigger').item.json.message.document.file_id }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "218e99ed-26fd-4e7c-89e4-208b1196bfb7",
+      "name": "Get Path",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1088,
+        320
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "586cf442-13be-4996-9824-366e20ab864e",
+              "name": "visionAPI",
+              "type": "string",
+              "value": "AIzaSyDykvXMAD_piDUj50lIW9I6lFaYxWk6AVo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f7982b1b-cee2-4e40-a416-812066eb71f1",
+      "name": "Set Vision API",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1120,
+        528
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://vision.googleapis.com/v1/images:annotate?key={{ $json.visionAPI }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"image\": {\n        \"content\": \"{{ $('Code').item.json.base64 }}\"\n      },\n      \"features\": [\n        {\n          \"type\": \"TEXT_DETECTION\"\n        }\n      ]\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "f1af16ee-4d2f-47cd-af6d-37ad90045d5a",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -928,
+        528
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "586cf442-13be-4996-9824-366e20ab864e",
+              "name": "telegramToken",
+              "type": "string",
+              "value": "1919338656:AAHthUfM6N6uFVY5MKODCz_bxsZ9JLr8X1Y"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ca3aa5c8-e9c9-4d81-a321-1d26699a3828",
+      "name": "Set Telegram Token",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1312,
+        304
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "- Retrieves the file path (image) from Telegram by accessing the getFile endpoint. This path is needed so we can download the image file from the Telegram server.\n- After obtaining the file_path, this node accesses the direct URL to download the image file from the Telegram server.\n- Next, it retrieves the binary image data from the previous node and converts it to a base64 string, which is required by the Google Vision API for the OCR process.",
+        "height": 380,
+        "width": 500,
+        "color": 4
+      },
+      "id": "f2b6d48e-cdb3-4677-adb5-e61afe11d6a9",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1424,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "- Save the Google Vision API key into a variable named visionAPI. This variable will later be used to dynamically call the OCR endpoint, without having to specify the API key directly in the URL.\n- Send a POST request to the Google Vision API endpoint. The sent data contains the image in base64 format from the previous node (Code) and uses TEXT_DETECTION as the OCR feature.\n- Send a message to the Telegram user as a notification that the data is being processed. This provides immediate feedback so the user knows the workflow is running.",
+        "height": 600,
+        "width": 400,
+        "color": 6
+      },
+      "id": "316fa7e7-1770-4562-8f1f-bc5177776060",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1744,
+        -128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Data is being processed . . .",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7b6383d2-0489-4306-b6f8-820511674580",
+      "name": "Send a text message5",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        -784,
+        352
+      ],
+      "webhookId": "849284a7-a383-4bc7-b2d9-115bdd3a8c1e",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconsole.log(buffer)\nconst base64 = buffer.toString('base64');\n\nreturn { json: { base64 } };"
+      },
+      "id": "83c0ac24-3716-48d8-ae86-3eabe7df7f16",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1328,
+        528
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot{{ $('Set Telegram Token').item.json.telegramToken }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1536,
+        528
+      ],
+      "id": "11059ca2-f02a-4159-ac22-a40516244dee",
+      "name": "Get URL"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Set Telegram Token1').item.json.telegramToken }}/getFile?file_id={{ $('Telegram Trigger').item.json.message.document ? $('Telegram Trigger').item.json.message.document.file_id : ($('Telegram Trigger').item.json.message.photo && $('Telegram Trigger').item.json.message.photo.length ? $('Telegram Trigger').item.json.message.photo.slice(-1)[0].file_id : '') }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "0c592550-7dcb-43bc-8957-a62c3b7e7272",
+      "name": "Get Path (getFile)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot{{ $('Set Telegram Token1').item.json.telegramToken }}/{{ $json.result.file_path }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "40bf04c3-86a3-4d16-85d7-63ebe26f06d3",
+      "name": "Download File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-pdf",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.document?.mime_type || '' }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e6ad630f-3b69-47de-af61-68d2b81bffc8",
+      "name": "If PDF?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ocr-api:3001/convert/pdf-to-images",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "c9016a79-f163-48ad-bc7e-be9c5a22de1f",
+      "name": "Convert PDF to Images",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        720,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputs = []; for (const item of items) {  const images = item.json?.images;  if (!Array.isArray(images) || images.length === 0) {    throw new Error('PDF conversion returned no images');  }  for (const image of images) {    outputs.push({ json: {      base64: image.base64,      pageNumber: image.pageNumber ?? null,      mimeType: image.mimeType || 'image/jpeg'    }});  }}\nreturn outputs;"
+      },
+      "id": "7d52dfd9-0f4b-47f7-8f88-7aec86ee1ff3",
+      "name": "PDF Pages to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nreturn { json: { base64: buffer.toString('base64'), pageNumber: 1 } };"
+      },
+      "id": "90e24ae5-121a-4adc-a0a5-7136b981ea23",
+      "name": "File to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://vision.googleapis.com/v1/images:annotate?key={{ $json.visionAPI }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"image\": { \"content\": \"{{ $('PDF Pages to Base64').item.json.base64 }}\" },\n      \"features\": [{ \"type\": \"DOCUMENT_TEXT_DETECTION\" }]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "f70bc12d-abd7-44a3-9284-ff636c09202d",
+      "name": "HTTP Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-telegram-token",
+              "name": "telegramToken",
+              "type": "string",
+              "value": "={{ $env.TELEGRAM_BOT_TOKEN || '1919338656:AAHthUfM6N6uFVY5MKODCz_bxsZ9JLr8X1Y' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "34ad792c-82b3-4ce2-9e0e-fcbd8e21747f",
+      "name": "Set Telegram Token1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-vision-key",
+              "name": "visionAPI",
+              "type": "string",
+              "value": "={{ $env.GOOGLE_VISION_API_KEY || 'AIzaSyDykvXMAD_piDUj50lIW9I6lFaYxWk6AVo' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5c909774-0cf0-4101-bb98-7af3c5aa2e1b",
+      "name": "Set Vision API1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        960
+      ]
     }
   ],
   "pinData": {},
@@ -515,7 +874,7 @@
       "main": [
         [
           {
-            "node": "If",
+            "node": "Set Telegram Token1",
             "type": "main",
             "index": 0
           }
@@ -533,11 +892,6 @@
         ],
         [
           {
-            "node": "Send a text \"Взято в работу\"",
-            "type": "main",
-            "index": 0
-          },
-          {
             "node": "Get a file",
             "type": "main",
             "index": 0
@@ -549,7 +903,7 @@
       "main": [
         [
           {
-            "node": "HTTP POST OCR (async)",
+            "node": "Set Telegram Token",
             "type": "main",
             "index": 0
           }
@@ -598,13 +952,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Switch2",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "OpenAI Chat Model": {
@@ -702,6 +1050,171 @@
       "main": [
         []
       ]
+    },
+    "Get Path": {
+      "main": [
+        [
+          {
+            "node": "Get URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Set Vision API": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Telegram Token": {
+      "main": [
+        [
+          {
+            "node": "Get Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Set Vision API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get URL": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Path (getFile)": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "If PDF?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If PDF?": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF to Images",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "File to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert PDF to Images": {
+      "main": [
+        [
+          {
+            "node": "PDF Pages to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF Pages to Base64": {
+      "main": [
+        [
+          {
+            "node": "Set Vision API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File to Base64": {
+      "main": [
+        [
+          {
+            "node": "Set Vision API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Telegram Token1": {
+      "main": [
+        [
+          {
+            "node": "Get Path (getFile)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Vision API1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Vision": {
+      "main": [
+        []
+      ]
     }
   },
   "active": false,
@@ -710,7 +1223,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "18cc25c2-19bb-48d1-8196-6f3e5aa89698",
+  "versionId": "58341bf6-5a8e-44f3-b4d0-cda1bf68d493",
   "meta": {
     "templateCredsSetupCompleted": true
   },
