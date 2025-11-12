@@ -27,8 +27,8 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -2448,
-        -1264
+        -1904,
+        -1600
       ],
       "webhookId": "813d96c9-3bed-466a-a84a-6c2d5e8590d9",
       "credentials": {
@@ -36,7 +36,8 @@
           "id": "tr6sdpVZ6vPF4MC1",
           "name": "Telegram account"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -506,19 +507,50 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "id": "e9abffd7-a771-47ab-a55b-00a2abb2c96a",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2512,
+        -1520
+      ],
+      "webhookId": "813d96c9-3bed-466a-a84a-6c2d5e8590d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "id": "438af73e-9779-4dba-a4c2-62df878f08e1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2576,
+        -1280
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
     }
   ],
   "pinData": {},
   "connections": {
     "Telegram Trigger1": {
       "main": [
-        [
-          {
-            "node": "Set Telegram Token1",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Set Telegram Token1": {
@@ -717,13 +749,31 @@
           }
         ]
       ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Telegram Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "3a1e1aad-3e47-454d-a1d1-444b0e3c363a",
+  "versionId": "0c021c6f-f7f9-40e6-b921-006a82d4d556",
   "meta": {
     "templateCredsSetupCompleted": true
   },

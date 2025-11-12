@@ -1,0 +1,231 @@
+{
+  "name": "Router: Telegram Message Router",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "id": "router-telegram-trigger-1",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -520,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnce",
+        "jsCode": "// Detect incoming type and set route\nconst msg = items[0].json.message ?? {};\nlet route = 'unknown';\nif (msg.document || (msg.photo && msg.photo.length)) route = 'file';\nelse if (msg.voice || msg.audio) route = 'voice';\nelse if (msg.text || msg.caption) route = 'text';\nreturn [{ json: { route, message: msg } }];"
+      },
+      "id": "router-detect-code-1",
+      "name": "Detect Route (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-file",
+              "leftValue": "={{ $json.route }}",
+              "rightValue": "file",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "router-if-is-file-1",
+      "name": "If Is File?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "yAZEm9dxfVGQv9Qo",
+        "waitForCompletion": true,
+        "options": {}
+      },
+      "id": "router-exec-file-1",
+      "name": "Execute File Workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        360,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-voice",
+              "leftValue": "={{ $json.route }}",
+              "rightValue": "voice",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "router-if-is-voice-1",
+      "name": "If Is Voice?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "",
+        "waitForCompletion": true,
+        "options": {}
+      },
+      "id": "router-exec-voice-1",
+      "name": "Execute Voice Workflow (placeholder)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        360,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "Child: Reply With Received Text",
+        "waitForCompletion": true,
+        "options": {}
+      },
+      "id": "router-exec-text-1",
+      "name": "Execute Text Workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        360,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "= {{$json.message?.chat?.id || $json.message?.chat_id || ''}}",
+        "text": "Unsupported message type. I can process files, voice and text.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "router-telegram-reply-1",
+      "name": "Reply Unsupported",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        840
+      ],
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Detect Route (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Route (Code)": {
+      "main": [
+        [
+          {
+            "node": "If Is File?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Is File?": {
+      "main": [
+        [
+          {
+            "node": "Execute File Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Is Voice?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Is Voice?": {
+      "main": [
+        [
+          {
+            "node": "Execute Voice Workflow (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Text Workflow (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "Router_Telegram_Router"
+}

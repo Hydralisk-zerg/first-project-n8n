@@ -1,0 +1,87 @@
+{
+  "name": "Child: Reply With Received Text",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "exec-trigger-1",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -40
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "reply",
+              "value": "={{ 'Вы написали мне: ' + ($json.input ?? $json.message?.text ?? '') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-reply-1",
+      "name": "Set Reply Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        440,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "= {{$json.message?.chat?.id || $json.message?.chat_id || ''}}",
+        "text": "={{ $json.reply }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "telegram-reply-1",
+      "name": "Telegram Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -40
+      ],
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Reply Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Reply Text": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "Child_Reply_Text"
+}

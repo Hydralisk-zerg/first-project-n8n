@@ -1,0 +1,275 @@
+{
+  "name": "Router: Telegram Message Router",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const msg = items[0].json.message ?? {};\nlet route = 'unknown';\nif (msg.document || (msg.photo && msg.photo.length)) route = 'file';\nelse if (msg.voice || msg.audio) route = 'voice';\nelse if (msg.text || msg.caption) route = 'text';\nreturn [{ json: { route, message: msg } }];"
+      },
+      "id": "a93c79b3-7d3a-4704-84f5-d15a7b40eb98",
+      "name": "Detect Route (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "yAZEm9dxfVGQv9Qo",
+        "options": {}
+      },
+      "id": "595df1c2-deeb-4a5d-b263-bbecf5952caf",
+      "name": "Execute File Workflow",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        496,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d12ca69b-7131-4f5f-a722-1a53eaac781e",
+      "name": "Execute Voice Workflow (placeholder)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        480,
+        224
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": "Child: Reply With Received Text",
+        "options": {}
+      },
+      "id": "14e2f46c-c854-4fd1-9a30-61093dd9fd8a",
+      "name": "Execute Text Workflow (placeholder)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
+      "position": [
+        512,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "= {{$json.message?.chat?.id || $json.message?.chat_id || ''}}",
+        "text": "Unsupported message type. I can process files, voice and text.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "a34ba9e3-a58f-4a05-9eba-b2164a53adaf",
+      "name": "Reply Unsupported",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        64,
+        368
+      ],
+      "webhookId": "791e23ab-02d3-4930-adfd-4b02eba4265e",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "file",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "12d7a1ca-48d6-4276-b8cb-cae9e7ff47c7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e4a13da9-4a3b-481e-9be8-9812d94e0586",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "voice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ab080754-f8d8-4120-b5ee-360b726238dd",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ec2a3e91-05a7-452f-bf4d-f66228caaaf9",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "unknown",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        64,
+        48
+      ],
+      "id": "4524d5b4-b7a5-465a-8f38-b8484406e782",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "id": "9e38650c-51c4-467f-9fd8-5bb20d3548cd",
+      "name": "Telegram Trigger1",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        64
+      ],
+      "webhookId": "6fd7795b-c64d-4027-be31-98db3a93b886",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Detect Route (Code)": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Execute File Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Voice Workflow (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Text Workflow (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Unsupported",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "650bfca3-8f03-4495-bc66-69e5381769e3",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "AV1bYnfFic8acDVM"
+}
