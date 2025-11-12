@@ -1,0 +1,731 @@
+{
+  "name": "Telegram Download Vision with PDF Support",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Execution Mode = runOnceForEachItem\ntry {\n  // item — текущий вход\n  const result = {\n    pageNumber: item.json.pageNumber ?? null,\n    vision: item.json\n  };\n  return { json: result }; // возвращаем ТОЛЬКО один объект (не массив)\n} catch (err) {\n  return { json: { _error: String(err) } };\n}"
+      },
+      "id": "3fee1783-6537-498e-8749-680ce3b95770",
+      "name": "Collect Vision Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "id": "76d1dba0-306b-4a84-9f21-6a9a08b0afe5",
+      "name": "Telegram Trigger1",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2448,
+        -1264
+      ],
+      "webhookId": "813d96c9-3bed-466a-a84a-6c2d5e8590d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-telegram-token",
+              "name": "telegramToken",
+              "type": "string",
+              "value": "={{ $env.TELEGRAM_BOT_TOKEN || '1919338656:AAHthUfM6N6uFVY5MKODCz_bxsZ9JLr8X1Y' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "08e15f19-895a-4d1b-bc19-42268d2191e4",
+      "name": "Set Telegram Token1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2272,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Set Telegram Token1').item.json.telegramToken }}/getFile?file_id={{ $('Telegram Trigger1').item.json.message.document ? $('Telegram Trigger1').item.json.message.document.file_id : ($('Telegram Trigger1').item.json.message.photo && $('Telegram Trigger1').item.json.message.photo.length ? $('Telegram Trigger1').item.json.message.photo.slice(-1)[0].file_id : '') }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "10390694-4f4d-4a92-9272-85e070441e40",
+      "name": "Get Path (getFile)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2096,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot{{ $('Set Telegram Token1').item.json.telegramToken }}/{{ $json.result.file_path }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "a1a34c4d-a5fd-40ad-a6da-762c2b6eb9ef",
+      "name": "Download File1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1920,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-pdf",
+              "leftValue": "={{ $('Telegram Trigger1').item.json.message.document?.mime_type || '' }}",
+              "rightValue": "application/pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f86176d6-0af8-4248-8c5d-0be4859c3268",
+      "name": "If PDF?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1744,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ocr-api:3001/convert/pdf-to-images",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "87d78c8a-2134-45f6-9d29-4f530674f713",
+      "name": "Convert PDF to Images1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1568,
+        -1392
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const outputs = [];\nfor (const item of items) {\n  const images = item.json?.images ?? item.json?.result?.images ?? [];\n  \n  if (!Array.isArray(images) || images.length === 0) {\n    outputs.push({ json: { _error: 'PDF conversion returned no images', originalJsonKeys: Object.keys(item.json ?? {}) } });\n    continue;\n  }\n  for (const image of images) {\n    let base64 = null;\n    \n    if (typeof image.base64 === 'string' && image.base64.length > 0) {\n      base64 = image.base64;\n    } else if (typeof image.data === 'string' && image.data.length > 0) {\n      base64 = image.data;\n    } else if (image?.binary && typeof image.binary === 'object') {\n      try {\n        if (image.binary.data && Buffer.isBuffer(image.binary.data)) {\n          base64 = image.binary.data.toString('base64');\n        } else if (typeof image.binary.data === 'string') {\n          base64 = image.binary.data;\n        }\n      } catch (e) { /* ignore */ }\n    } \n    if (!base64) {\n      outputs.push({ json: { _warning: 'image has no base64/data', pageNumber: image.pageNumber ?? image.page ?? null, originalImageKeys: Object.keys(image ?? {}) } });\n      continue;\n    }\n    \n    outputs.push({ json: { base64, pageNumber: image.pageNumber ?? image.page ?? null, mimeType: image.mimeType || 'image/jpeg' } });\n  }\n}\nreturn outputs;"
+      },
+      "id": "321655e5-cf95-4e23-8ba4-71203b0e4042",
+      "name": "PDF Pages to Base",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1392,
+        -1392
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nreturn { json: { base64: buffer.toString('base64'), pageNumber: 1 } };"
+      },
+      "id": "97c97ddb-35bd-405a-a633-adf50ab42845",
+      "name": "File to Base",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1584,
+        -1104
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set-vision-key",
+              "name": "visionAPI",
+              "type": "string",
+              "value": "={{ $env.GOOGLE_VISION_API_KEY || 'AIzaSyDykvXMAD_piDUj50lIW9I6lFaYxWk6AVo' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "721506f8-313a-406d-b500-b62c4ce62982",
+      "name": "Set Vision API1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1200,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://vision.googleapis.com/v1/images:annotate?key={{ $json.visionAPI }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"image\": { \"content\": \"{{ $('PDF Pages to Base').item.json.base64 }}\" },\n      \"features\": [{ \"type\": \"DOCUMENT_TEXT_DETECTION\" }]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "bcdc43c8-deda-435e-8863-6afd6b0a1168",
+      "name": "HTTP Vision1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1008,
+        -1264
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('HTTP Vision1').item.json.responses[0].textAnnotations[0].description }}",
+        "options": {
+          "systemMessage": "Ты — модель сегментации скана на документы и извлечения полей.\n\nВход: pages — упорядоченный массив страниц:\n{\n\"index\": <целое>,\n\"text\": \"<текст страницы>\"\n}\n\nВЫХОД: СТРОГО один JSON‑массив объектов. Каждый объект имеет РОВНО ключи:\n{\n\"result\": \"contract|act|invoice|BL|unknown\",\n\"number\": \"string|null\",\n\"date\": \"YYYY-MM-DD|null\",\n\"startIndex\": number,\n\"endIndex\": number,\n\"pageCount\": number\n}\n\nЖЁСТКИЕ ГАРАНТИИ И ПРАВИЛА\n\nПустой массив запрещён. Диапазоны упорядочены по startIndex, не пересекаются.\nПокрытие index:\n— По умолчанию: каждый index покрыт ровно один раз непрерывными диапазонами.\n— Единственное допустимое исключение: страницы‑дубликаты (полные копии уже встречавшегося документа) МОЖНО не покрывать и не выводить (см. “Дедупликация”).\nБАЗОВОЕ ПОВЕДЕНИЕ: КАЖДАЯ СТРАНИЦА — ОТДЕЛЬНЫЙ ДОКУМЕНТ:\nstartIndex = index, endIndex = index, pageCount = 1.\n\nСлияние страниц в один документ (строго контролируемое)\n\nОбщие условия (для всех типов, нужны одновременно “продолжение” И отсутствие стоп‑событий):\n\nДопускай слияние ТОЛЬКО при наличии ЯВНОГО МАРКЕРА ПРОДОЛЖЕНИЯ или сильного признака:\nМаркер продолжения (в шапке/верхней зоне): \"продовження\", \"продолжение\", \"continuation\", \"Page X of Y\", \"Page X/Y\", \"стр. X\", \"лист X\", \"лист X из Y\", \"continued\", \"cont.\", \"continued on next page\".\nСильные признаки (любой):\na) Полное совпадение номера документа между страницами (одинаковый номер рядом с явной меткой №/No).\nb) Повтор той же шапки/реквизитов (shipper/consignee/vessel/ports для BL; реквизиты договора/сторон для contract) БЕЗ нового заголовка/нового номера.\nИ одновременно НЕТ ни одного стоп‑события:\n• новый типовой заголовок (\"Акт\", \"Рахунок/Invoice/СЧЕТ\", \"Договор/Contract/Договір\", \"Bill of Lading\"),\n• новый номер документа в шапке,\n• новая шапка/новые стороны (другие компании/коды/ІПН/ЕДРПОУ),\n• финальный блок завершения на предыдущей странице (итоги + подписи/штамп/ФИО/“М.П.”/массива реквизитов).\n\nАНТИ‑СКЛЕЙКА ДЛЯ ДУБЛИКАТОВ ОДНОГО ТИПА:\nЕсли на соседних страницах встречаются повторяющиеся заголовки одного типа (напр. \"Акт …\", \"INVOICE …\") с тем же номером/датой и самодостаточными финальными блоками/шапками — это НЕ продолжение, а отдельные самодостаточные документы. Их нельзя объединять. В этом случае выведи только первый экземпляр (см. “Дедупликация”), остальные страницы считаются дубликатами и могут быть не покрыты.\n\nПолитика слияния по типам\n\ncontract (ДОГОВОР/КОНТРАКТ/Договір) — РАСШИРЕННЫЙ МЕРДЖ:\nЕсли первая страница — договор (заголовок содержит “ДОГОВОР/КОНТРАКТ/Договір”):\n• По умолчанию СЧИТАЙ ПРОДОЛЖЕНИЕМ все следующие подряд страницы до “конца” или появления нового документа.\n• Конец = появление блока подписей/печати/ФИО/должностей/массива банковских реквизитов (“IBAN”, “р/с”, ЕДРПОУ/ИНН) ИЛИ новый заголовок другого типа.\n• Признаки продолжения (любой): структурные слова (“РОЗДІЛ/РАЗДЕЛ/Стаття/ПОРЯДОК/ОБОВ’ЯЗКИ/ПРАВА/ВІДПОВІДАЛЬНІСТЬ/ФОРС‑МАЖОР/РЕКВІЗИТИ”) ИЛИ пункт‑ная нумерация в первых 1–2 непустых строках: ^\\s*\\d+(?:.\\d+){1,3}\\b (например “3.2.”, “4.7”, “5.1.3”, “6.10.”). Отсутствие номера/даты на продолжениях НЕ разрывает документ.\n\nact (Акт) — ПО УМОЛЧАНИЮ ОДНОСТРАНИЧНЫЙ:\n• НЕ сливай между страницами, если на текущей есть итоги/подписи/ФИО/штамп.\n• Разрешай слияние ТОЛЬКО при явной многостраничности (“Page X of Y”/“продовження/продолжение”) и при отсутствии итогов/подписей на предыдущей странице.\n• ЕСЛИ на следующей странице снова есть самостоятельный заголовок “Акт …” (даже с тем же номером/датой) — это НОВЫЙ документ, НЕ продолжение. Для одинаковых — применяй дедупликацию: выведи только первый, остальные пропусти.\n\ninvoice (Рахунок/СЧЕТ/INVOICE) — ПО УМОЛЧАНИЮ ОДНОСТРАНИЧНЫЙ:\n• НЕ сливай, если на странице присутствуют финальные блоки: “Всього/Итого/Total”, “У тому числі ПДВ/НДС”, “Всього найменувань”, “Виписав(ла)”.\n• Разрешай слияние ТОЛЬКО при явной многостраничности (“Page X of Y”, “продовження рахунку/continuation”) и совпадающем номере счета; на предыдущей странице не должно быть итогов/подписей.\n• ЕСЛИ на следующей странице снова “INVOICE/Рахунок/СЧЕТ № …” (даже с тем же номером/датой) — это НОВЫЙ документ, НЕ продолжение. Для полных дублей — выведи только первый, остальные пропусти.\n\nBL — по общим условиям (часто многостраничный). Не сливай, если виден новый полноценный B/L заголовок/No. с иной шапкой.\n\nДубликаты (дедупликация, пропускать)\n\nЕсли в скане встречаются ДВА (или больше) самодостаточных документа, которые являются ПОЛНЫМИ ДУБЛИКАТАМИ, ВЫВОДИ ТОЛЬКО ПЕРВЫЙ, остальные ПРОПУСКАЙ (не создавай объект и не покрывай их index).\nКритерии “полного дубликата” (выполняются одновременно):\n• Одинаковый result (тип документа).\n• Совпадает нормализованный number (без пробелов/регистра) и date.\n• Заголовки/шапки сторон (постачальник/покупець для invoice; сторони/виконавець/замовник для act) совпадают по ключевым полям.\n• Финансовые итоги совпадают (для act/invoice: строки “Всього/Итого/Total” и “ПДВ/НДС” по суммам текстуально совпадают).\n• Основной текст практически дословно совпадает (допускаются только различия в пробелах/переносах/регистре).\nЕсли не уверен, что страницы — дословные дубликаты, НЕ применяй дедупликацию (лучше оставить как отдельные документы).\n\nКлассификация (result)\n\ncontract: “ДОГОВОР/КОНТРАКТ/Договір” + преамбула/стороны/разделы/подписи/реквизиты.\nact: “Акт …”, перечень робіт/услуг, суммы/итоги, подписи/штампы.\ninvoice: “Рахунок/СЧЕТ/INVOICE”, таблица, суммы/ПДВ, “Виписав(ла)”.\nBL: “Коносамент/Bill of Lading/B/L” + shipper/consignee/vessel/ports/B/L No.\nunknown: признаков недостаточно (всё равно пытайся извлечь number/date).\n\nИзвлечение number (НЕ обрезать “22/10/2025” до “22”)\n\nОбщий паттерн номера: 5–25 символов [A-Za-z0-9./-]; слеши/точки/дефисы разрешены, НЕ усекать.\ncontract: в строке с заголовком договора после “№/No/No.” возьми следующий токен целиком. Если токен выглядит как дата (например “22/10/2025”) — для договора считать это НОМЕРОМ, не датой.\nact: “Акт № …”; invoice: “Рахунок/СЧЕТ/INVOICE № …” — аналогично.\nBL: “B/L No”, “Bill of Lading No”, “Коносамент № …”; контейнерный формат (4 буквы + 7 цифр) игнорировать без B/L контекста.\nНесколько кандидатов — бери ближайший к явной метке; неоднозначность → null.\n\nИзвлечение date\n\nПоддержка: DD.MM.YYYY, D.M.YYYY, DD/MM/YYYY, YYYY-MM-DD, DD-MMM-YYYY (01 JAN 2025), “31 жовтня 2025”, “7 ноября 2025”, “October 31 2025”.\nНормализуй в YYYY-MM-DD; неоднозначность → null.\nДля contract: дату бери из строки с городом и датой (“м. Одеса «22» жовтня 2025 р.” → 2025‑10‑22), не путай с номером после “№”.\n\npageCount\n\nВСЕГДА: pageCount = endIndex - startIndex + 1. Никогда не считывай из текста (“Page 1 of 2” и т.п.).\n\nПроверка перед выводом\n\n• Массив не пуст.\n• Каждый объект имеет ровно ключи: result, number, date, startIndex, endIndex, pageCount.\n• Диапазоны упорядочены, не пересекаются, покрывают все index, КРОМЕ страниц‑дубликатов (их допустимо не покрывать).\n• Для каждого: pageCount = endIndex - startIndex + 1.\n• Для act/invoice: если встречаются несколько самодостаточных страниц с одинаковыми номером/датой/сторонами/итогами — выведи только ПЕРВУЮ (остальные дубликаты пропусти). НИКОГДА не объединяй их в многостраничный документ.\n\nFALLBACK\nЕсли сегментация/классификация не удалась — вернуть по одному unknown объекту на каждую страницу:\n{ \"result\":\"unknown\",\"number\":null,\"date\":null,\"startIndex\":index,\"endIndex\":index,\"pageCount\":1 }\n\nВход pages:\n{{ JSON.stringify($json.pages) }}\n\nВерни ТОЛЬКО чистый JSON‑массив (без Markdown, комментариев, лишних ключей)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -448,
+        -1600
+      ],
+      "id": "1542839c-5d7c-4f6d-a6b3-9a9b577f4443",
+      "name": "AI Agent",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "temperature": 0.7,
+          "topP": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        -1440
+      ],
+      "id": "7edb84a6-3376-47ed-8a1b-252f209035a8",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6o3E6CtmYsqbpVFq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        -1600
+      ],
+      "id": "43bc19ea-10f7-44e6-a301-c630a91d5bd6",
+      "name": "Send a text message2",
+      "webhookId": "ea8f2d08-f1e9-4139-a3ef-249597abdcce",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return (() => {\n  // Ищем pages[] в любом входном элементе\n  let pages = [];\n  for (const it of $input.all()) {\n    const p = it.json?.result?.pages;\n    if (Array.isArray(p) && p.length) {\n      pages = p;\n      break;\n    }\n  }\n\n  // Если pages нет — вернём пустой массив (или включите \"Always Output Data\" в настройках узла)\n  if (!pages.length) {\n    return [];\n  }\n\n  // Возвращаем массив { json: { text } } по количеству страниц\n  return pages.map(p => ({\n    json: {\n      text: String(p?.text ?? ''),\n    },\n  }));\n})();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -1296
+      ],
+      "id": "2d80c066-6f53-4351-b1fb-32d857a5e57a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        -1296
+      ],
+      "id": "bef82028-48ca-49a3-a6a5-74c1196cb976",
+      "name": "Send a text message3",
+      "webhookId": "ea8f2d08-f1e9-4139-a3ef-249597abdcce",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.document.mime_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c3d62e57-0bf9-44d1-a2d3-5f1bee21b4c7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "698599e8-6666-4f15-9bee-ad8263d0ebaa",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.document.mime_type }}",
+                    "rightValue": "word",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b989a563-e6f8-4758-ad90-191521b94b42",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.document.mime_type }}",
+                    "rightValue": "sheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "91a0ed9d-d198-475b-aab6-389eeb18df3c",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.document.mime_type }}",
+                    "rightValue": "text/plain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cce89a53-fd4c-42d4-b33a-56e9cf98c631",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.document.mime_type }}",
+                    "rightValue": "image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -640,
+        -1312
+      ],
+      "id": "b589165f-b4c8-4aa9-aefb-ee056ee2b489",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "jsCode": "function normalize(input) {\n  // Вход может быть: {result:{text,pages...}}, или [{...}], или сразу {text,pages}\n  let root = input;\n  if (Array.isArray(root) && root.length > 0) root = root[0];\n\n  // Если это конверт \"job/status/result\"\n  if (root && root.result && (typeof root.result === 'object')) {\n    return {\n      jobId: root.jobId ?? null,\n      status: root.status ?? null,\n      fileName: root.result.fileName ?? null,\n      text: typeof root.result.text === 'string' ? root.result.text : '',\n      pages: Array.isArray(root.result.pages) ? root.result.pages : [],\n    };\n  }\n\n  // Если пришёл уже плоский объект { text, pages }\n  return {\n    jobId: root.jobId ?? null,\n    status: root.status ?? null,\n    fileName: root.fileName ?? null,\n    text: typeof root.text === 'string' ? root.text : '',\n    pages: Array.isArray(root.pages) ? root.pages : [],\n  };\n}\n\nfunction cleanText(s) {\n  if (!s) return '';\n  return String(s).replace(/\\r/g, '').trim();\n}\n\n// Пробегаем по всем входным items и нормализуем в единый формат\nconst out = [];\nfor (const item of items) {\n  const n = normalize(item.json);\n  const text = cleanText(n.text);\n  const pages = Array.isArray(n.pages)\n    ? n.pages.map((p) => ({\n        pageNumber: p.pageNumber ?? null,\n        text: cleanText(p.text ?? ''),\n        textLength: typeof p.text === 'string' ? p.text.length : 0,\n        imageFile: p.imageFile ?? null,\n        error: p.error ?? undefined,\n      }))\n    : [];\n\n  out.push({\n    json: {\n      success: true,\n      source: 'ocr',\n      jobId: n.jobId,\n      status: n.status,\n      fileName: n.fileName,\n      text,\n      pages,\n      pageCount: pages.length,\n    },\n  });\n}\nreturn out;"
+      },
+      "name": "Extract OCR Text (robust)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -1088
+      ],
+      "id": "dd2e5b24-43cc-47c1-b8f7-6e8793515cfb"
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = [];\n\nfor (const item of items) {\n  const pages = Array.isArray(item.json?.pages) ? item.json.pages : [];\n\n  if (pages.length === 0) {\n    const t = item.json?.text ?? '';\n    out.push({\n      json: {\n        pageNumber: 1,\n        text: t,\n        textLength: typeof t === 'string' ? t.length : 0,\n        jobId: item.json?.jobId,\n        fileName: item.json?.fileName,\n      },\n    });\n    continue;\n  }\n\n  let i = 0;\n  for (const p of pages) {\n    i += 1;\n    const t = p?.text ?? '';\n    out.push({\n      json: {\n        pageNumber: p?.pageNumber ?? i,\n        text: t,\n        textLength: typeof t === 'string' ? t.length : 0,\n        jobId: item.json?.jobId,\n        fileName: item.json?.fileName,\n      },\n    });\n  }\n}\n\nreturn out;"
+      },
+      "name": "Fan-out Pages (optional)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -1088
+      ],
+      "id": "d8e23c0a-3660-46f0-9a2d-f42b78f0363f"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=текст из таблицы:  {{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        -1088
+      ],
+      "id": "73fefb9b-2221-40f1-8c77-22c1465eba41",
+      "name": "Send a text message4",
+      "webhookId": "96754d5c-467c-41e5-9489-011accbe0f4d",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Set Telegram Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Telegram Token1": {
+      "main": [
+        [
+          {
+            "node": "Get Path (getFile)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Path (getFile)1": {
+      "main": [
+        [
+          {
+            "node": "Download File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File1": {
+      "main": [
+        [
+          {
+            "node": "If PDF?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If PDF?1": {
+      "main": [
+        [
+          {
+            "node": "Convert PDF to Images1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "File to Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert PDF to Images1": {
+      "main": [
+        [
+          {
+            "node": "PDF Pages to Base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF Pages to Base": {
+      "main": [
+        [
+          {
+            "node": "Set Vision API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File to Base": {
+      "main": [
+        [
+          {
+            "node": "Set Vision API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Vision API1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Vision1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Vision1": {
+      "main": [
+        [
+          {
+            "node": "Collect Vision Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract OCR Text (robust)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract OCR Text (robust)": {
+      "main": [
+        [
+          {
+            "node": "Fan-out Pages (optional)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fan-out Pages (optional)": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Vision Results": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3a1e1aad-3e47-454d-a1d1-444b0e3c363a",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "yAZEm9dxfVGQv9Qo"
+}
