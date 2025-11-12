@@ -1,0 +1,102 @@
+{
+  "name": "Child: Reply With Received Text",
+  "nodes": [
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "reply",
+              "value": "={{ $json.text }}"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "54138d0a-f9a7-472b-a46a-4ad35a49a034",
+      "name": "Set Reply Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        864,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.id }}",
+        "text": "=Вы написали: {{ $json.reply }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0c24aedc-2e70-468a-a659-b6348c9b607c",
+      "name": "Telegram Reply",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        -96
+      ],
+      "webhookId": "3a5f45d2-2798-4326-adbd-978d20734b7c",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        -96
+      ],
+      "id": "022cc59b-9886-4b1e-9be8-19a614788614",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set Reply Text": {
+      "main": [
+        [
+          {
+            "node": "Telegram Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Set Reply Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "65c7debb-7914-4f78-9651-6b2102701a0b",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "Ri6pBT9uWLsClQWX"
+}

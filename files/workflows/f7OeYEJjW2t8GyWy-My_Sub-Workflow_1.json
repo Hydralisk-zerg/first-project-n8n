@@ -1,0 +1,13 @@
+{
+  "name": "My Sub-Workflow 1",
+  "nodes": [],
+  "pinData": {},
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26d29d74-8e94-400f-a515-7ab4d7ccf2cb",
+  "meta": null,
+  "id": "f7OeYEJjW2t8GyWy"
+}

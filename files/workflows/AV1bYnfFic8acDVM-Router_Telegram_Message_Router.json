@@ -16,48 +16,6 @@
     },
     {
       "parameters": {
-        "workflowId": "yAZEm9dxfVGQv9Qo",
-        "options": {}
-      },
-      "id": "595df1c2-deeb-4a5d-b263-bbecf5952caf",
-      "name": "Execute File Workflow",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        496,
-        16
-      ]
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "d12ca69b-7131-4f5f-a722-1a53eaac781e",
-      "name": "Execute Voice Workflow (placeholder)",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        480,
-        224
-      ],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "workflowId": "Child: Reply With Received Text",
-        "options": {}
-      },
-      "id": "14e2f46c-c854-4fd1-9a30-61093dd9fd8a",
-      "name": "Execute Text Workflow (placeholder)",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        512,
-        496
-      ]
-    },
-    {
-      "parameters": {
         "chatId": "= {{$json.message?.chat?.id || $json.message?.chat_id || ''}}",
         "text": "Unsupported message type. I can process files, voice and text.",
         "additionalFields": {
@@ -69,8 +27,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
       "position": [
-        64,
-        368
+        -224,
+        352
       ],
       "webhookId": "791e23ab-02d3-4930-adfd-4b02eba4265e",
       "credentials": {
@@ -201,7 +159,7 @@
       "typeVersion": 1.2,
       "position": [
         -304,
-        64
+        80
       ],
       "webhookId": "6fd7795b-c64d-4027-be31-98db3a93b886",
       "credentials": {
@@ -210,6 +168,149 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Ri6pBT9uWLsClQWX",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Ri6pBT9uWLsClQWX",
+          "cachedResultName": "Child: Reply With Received Text"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        416
+      ],
+      "id": "a55cabd2-1835-4d33-8483-c30149164e08",
+      "name": "Call 'Child: Reply With Received Text'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "37e1d93c-78cc-44b5-9125-2c3304faf083",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "980b876b-1f88-4b93-adae-855a8f0842d5",
+              "name": "id",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        416
+      ],
+      "id": "cbf61e07-efe5-47d1-9117-faf0320b9cda",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "yAZEm9dxfVGQv9Qo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/yAZEm9dxfVGQv9Qo",
+          "cachedResultName": "Telegram Download Vision with PDF Support"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        32
+      ],
+      "id": "1e1155d0-f383-4ee7-8f12-157c44aff5b5",
+      "name": "pdf"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        32
+      ],
+      "id": "a531cdab-67a0-46e8-b100-a2ec787fc7cd",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        208
+      ],
+      "id": "e2c2ea2d-5fa5-470d-97a3-ee743f776a1d",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "GSMgkkxdrOB4EMEn",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/GSMgkkxdrOB4EMEn",
+          "cachedResultName": "Voice"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        704,
+        208
+      ],
+      "id": "9ae8b2e1-0d8f-46ae-9f27-5189e9ac753d",
+      "name": "Call 'Voice'"
     }
   ],
   "pinData": {},
@@ -229,21 +330,21 @@
       "main": [
         [
           {
-            "node": "Execute File Workflow",
+            "node": "Edit Fields1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute Voice Workflow (placeholder)",
+            "node": "Edit Fields2",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute Text Workflow (placeholder)",
+            "node": "Edit Fields",
             "type": "main",
             "index": 0
           }
@@ -259,15 +360,56 @@
     },
     "Telegram Trigger1": {
       "main": [
-        []
+        [
+          {
+            "node": "Detect Route (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Call 'Child: Reply With Received Text'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Call 'Voice'",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
   "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "650bfca3-8f03-4495-bc66-69e5381769e3",
+  "versionId": "4ef864d3-61fb-4346-81f7-9f24cb971dfd",
   "meta": {
     "templateCredsSetupCompleted": true
   },
