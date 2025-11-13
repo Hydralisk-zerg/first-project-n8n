@@ -1,0 +1,313 @@
+{
+  "name": "search for a contract by code",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "aaed2ce8-4911-484d-bd7d-b0d8084e98bf",
+      "name": "Telegram Trigger",
+      "webhookId": "1059276b-989a-4689-92b9-e682cdac7552",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA",
+          "mode": "list",
+          "cachedResultName": "clients_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "customer_code",
+              "lookupValue": "={{ $json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        0
+      ],
+      "id": "20de48f9-54be-453d-9256-d0dfa195dfee",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZgRWFe7RWXYmmBlY",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseDateFlexible(s) {\n  if (!s && s !== 0) return null;\n  s = String(s).trim();\n  if (!s) return null;\n\n  // Попробуем распознать форматы типа 07.05.2019 или 7/5/2019 или 07-05-2019\n  const dmy = s.match(/^(\\d{1,2})[.\\-\\/](\\d{1,2})[.\\-\\/](\\d{2,4})$/);\n  if (dmy) {\n    let day = parseInt(dmy[1], 10);\n    let month = parseInt(dmy[2], 10);\n    let year = parseInt(dmy[3], 10);\n    if (year < 100) { // two-digit year heuristic\n      year += year >= 70 ? 1900 : 2000;\n    }\n    // Validate\n    const dateObj = new Date(year, month - 1, day);\n    if (!isNaN(dateObj)) return dateObj;\n  }\n\n  // Попробуем ISO или встроенный парсер\n  const iso = Date.parse(s);\n  if (!isNaN(iso)) return new Date(iso);\n\n  return null;\n}\n\n// Сравнение двух записей: возвращает true если a is newer than b\nfunction isANewerThanB(a, b) {\n  const da = parseDateFlexible(a.agreement_date);\n  const db = parseDateFlexible(b.agreement_date);\n\n  if (da && db) {\n    if (da.getTime() !== db.getTime()) return da.getTime() > db.getTime();\n    // даты равны -> tie-breaker: взять больший id (если есть)\n    const ida = (a.id === undefined || a.id === null) ? -Infinity : Number(a.id);\n    const idb = (b.id === undefined || b.id === null) ? -Infinity : Number(b.id);\n    return ida > idb;\n  }\n\n  // если только одна из дат есть — предпочитаем существующую дату (новее)\n  if (da && !db) return true;\n  if (!da && db) return false;\n\n  // обе даты отсутствуют — tie-breaker по id\n  const ida = (a.id === undefined || a.id === null) ? -Infinity : Number(a.id);\n  const idb = (b.id === undefined || b.id === null) ? -Infinity : Number(b.id);\n  return ida > idb;\n}\n\n// Основная логика\nconst mapByCode = new Map();\n\n// Поддерживаем вход как массив items (каждый item.json — объект)\nfor (const item of items) {\n  const obj = item.json ?? {};\n  const code = String(obj.customer_code ?? '').trim();\n  if (!code) {\n    // если нет customer_code — пропускаем (можно менять политику)\n    continue;\n  }\n\n  if (!mapByCode.has(code)) {\n    mapByCode.set(code, obj);\n  } else {\n    const existing = mapByCode.get(code);\n    if (isANewerThanB(obj, existing)) {\n      mapByCode.set(code, obj);\n    }\n  }\n}\n\n// Собираем результат в формате n8n items\nconst output = [];\nfor (const kept of mapByCode.values()) {\n  output.push({ json: kept });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        0
+      ],
+      "id": "4172595f-34a7-4ace-88cc-49b33320d428",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "=00{{ $json.id }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        944,
+        0
+      ],
+      "id": "2502c3b9-2194-4c52-83b7-131ed24bee79",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "28Nvzmlq86EJNtJD",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "7f4af8ca-5133-429e-8b8d-ed1b48f6ce12",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "28Nvzmlq86EJNtJD",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "={{ $('Edit Fields').item.json.chat_id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "a921f9d2-8314-4e18-8f47-68f2cfc045a6",
+      "name": "Send a document",
+      "webhookId": "188e76e6-0c34-4dce-a5ed-4179b9675732",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "180b74ff-7930-4050-89f5-ac45f66d1606",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "38d4d354-0b52-465c-a2f3-c40ed45987c9",
+              "name": "customer_name",
+              "value": "={{ $json.customer_name }}",
+              "type": "string"
+            },
+            {
+              "id": "ea768468-f2f7-4f17-81a1-8758bed83cd1",
+              "name": "customer_code",
+              "value": "={{ $json.customer_code }}",
+              "type": "number"
+            },
+            {
+              "id": "bc5f2aa8-e77f-42b4-a704-79395b5369eb",
+              "name": "agreement_date",
+              "value": "={{ $json.agreement_date }}",
+              "type": "string"
+            },
+            {
+              "id": "f72cfd32-b95c-4295-8f9e-bcb284e51ddc",
+              "name": "agreement_language",
+              "value": "={{ $json.agreement_language }}",
+              "type": "string"
+            },
+            {
+              "id": "ccc543f3-1371-4aba-b5c4-23f9c1e27e37",
+              "name": "expiration_date",
+              "value": "={{ $json.expiration_date }}",
+              "type": "string"
+            },
+            {
+              "id": "f7a6ce61-581a-445e-882e-2bbc71a2f3d0",
+              "name": "autoprolongation",
+              "value": "={{ $json.autoprolongation }}",
+              "type": "boolean"
+            },
+            {
+              "id": "c2f71fb9-9a0c-4b66-94bb-55a947444268",
+              "name": "notes",
+              "value": "={{ $json.notes }}",
+              "type": "string"
+            },
+            {
+              "id": "f25990c2-a050-4fa4-9b54-83c6094ee67b",
+              "name": "agreement_id",
+              "value": "={{ $json.agreement_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8384962a-9c05-4489-a0aa-36e414298b45",
+              "name": "chat_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+              "type": "number"
+            },
+            {
+              "id": "b4f7645c-11f0-41dc-9db4-634815743b64",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        0
+      ],
+      "id": "98ef5eed-50fd-456a-8e9d-aa0421247224",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Send a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "09da9132-9d94-4d40-8688-f567ca5a6ed8",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "ZSrhJX9nhXpPvRac"
+}

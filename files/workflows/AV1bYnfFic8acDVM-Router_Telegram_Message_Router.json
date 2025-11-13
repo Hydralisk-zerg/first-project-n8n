@@ -27,8 +27,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
       "position": [
-        -224,
-        352
+        96,
+        384
       ],
       "webhookId": "791e23ab-02d3-4930-adfd-4b02eba4265e",
       "credentials": {
@@ -158,7 +158,7 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -304,
+        -336,
         80
       ],
       "webhookId": "6fd7795b-c64d-4027-be31-98db3a93b886",
@@ -403,13 +403,13 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "4ef864d3-61fb-4346-81f7-9f24cb971dfd",
+  "versionId": "7c7f252d-9337-46b8-aeb7-fdb8198a38f4",
   "meta": {
     "templateCredsSetupCompleted": true
   },
