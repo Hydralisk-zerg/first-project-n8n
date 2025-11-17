@@ -16,84 +16,107 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $json.id }}",
-        "text": "voice",
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        560,
-        0
-      ],
-      "id": "a8bbe7ae-b69b-4d09-9b93-63fc6d6526a0",
-      "name": "Send a text message",
-      "webhookId": "e57b9480-73b5-45af-96be-8da50d9008f2",
-      "credentials": {
-        "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "assignments": {
           "assignments": [
             {
               "id": "b25ec88b-0a19-491e-b471-02f6486fef2a",
-              "name": "id",
-              "value": "={{ $json.chat.id }}",
-              "type": "number"
+              "name": "file_id",
+              "value": "={{ $json.voice.file_id }}",
+              "type": "string"
             }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        208,
-        0
-      ],
-      "id": "6ed2fc00-99af-4af0-bcf9-60ec8d0c0ab2",
-      "name": "Edit Fields"
-    }
-  ],
-  "pinData": {},
-  "connections": {
-    "When Executed by Another Workflow": {
-      "main": [
-        [
           {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
+            "name": "Voice",
+            "nodes": [
+              {
+                "parameters": {
+                  "inputSource": "passthrough"
+                },
+                "type": "n8n-nodes-base.executeWorkflowTrigger",
+                "typeVersion": 1.1,
+                "position": [0, 0],
+                "id": "f5dcc96b-303b-4a3b-acd7-7e020a49a09b",
+                "name": "When Executed by Another Workflow"
+              },
+              {
+                "parameters": {
+                  "assignments": { "assignments": [ { "id": "b25ec88b-0a19-491e-b471-02f6486fef2a", "name": "file_id", "value": "={{ $json.voice.file_id }}", "type": "string" } ] },
+                  "options": {}
+                },
+                "type": "n8n-nodes-base.set",
+                "typeVersion": 3.4,
+                "position": [176, 0],
+                "id": "6ed2fc00-99af-4af0-bcf9-60ec8d0c0ab2",
+                "name": "Edit Fields"
+              },
+              {
+                "parameters": {
+                  "url": "=https://api.telegram.org/bot1919338656:AAHthUfM6N6uFVY5MKODCz_bxsZ9JLr8X1Y/getFile?file_id={{ $json.file_id }}",
+                  "options": { "response": { "response": { "responseFormat": "json" } } }
+                },
+                "type": "n8n-nodes-base.httpRequest",
+                "typeVersion": 4.3,
+                "position": [368, 0],
+                "id": "f8f6049e-89a4-48ce-b74b-256fcbbf4c6a",
+                "name": "HTTP Request"
+              },
+              {
+                "parameters": {
+                  "url": "=https://api.telegram.org/file/bot1919338656:AAHthUfM6N6uFVY5MKODCz_bxsZ9JLr8X1Y/{{ $json.result.file_path }}",
+                  "options": { "response": { "response": { "responseFormat": "file" } } }
+                },
+                "type": "n8n-nodes-base.httpRequest",
+                "typeVersion": 4.3,
+                "position": [560, 0],
+                "id": "4001eb5e-4c43-4577-9cb7-2e8f8895cbd6",
+                "name": "HTTP Request1"
+              },
+              {
+                "parameters": { "jsCode": "const out = [];\nfor (const item of items) {\n  const binaryKey = item.binary ? Object.keys(item.binary)[0] : null;\n  if (!binaryKey) { out.push({ json: { error: 'no-binary', base64Audio: null, binaryKey: null } }); continue; }\n  const bin = item.binary[binaryKey];\n  let b64 = null;\n  try {\n    if (typeof bin.data === 'string') { b64 = bin.data; } else if (bin.data && bin.data.length) {\n      if (typeof Buffer !== 'undefined' && Buffer.from) { b64 = Buffer.from(bin.data).toString('base64'); } else if (typeof Uint8Array !== 'undefined') {\n        const arr = new Uint8Array(bin.data); let binary = ''; for (let i = 0; i < arr.length; i++) binary += String.fromCharCode(arr[i]); b64 = btoa(binary); } else { out.push({ json: { error: 'no-buffer-support', base64Audio: null, binaryKey } }); continue; }\n    } else { out.push({ json: { error: 'empty-binary', base64Audio: null, binaryKey } }); continue; }\n  } catch (e) { out.push({ json: { error: 'convert-failed', message: String(e), base64Audio: null, binaryKey } }); continue; }\n  out.push({ json: { base64Audio: b64, binaryKey } });\n}\nreturn out;" },
+                "type": "n8n-nodes-base.code",
+                "typeVersion": 2,
+                "position": [784, 0],
+                "id": "binary-to-base64-1",
+                "name": "Binary -> Base64"
+              },
+              {
+                "parameters": {
+                  "url": "=https://speech.googleapis.com/v1/speech:recognize",
+                  "options": {
+                    "response": { "response": { "responseFormat": "json" } },
+                    "bodyContentType": "json",
+                    "bodyParametersJson": "={\\n  \\\"config\\\": {\\n    \\\"encoding\\\": \\\"OGG_OPUS\\\",\\n    \\\"sampleRateHertz\\\": 48000,\\n    \\\"languageCode\\\": \\\"ru-RU\\\",\\n    \\\"enableAutomaticPunctuation\\\": true,\\n    \\\"maxAlternatives\\\": 1,\\n    \\\"model\\\": \\\"default\\\"\\n  },\\n  \\\"audio\\\": {\\n    \\\"content\\\": \\\"{{ $json.base64Audio }}\\\"\\n  }\\n}"
+                  }
+                },
+                "type": "n8n-nodes-base.httpRequest",
+                "typeVersion": 4.3,
+                "position": [1040, 0],
+                "id": "google-stt-sync-1",
+                "name": "Google STT (sync)"
+              },
+              {
+                "parameters": { "assignments": { "assignments": [ { "id": "transcript-assign-1", "name": "transcript", "value": "={{ $json.results?.[0]?.alternatives?.[0]?.transcript || '' }}", "type": "string" } ] }, "options": {} },
+                "type": "n8n-nodes-base.set",
+                "typeVersion": 3.4,
+                "position": [1264, 0],
+                "id": "parse-stt-1",
+                "name": "Parse STT Response"
+              }
+            ],
+            "pinData": {
+              "When Executed by Another Workflow": [ { "json": { "message_id": 1711, "from": { "id": 544911412, "is_bot": false, "first_name": "Alexey", "last_name": "Ilchenko", "username": "Batman_ila", "language_code": "uk" }, "chat": { "id": 544911412, "first_name": "Alexey", "last_name": "Ilchenko", "username": "Batman_ila", "type": "private" }, "date": 1763045817, "voice": { "duration": 2, "mime_type": "audio/ogg", "file_id": "AwACAgIAAxkBAAIGr2kV8bmJGJ1r8KH1luqZ8livgFt5AAIwhgACuvqxSIjqFNa8QC2jNgQ", "file_unique_id": "AgADMIYAArr6sUg", "file_size": 8765 } } } ]
+            },
+            "connections": {
+              "When Executed by Another Workflow": { "main": [ [ { "node": "Edit Fields", "type": "main", "index": 0 } ] ] },
+              "Edit Fields": { "main": [ [ { "node": "HTTP Request", "type": "main", "index": 0 } ] ] },
+              "HTTP Request": { "main": [ [ { "node": "HTTP Request1", "type": "main", "index": 0 } ] ] },
+              "HTTP Request1": { "main": [ [ { "node": "Binary -> Base64", "type": "main", "index": 0 } ] ] },
+              "Binary -> Base64": { "main": [ [ { "node": "Google STT (sync)", "type": "main", "index": 0 } ] ] },
+              "Google STT (sync)": { "main": [ [ { "node": "Parse STT Response", "type": "main", "index": 0 } ] ] },
+              "Parse STT Response": { "main": [ [] ] }
+            },
+            "active": false,
+            "settings": { "executionOrder": "v1" },
+            "versionId": "b241bfbe-38e4-4819-bd32-5f43b58de39f",
+            "meta": { "templateCredsSetupCompleted": true },
+            "id": "GSMgkkxdrOB4EMEn"
           }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "Send a text message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "versionId": "a3e74687-aa41-4970-81ab-5f3b9efa8124",
-  "meta": {
-    "templateCredsSetupCompleted": true
-  },
-  "id": "GSMgkkxdrOB4EMEn"
-}

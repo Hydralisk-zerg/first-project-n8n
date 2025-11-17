@@ -1,0 +1,53 @@
+{
+  "name": "CSV Lookup by ua_customer_code (v2)",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "code-assign-1",
+              "name": "code",
+              "value": "055402090",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [200, 200],
+      "name": "Set Code Example",
+      "id": "set-code-1-v2"
+    },
+    {
+      "parameters": {
+        "filePath": "/files/transport_data_2025.csv"
+      },
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [440, 200],
+      "name": "Read CSV File",
+      "id": "read-file-1-v2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first()?.json?.stdout ?? ($input.first()?.binary?.data?.data ? Buffer.from($input.first().binary.data.data, 'base64').toString('utf8') : '');\nif (!raw) {\n  return [{ json: { message: 'no_input' } }];\n}\n\n// normalize newlines\nconst text = raw.replace(/\\r\\n/g, '\\n').replace(/\\r/g, '\\n');\n\n// robust CSV parser (semicolon delimiter)\nfunction parseCSV(s, delimiter) {\n  delimiter = delimiter || ';';\n  const rows = [];\n  let cur = '';\n  let row = [];\n  let inQuotes = false;\n  for (let i = 0; i < s.length; i++) {\n    const ch = s[i];\n    if (inQuotes) {\n      if (ch === '\"') {\n        if (i + 1 < s.length && s[i+1] === '\"') { cur += '\"'; i++; }\n        else { inQuotes = false; }\n      } else { cur += ch; }\n    } else {\n      if (ch === '\"') { inQuotes = true; }\n      else if (ch === delimiter) { row.push(cur); cur = ''; }\n      else if (ch === '\\n') { row.push(cur); cur = ''; rows.push(row); row = []; }\n      else { cur += ch; }\n    }\n  }\n  if (cur !== '' || row.length > 0) { row.push(cur); rows.push(row); }\n  return rows;\n}\n\nconst rowsAll = parseCSV(text, ';');\nif (!rowsAll || rowsAll.length === 0) { return [{ json: { message: 'no_rows' } }]; }\n\nconst header = rowsAll.shift().map(h => (h || '').toString().trim());\n\nconst sanitizeKey = (k, idx) => {\n  if (!k || k.trim() === '') return `col_${idx+1}`;\n  return k.replace(/\\s+/g, '_').replace(/[^\\w\\-]/g, '_');\n};\nconst keys = header.map((h, i) => sanitizeKey(h, i));\n\nconst items = rowsAll.map(r => {\n  const obj = {};\n  for (let i = 0; i < keys.length; i++) {\n    obj[keys[i]] = (r[i] !== undefined) ? r[i] : '';\n  }\n  return obj;\n});\n\nfunction quoteField(f) {\n  if (f === null || f === undefined) return '';\n  const s = f.toString();\n  if (s.indexOf(';') !== -1 || s.indexOf('\"') !== -1 || s.indexOf('\\n') !== -1 || s.indexOf('\\r') !== -1) {\n    return '\"' + s.replace(/\"/g, '\"\"') + '\"';\n  }\n  return s;\n}\n\nconst outLines = [ header.map(quoteField).join(';') ];\nfor (const r of rowsAll) {\n  const cols = [];\n  for (let i = 0; i < keys.length; i++) { cols.push( quoteField( (r[i] !== undefined) ? r[i] : '' ) ); }\n  outLines.push(cols.join(';'));\n}\n\nconst csvText = outLines.join('\\r\\n') + '\\r\\n';\n// add BOM so Excel will display Cyrillic correctly\nconst b64 = Buffer.from('\\uFEFF' + csvText, 'utf8').toString('base64');\nconst codeVal = $input.first()?.json?.code ?? 'result';\nconst filename = `matches_${codeVal}.csv`;\n\nconst output = [];\nif (items.length === 0) {\n  output.push({ json: { message: 'no_matches' } });\n} else {\n  output.push({\n    json: items[0],\n    binary: {\n      data: {\n        data: b64,\n        fileName: filename,\n        mimeType: 'text/csv; charset=utf-8'\n      }\n    }\n  });\n  for (let i = 1; i < items.length; i++) { output.push({ json: items[i] }); }\n}\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 200],
+      "name": "Find in CSV by ua_customer_code",
+      "id": "code-search-1-v2"
+    }
+  ],
+  "connections": {
+    "Set Code Example": { "main": [ [ { "node": "Read CSV File", "type": "main", "index": 0 } ] ] },
+    "Read CSV File": { "main": [ [ { "node": "Find in CSV by ua_customer_code", "type": "main", "index": 0 } ] ] },
+    "Find in CSV by ua_customer_code": { "main": [ [] ] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "id": "CSV-Lookup-ua_customer_code-2025-v2"
+}

@@ -313,7 +313,38 @@
       "name": "Call 'Voice'"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Edit Fields2": [
+      {
+        "json": {
+          "message_id": 1711,
+          "from": {
+            "id": 544911412,
+            "is_bot": false,
+            "first_name": "Alexey",
+            "last_name": "Ilchenko",
+            "username": "Batman_ila",
+            "language_code": "uk"
+          },
+          "chat": {
+            "id": 544911412,
+            "first_name": "Alexey",
+            "last_name": "Ilchenko",
+            "username": "Batman_ila",
+            "type": "private"
+          },
+          "date": 1763045817,
+          "voice": {
+            "duration": 2,
+            "mime_type": "audio/ogg",
+            "file_id": "AwACAgIAAxkBAAIGr2kV8bmJGJ1r8KH1luqZ8livgFt5AAIwhgACuvqxSIjqFNa8QC2jNgQ",
+            "file_unique_id": "AgADMIYAArr6sUg",
+            "file_size": 8765
+          }
+        }
+      }
+    ]
+  },
   "connections": {
     "Detect Route (Code)": {
       "main": [
@@ -403,13 +434,13 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "7c7f252d-9337-46b8-aeb7-fdb8198a38f4",
+  "versionId": "9909bdba-ec50-4231-aa62-153be174b1bc",
   "meta": {
     "templateCredsSetupCompleted": true
   },

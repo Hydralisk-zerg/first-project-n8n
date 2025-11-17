@@ -3,29 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "updates": [
-          "message"
-        ],
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-base.telegramTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        0,
-        0
-      ],
-      "id": "aaed2ce8-4911-484d-bd7d-b0d8084e98bf",
-      "name": "Telegram Trigger",
-      "webhookId": "1059276b-989a-4689-92b9-e682cdac7552",
-      "credentials": {
-        "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "documentId": {
           "__rl": true,
           "value": "1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA",
@@ -44,7 +21,7 @@
           "values": [
             {
               "lookupColumn": "customer_code",
-              "lookupValue": "={{ $json.message.text }}"
+              "lookupValue": "={{ $json.company_code }}"
             }
           ]
         },
@@ -58,12 +35,15 @@
       ],
       "id": "20de48f9-54be-453d-9256-d0dfa195dfee",
       "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "ZgRWFe7RWXYmmBlY",
           "name": "Google Sheets account 2"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -72,8 +52,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        448,
-        0
+        736,
+        -16
       ],
       "id": "4172595f-34a7-4ace-88cc-49b33320d428",
       "name": "Code in JavaScript"
@@ -96,8 +76,8 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        672,
-        0
+        1120,
+        -16
       ],
       "id": "2502c3b9-2194-4c52-83b7-131ed24bee79",
       "name": "Search files and folders",
@@ -125,8 +105,8 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        896,
-        0
+        1472,
+        -16
       ],
       "id": "7f4af8ca-5133-429e-8b8d-ed1b48f6ce12",
       "name": "Download file",
@@ -147,8 +127,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1104,
-        0
+        2128,
+        -16
       ],
       "id": "a921f9d2-8314-4e18-8f47-68f2cfc045a6",
       "name": "Send a document",
@@ -159,26 +139,314 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9c6f7336-f183-4ccc-a241-a2b5b198227e",
+              "leftValue": "={{ $json.customer_code }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "228b37f1-05be-4ad9-a531-d65ee91eed46",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "a513fddb-ed4a-40cf-bb9e-0dc6599265cb",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA",
+          "mode": "list",
+          "cachedResultName": "clients_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "customer_name",
+              "lookupValue": "={{ $json.output.parseJson().target_company }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1264,
+        496
+      ],
+      "id": "4d7eefb8-eb8b-48e5-b226-cd607b52f421",
+      "name": "Get row(s) in sheet1",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZgRWFe7RWXYmmBlY",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9c6f7336-f183-4ccc-a241-a2b5b198227e",
+              "leftValue": "={{ $json.customer_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        272
+      ],
+      "id": "e0ce94e5-7693-4699-afe6-77f8a3d60fbe",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "67f6675b-7ee1-4672-b4ad-c18e59699efe",
+              "name": "chat_id",
+              "value": "={{ $json.chat_id }}",
+              "type": "string"
+            },
+            {
+              "id": "9b6f53b8-15cf-4814-bd90-7b5ee60e6147",
+              "name": "company_code",
+              "value": "={{ $json.company_code }}",
+              "type": "string"
+            },
+            {
+              "id": "c11574fe-2ee0-4569-a36d-34bec9686a8a",
+              "name": "company_name",
+              "value": "={{ $json.company_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c7aeb7f5-52e8-486e-ac7b-b7d5debf9e41",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Edit Fields').item.json.chat_id }}",
+        "text": "=not exest: {{ $('Edit Fields').item.json.company_code }} / {{ $('Edit Fields').item.json.company_name }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        288
+      ],
+      "id": "e92ab7eb-8371-48b2-a79a-9350c7e768d4",
+      "name": "Send a text message",
+      "webhookId": "28a49cd3-ce5e-4e98-ba61-d2f961b81866",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA",
+          "mode": "list",
+          "cachedResultName": "clients_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        256
+      ],
+      "id": "ff7f08e5-c6e0-4c5b-a456-ad61832d7019",
+      "name": "Get row(s) in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ZgRWFe7RWXYmmBlY",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5eb032cb-0f22-44f6-afec-2663e24f730e",
+              "name": "customer_name",
+              "value": "={{ $json.customer_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        496
+      ],
+      "id": "12563044-29ca-47f5-9e72-a8e09dc8e130",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const companies = [];\n\nfor (const item of $input.all()) {\nconst name = item.json?.customer_name;\nif (typeof name === 'string') {\nconst trimmed = name.trim();\nif (trimmed !== '') companies.push(trimmed);\n}\n}\n\nconst uniqueCompanies = [...new Set(companies)];\n\nreturn [{\njson: {\ncompanies: uniqueCompanies,\ncompany: $('Edit Fields').first().json.company_name\n}\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        496
+      ],
+      "id": "6b026625-a052-47ce-a5a0-d4cfde1f29e5",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты — модуль сопоставления названий компаний.\n\nВходные данные:\n\nclient_name — строка с названием компании клиента.\n\ndirectory — список строк со справочными названиями компаний.\n\nЗадача:\n\nНайти в списке directory одно название, которое наиболее похоже на client_name.\n\nПри сравнении игнорировать организационно-правовые формы (ТОВ, ТЗОВ, АТЗТ, ПрАТ, ПП, ФОП и т.д.), кавычки, регистр, лишние пробелы.\n\nДопускать опечатки и небольшие различия.\n\nОпределить уверенность совпадения от 0 до 100 (строка).\n\nЕсли найдено хорошее совпадение — вернуть точное название из directory.\n\nЕсли нет подходящего совпадения — вернуть target_company = null и Confidence = \"0\".\n\nФормат ответа:\nВывести строго один JSON-объект, без любого лишнего текста.\nТолько два ключа:\n\n\"target_company\" — строка или null\n\n\"Confidence\" — строка с числом\n\nНикаких комментариев, пояснений, пояснительных фраз, примеров, Markdown, текста вне JSON. client_name == {{ $json.company }} directory == {{ $json.companies }}\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        912,
+        496
+      ],
+      "id": "4b2d74d2-d779-4976-9611-f36a1287c3c3",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        704
+      ],
+      "id": "70fa5be3-5699-4e9d-8f93-33fbc72c303a",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "6o3E6CtmYsqbpVFq",
+          "name": "OpenAi account"
+        }
+      }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "chat_id": "544911412",
+          "company_code": "05540209",
+          "company_name": "ДП \"КДЕЗ ІХП НАН УКРАЇНИ 435\""
+        }
+      }
+    ]
+  },
   "connections": {
-    "Telegram Trigger": {
-      "main": [
-        [
-          {
-            "node": "Get row(s) in sheet",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get row(s) in sheet": {
       "main": [
         [
           {
-            "node": "Code in JavaScript",
+            "node": "If",
             "type": "main",
             "index": 0
           }
@@ -217,13 +485,137 @@
           }
         ]
       ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "13ffcfd2-6311-4b74-b5b0-53987b65d58f",
+  "versionId": "d198d15c-f78f-465d-b0be-7eafe3fc0458",
   "meta": {
     "templateCredsSetupCompleted": true
   },
