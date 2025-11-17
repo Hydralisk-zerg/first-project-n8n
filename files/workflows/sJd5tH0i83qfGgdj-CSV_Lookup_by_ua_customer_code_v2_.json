@@ -45,7 +45,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        128,
+        64,
         -32
       ],
       "id": "08632fc4-09ba-480c-acb1-0781fc284d89",
@@ -103,13 +103,20 @@
           }
         ]
       ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        []
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b27074fd-487d-4053-b838-d5ddae2e69e8",
-  "meta": null,
+  "versionId": "5f29a2bb-43d8-4f31-8495-4ee6942ed7e7",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
   "id": "sJd5tH0i83qfGgdj"
 }
