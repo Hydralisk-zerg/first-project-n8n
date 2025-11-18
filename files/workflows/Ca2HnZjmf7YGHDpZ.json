@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2025-11-06T17:36:08.707Z",
+  "updatedAt": "2025-11-06T18:00:33.957Z",
   "createdAt": "2025-11-06T17:32:17.612Z",
   "id": "Ca2HnZjmf7YGHDpZ",
-  "name": "Child: Append phrase",
+  "name": "промежуток",
   "active": false,
   "isArchived": false,
   "nodes": [
@@ -59,7 +59,9 @@
     "executionOrder": "v1"
   },
   "staticData": null,
-  "meta": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
   "pinData": {
     "Execute Workflow Trigger": [
       {
@@ -67,8 +69,8 @@
       }
     ]
   },
-  "versionId": "045d8a34-5be8-4115-b2eb-cbbfb9d2b22b",
-  "versionCounter": 4,
+  "versionId": "14184b7f-0535-42c0-900d-a68179adc014",
+  "versionCounter": 7,
   "triggerCount": 0,
   "tags": [],
   "shared": [

@@ -1,10 +1,10 @@
 {
-  "updatedAt": "2025-11-06T17:40:14.753Z",
-  "createdAt": "2025-11-06T16:47:20.771Z",
-  "id": "DSfctYfMKaOHjP9p",
+  "updatedAt": "2025-11-06T18:11:21.360Z",
+  "createdAt": "2025-11-06T17:34:58.512Z",
+  "id": "OwjzXK1lD70IlcgJ",
   "name": "My workflow",
   "active": false,
-  "isArchived": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -284,7 +284,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1648,
+        1600,
         224
       ],
       "id": "403709f9-79c5-4cb1-82f8-ed55a0e9192a",
@@ -864,6 +864,11 @@
           }
         ]
       ]
+    },
+    "Send a text message2": {
+      "main": [
+        []
+      ]
     }
   },
   "settings": {
@@ -876,16 +881,16 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "aa037962-ba29-4f4e-8ba7-356c9c5d7570",
-  "versionCounter": 10,
-  "triggerCount": 1,
+  "versionId": "1bd3e3ec-ec0f-43a3-89c5-d84338e272c2",
+  "versionCounter": 7,
+  "triggerCount": 0,
   "tags": [],
   "shared": [
     {
-      "updatedAt": "2025-11-06T16:47:20.771Z",
-      "createdAt": "2025-11-06T16:47:20.771Z",
+      "updatedAt": "2025-11-06T17:34:58.512Z",
+      "createdAt": "2025-11-06T17:34:58.512Z",
       "role": "workflow:owner",
-      "workflowId": "DSfctYfMKaOHjP9p",
+      "workflowId": "OwjzXK1lD70IlcgJ",
       "projectId": "h4l9I70OGsrgTeq4",
       "project": {
         "updatedAt": "2025-11-06T16:46:31.182Z",

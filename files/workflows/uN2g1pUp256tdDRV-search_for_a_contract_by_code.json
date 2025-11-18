@@ -1,0 +1,355 @@
+{
+  "name": "search for a contract by code",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA",
+          "mode": "list",
+          "cachedResultName": "clients_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "customer_code",
+              "lookupValue": "={{ $json.company_code }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        -16
+      ],
+      "id": "a8f3075b-db7a-4095-8284-e3bc9c0d8ca6",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "epS53Nyy2MEAF5xX",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseDateFlexible(s) {\n  if (!s && s !== 0) return null;\n  s = String(s).trim();\n  if (!s) return null;\n\n  // Попробуем распознать форматы типа 07.05.2019 или 7/5/2019 или 07-05-2019\n  const dmy = s.match(/^(\\d{1,2})[.\\-\\/](\\d{1,2})[.\\-\\/](\\d{2,4})$/);\n  if (dmy) {\n    let day = parseInt(dmy[1], 10);\n    let month = parseInt(dmy[2], 10);\n    let year = parseInt(dmy[3], 10);\n    if (year < 100) { // two-digit year heuristic\n      year += year >= 70 ? 1900 : 2000;\n    }\n    // Validate\n    const dateObj = new Date(year, month - 1, day);\n    if (!isNaN(dateObj)) return dateObj;\n  }\n\n  // Попробуем ISO или встроенный парсер\n  const iso = Date.parse(s);\n  if (!isNaN(iso)) return new Date(iso);\n\n  return null;\n}\n\n// Возвращает строку с ведущими нулями согласно вашим правилам (только нули)\nfunction zeroPrefixForId(id) {\n  if (id === undefined || id === null || id === '') return '';\n  const str = String(id).trim();\n  const n = Number(str);\n  if (Number.isNaN(n)) return '';\n  if (n >= 0 && n <= 9) return '0000';\n  if (n <= 99) return '000';\n  if (n <= 999) return '00';\n  if (n <= 9999) return '0';\n  return '';\n}\n\n// Паддинг id: возвращает строку с нулями + id, либо просто id если нулей не требуется\nfunction padIdString(id) {\n  const z = zeroPrefixForId(id);\n  if (z === '') return String(id === undefined || id === null ? '' : String(id).trim());\n  return z + String(id).trim();\n}\n\n// Сравнение двух записей: возвращает true если a is newer than b\nfunction isANewerThanB(a, b) {\n  const da = parseDateFlexible(a.agreement_date);\n  const db = parseDateFlexible(b.agreement_date);\n\n  if (da && db) {\n    if (da.getTime() !== db.getTime()) return da.getTime() > db.getTime();\n    // даты равны -> tie-breaker: сравниваем padded-строки\n    const padA = padIdString(a.id);\n    const padB = padIdString(b.id);\n    if (padA === padB) return false; // при равенстве не заменяем\n    return padA > padB;\n  }\n\n  // если только одна из дат есть — предпочитаем существующую дату (новее)\n  if (da && !db) return true;\n  if (!da && db) return false;\n\n  // обе даты отсутствуют — tie-breaker по padded id\n  const padA2 = padIdString(a.id);\n  const padB2 = padIdString(b.id);\n  if (padA2 === padB2) return false;\n  return padA2 > padB2;\n}\n\n// Основная логика\nconst mapByCode = new Map();\n\n// Поддерживаем вход как массив items (каждый item.json — объект)\nfor (const item of items) {\n  const obj = item.json ?? {};\n  const code = String(obj.customer_code ?? '').trim();\n  if (!code) {\n    // если нет customer_code — пропускаем (можно менять политику)\n    continue;\n  }\n\n  if (!mapByCode.has(code)) {\n    mapByCode.set(code, obj);\n  } else {\n    const existing = mapByCode.get(code);\n    if (isANewerThanB(obj, existing)) {\n      mapByCode.set(code, obj);\n    }\n  }\n}\n\n// Собираем результат в формате n8n items, добавляя ключ `zero` — строка нулей по правилам\nconst output = [];\nfor (const kept of mapByCode.values()) {\n  const zero = zeroPrefixForId(kept.id);\n  output.push({ json: { ...kept, zero } });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -16
+      ],
+      "id": "2df161a5-3bc1-4b0e-81e0-b45aee0f5afe",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json.zero }}{{ $json.id }}",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1oyWESm0sGtkj_xGruQVcRfKw2R9FAHi5",
+            "mode": "list",
+            "cachedResultName": "Agreements",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1oyWESm0sGtkj_xGruQVcRfKw2R9FAHi5"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        992,
+        -16
+      ],
+      "id": "70245378-94cc-4b5c-9011-94e82dc93b24",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ePc07ZVYn8FsbfeJ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1168,
+        -16
+      ],
+      "id": "c9f18d7c-d20c-42c4-962a-54db81e04c66",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "ePc07ZVYn8FsbfeJ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "={{ $('When Executed by Another Workflow').all().map(item => item.json.chat_id) }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1344,
+        -16
+      ],
+      "id": "ee63bd21-688a-4d4c-87ef-f6c03d768360",
+      "name": "Send a document",
+      "webhookId": "188e76e6-0c34-4dce-a5ed-4179b9675732",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "fedb727f-bd28-42b6-a08c-8f7a3e452731",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bdb38423-88f5-4e2c-a0d4-6ce78ea0817d",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        -16
+      ],
+      "id": "7b1dbab5-e8bc-40bf-9a43-ac6e3a254546",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Edit Fields').item.json.chat_id }}",
+        "text": "=Договор с клиентом по коду ЄДРПОУ: {{ $('Edit Fields').item.json.company_code }}  в базе не найден! :(",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        224
+      ],
+      "id": "dd5db9e2-c3a1-469a-8740-b53261cd7130",
+      "name": "Send a text message",
+      "webhookId": "9ec14f60-6b21-4eb1-9f67-742f5d60a396",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5558f920-2d1d-4a3d-bc73-66fbafa867ee",
+              "name": "chat_id",
+              "value": "={{ $json.chat_id }}",
+              "type": "number"
+            },
+            {
+              "id": "016c15cd-e60d-45ba-9675-268182e742ea",
+              "name": "company_code",
+              "value": "={{ $json.company_code }}",
+              "type": "string"
+            },
+            {
+              "id": "137f20d9-3f00-48d5-a74c-4b55c3215efd",
+              "name": "company_name",
+              "value": "={{ $json.company_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -16
+      ],
+      "id": "6c59e716-e2e4-4bb3-ace2-680e3eea7999",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "company_code": "",
+          "company_name": "ДП \"КДЕЗ ІХП НАН УКРАЇНИ\"",
+          "chat_id": "544911412"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Send a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c78e590d-a2d6-4992-be82-7433c1744c59",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "uN2g1pUp256tdDRV"
+}

@@ -1,0 +1,440 @@
+{
+  "updatedAt": "2025-11-14T08:40:11.479Z",
+  "createdAt": "2025-11-14T08:40:11.479Z",
+  "id": "xuovy6NWTwQqCQUD",
+  "name": "Router: Telegram Message Router",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const msg = items[0].json.message ?? {};\nlet route = 'unknown';\nif (msg.document || (msg.photo && msg.photo.length)) route = 'file';\nelse if (msg.voice || msg.audio) route = 'voice';\nelse if (msg.text || msg.caption) route = 'text';\nreturn [{ json: { route, message: msg } }];"
+      },
+      "id": "42c7e30b-1f99-49e0-82bb-be96b7279130",
+      "name": "Detect Route (Code)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "= {{$json.message?.chat?.id || $json.message?.chat_id || ''}}",
+        "text": "Unsupported message type. I can process files, voice and text.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b1a6ea74-a995-460c-bbb8-038ac6ceabbe",
+      "name": "Reply Unsupported",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        400
+      ],
+      "webhookId": "791e23ab-02d3-4930-adfd-4b02eba4265e",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "file",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "12d7a1ca-48d6-4276-b8cb-cae9e7ff47c7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e4a13da9-4a3b-481e-9be8-9812d94e0586",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "voice",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ab080754-f8d8-4120-b5ee-360b726238dd",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ec2a3e91-05a7-452f-bf4d-f66228caaaf9",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "unknown",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -576,
+        64
+      ],
+      "id": "428003ea-2081-4796-995b-5417e3f4871f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "id": "d5576148-20e6-4505-a386-0b3515b396a5",
+      "name": "Telegram Trigger1",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -976,
+        96
+      ],
+      "webhookId": "6fd7795b-c64d-4027-be31-98db3a93b886",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Ri6pBT9uWLsClQWX",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Ri6pBT9uWLsClQWX",
+          "cachedResultName": "Child: Reply With Received Text"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        432
+      ],
+      "id": "fdf5c6eb-35bc-4e2a-b249-85f3fb2b83da",
+      "name": "Call 'Child: Reply With Received Text'"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "37e1d93c-78cc-44b5-9125-2c3304faf083",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "980b876b-1f88-4b93-adae-855a8f0842d5",
+              "name": "id",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        432
+      ],
+      "id": "6d9c7d58-a875-4b51-bd44-8bbbdfbfa5e2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "yAZEm9dxfVGQv9Qo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/yAZEm9dxfVGQv9Qo",
+          "cachedResultName": "Telegram Download Vision with PDF Support"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        48
+      ],
+      "id": "fa6ad54e-73e4-4ba8-94a0-ca2fa569edcc",
+      "name": "pdf"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        48
+      ],
+      "id": "5f022473-4951-4e3e-a66b-6551b93002c4",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        224
+      ],
+      "id": "c3128013-3e29-426b-959c-8e034454cc4f",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "GSMgkkxdrOB4EMEn",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/GSMgkkxdrOB4EMEn",
+          "cachedResultName": "Voice"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        64,
+        224
+      ],
+      "id": "a30799a7-be95-41bc-813d-ba8981d63867",
+      "name": "Call 'Voice'"
+    }
+  ],
+  "connections": {
+    "Detect Route (Code)": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Unsupported",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Detect Route (Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Call 'Child: Reply With Received Text'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "pdf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Call 'Voice'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "879f1155-2be4-4667-89cd-f559ed26f493",
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-14T08:40:11.479Z",
+      "createdAt": "2025-11-14T08:40:11.479Z",
+      "role": "workflow:owner",
+      "workflowId": "xuovy6NWTwQqCQUD",
+      "projectId": "h4l9I70OGsrgTeq4",
+      "project": {
+        "updatedAt": "2025-11-06T16:46:31.182Z",
+        "createdAt": "2025-11-06T16:30:15.421Z",
+        "id": "h4l9I70OGsrgTeq4",
+        "name": "alex ila <aleksey.ilchenko.m@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

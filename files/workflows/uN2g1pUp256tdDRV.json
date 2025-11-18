@@ -1,0 +1,236 @@
+{
+  "updatedAt": "2025-11-14T08:46:02.283Z",
+  "createdAt": "2025-11-14T08:46:02.283Z",
+  "id": "uN2g1pUp256tdDRV",
+  "name": "search for a contract by code",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        0
+      ],
+      "id": "17831127-a566-4ba1-8545-dedf3ad89ec3",
+      "name": "Telegram Trigger",
+      "webhookId": "1059276b-989a-4689-92b9-e682cdac7552",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA",
+          "mode": "list",
+          "cachedResultName": "clients_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eux6bnX9o4EVSctgAgdZha0dvjP3roPvZuAKBBDHhlA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "customer_code",
+              "lookupValue": "={{ $json.message.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        0
+      ],
+      "id": "a8f3075b-db7a-4095-8284-e3bc9c0d8ca6",
+      "name": "Get row(s) in sheet"
+    },
+    {
+      "parameters": {
+        "jsCode": "function parseDateFlexible(s) {\n  if (!s && s !== 0) return null;\n  s = String(s).trim();\n  if (!s) return null;\n\n  // Попробуем распознать форматы типа 07.05.2019 или 7/5/2019 или 07-05-2019\n  const dmy = s.match(/^(\\d{1,2})[.\\-\\/](\\d{1,2})[.\\-\\/](\\d{2,4})$/);\n  if (dmy) {\n    let day = parseInt(dmy[1], 10);\n    let month = parseInt(dmy[2], 10);\n    let year = parseInt(dmy[3], 10);\n    if (year < 100) { // two-digit year heuristic\n      year += year >= 70 ? 1900 : 2000;\n    }\n    // Validate\n    const dateObj = new Date(year, month - 1, day);\n    if (!isNaN(dateObj)) return dateObj;\n  }\n\n  // Попробуем ISO или встроенный парсер\n  const iso = Date.parse(s);\n  if (!isNaN(iso)) return new Date(iso);\n\n  return null;\n}\n\n// Возвращает строку с ведущими нулями согласно вашим правилам (только нули)\nfunction zeroPrefixForId(id) {\n  if (id === undefined || id === null || id === '') return '';\n  const str = String(id).trim();\n  const n = Number(str);\n  if (Number.isNaN(n)) return '';\n  if (n >= 0 && n <= 9) return '0000';\n  if (n <= 99) return '000';\n  if (n <= 999) return '00';\n  if (n <= 9999) return '0';\n  return '';\n}\n\n// Паддинг id: возвращает строку с нулями + id, либо просто id если нулей не требуется\nfunction padIdString(id) {\n  const z = zeroPrefixForId(id);\n  if (z === '') return String(id === undefined || id === null ? '' : String(id).trim());\n  return z + String(id).trim();\n}\n\n// Сравнение двух записей: возвращает true если a is newer than b\nfunction isANewerThanB(a, b) {\n  const da = parseDateFlexible(a.agreement_date);\n  const db = parseDateFlexible(b.agreement_date);\n\n  if (da && db) {\n    if (da.getTime() !== db.getTime()) return da.getTime() > db.getTime();\n    // даты равны -> tie-breaker: сравниваем padded-строки\n    const padA = padIdString(a.id);\n    const padB = padIdString(b.id);\n    if (padA === padB) return false; // при равенстве не заменяем\n    return padA > padB;\n  }\n\n  // если только одна из дат есть — предпочитаем существующую дату (новее)\n  if (da && !db) return true;\n  if (!da && db) return false;\n\n  // обе даты отсутствуют — tie-breaker по padded id\n  const padA2 = padIdString(a.id);\n  const padB2 = padIdString(b.id);\n  if (padA2 === padB2) return false;\n  return padA2 > padB2;\n}\n\n// Основная логика\nconst mapByCode = new Map();\n\n// Поддерживаем вход как массив items (каждый item.json — объект)\nfor (const item of items) {\n  const obj = item.json ?? {};\n  const code = String(obj.customer_code ?? '').trim();\n  if (!code) {\n    // если нет customer_code — пропускаем (можно менять политику)\n    continue;\n  }\n\n  if (!mapByCode.has(code)) {\n    mapByCode.set(code, obj);\n  } else {\n    const existing = mapByCode.get(code);\n    if (isANewerThanB(obj, existing)) {\n      mapByCode.set(code, obj);\n    }\n  }\n}\n\n// Собираем результат в формате n8n items, добавляя ключ `zero` — строка нулей по правилам\nconst output = [];\nfor (const kept of mapByCode.values()) {\n  const zero = zeroPrefixForId(kept.id);\n  output.push({ json: { ...kept, zero } });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        0
+      ],
+      "id": "2df161a5-3bc1-4b0e-81e0-b45aee0f5afe",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json.zero }}{{ $json.id }}",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1oyWESm0sGtkj_xGruQVcRfKw2R9FAHi5",
+            "mode": "list",
+            "cachedResultName": "Agreements",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1oyWESm0sGtkj_xGruQVcRfKw2R9FAHi5"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        528,
+        0
+      ],
+      "id": "70245378-94cc-4b5c-9011-94e82dc93b24",
+      "name": "Search files and folders"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        752,
+        0
+      ],
+      "id": "c9f18d7c-d20c-42c4-962a-54db81e04c66",
+      "name": "Download file"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "={{ $('Telegram Trigger').all().map(item => item.json.message.chat.id) }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        0
+      ],
+      "id": "ee63bd21-688a-4d4c-87ef-f6c03d768360",
+      "name": "Send a document",
+      "webhookId": "188e76e6-0c34-4dce-a5ed-4179b9675732",
+      "credentials": {
+        "telegramApi": {
+          "id": "717xIXgZmZGyNKEC",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Send a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "72417be7-8375-468b-9218-e22d7b95329a",
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-14T08:46:02.283Z",
+      "createdAt": "2025-11-14T08:46:02.283Z",
+      "role": "workflow:owner",
+      "workflowId": "uN2g1pUp256tdDRV",
+      "projectId": "h4l9I70OGsrgTeq4",
+      "project": {
+        "updatedAt": "2025-11-06T16:46:31.182Z",
+        "createdAt": "2025-11-06T16:30:15.421Z",
+        "id": "h4l9I70OGsrgTeq4",
+        "name": "alex ila <aleksey.ilchenko.m@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
