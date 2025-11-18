@@ -93,15 +93,17 @@
         "operation": "appendOrUpdate",
         "documentId": {
           "__rl": true,
-          "value": "1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg",
-          "mode": "list"
+          "value": "12Dcop_Blj6zS3V9iiQ0BTlsfBjbNLn4_74zkkN3kAPw",
+          "mode": "list",
+          "cachedResultName": "результат",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12Dcop_Blj6zS3V9iiQ0BTlsfBjbNLn4_74zkkN3kAPw/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Лист1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/12Dcop_Blj6zS3V9iiQ0BTlsfBjbNLn4_74zkkN3kAPw/edit#gid=0"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -252,7 +254,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "9b445039-d368-4bdb-87cd-5b5af9b53168",
+  "versionId": "10894b10-50ef-4e6e-85ac-3cdfdac29429",
   "meta": {
     "templateCredsSetupCompleted": true
   },
