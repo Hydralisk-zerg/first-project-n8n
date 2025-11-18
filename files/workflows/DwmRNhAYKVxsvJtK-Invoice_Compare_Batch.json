@@ -1,0 +1,260 @@
+{
+  "name": "Invoice Compare Batch",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "44a09651-5a33-4450-8043-8346d37593ea",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI",
+          "mode": "list",
+          "cachedResultName": "Новая ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "90ebba37-f234-4672-83ab-eb2acebe5233",
+      "name": "Get First Value (Sheet A)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -240,
+        160
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg",
+          "mode": "list",
+          "cachedResultName": "Новая 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "qwerty",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Invoice No.",
+              "lookupValue": "={{ $json[\"Invoice No.\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "dbfcabfd-5999-498d-ba87-6138e0c0baa6",
+      "name": "Get Table B (clients)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        176,
+        560
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0c388ae7-088e-4d41-b9e4-0300f32572a3",
+      "name": "Append Result Row (Sheet C)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        144
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        32,
+        160
+      ],
+      "id": "7750105a-6c28-4d99-9388-bfad505287d6",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        192,
+        336
+      ],
+      "id": "2582ca68-946b-4947-a29b-8539ad6e7577"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        336
+      ],
+      "id": "f5da6171-5a05-4f6a-9f33-63e511ea2e5e",
+      "name": "Wait",
+      "webhookId": "6c5fa9e2-14b7-4fc6-af22-8fdbfbe9c11b"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get First Value (Sheet A)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get First Value (Sheet A)1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table B (clients)1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Append Result Row (Sheet C)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Result Row (Sheet C)1": {
+      "main": [
+        []
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Table B (clients)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b445039-d368-4bdb-87cd-5b5af9b53168",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "DwmRNhAYKVxsvJtK"
+}

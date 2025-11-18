@@ -1,0 +1,373 @@
+{
+  "name": "Compare First Value vs Second Table and Write Result",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "44a09651-5a33-4450-8043-8346d37593ea",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI",
+          "mode": "list",
+          "cachedResultName": "Новая ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "0652d6fb-bf4a-44bf-b392-814f8981a0a4",
+      "name": "Get First Value (Sheet A)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        64,
+        48
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg",
+          "mode": "list",
+          "cachedResultName": "Новая 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Invoice No.",
+              "lookupValue": "={{ $json['Invoice No.'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f1d708f8-c9eb-42b8-bca3-0f48641e1637",
+      "name": "Get Table B (clients)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        48
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node: compare first value from Sheet A with ONLY the first column of Sheet B\n// and prepare append rows (match / not_found / duplicate based on first-column occurrences).\ntry {\n  let firstValue = null;\n  let sheetB = null; // array of arrays\n\n  for (const inp of $input.all()) {\n    if (inp.json && Array.isArray(inp.json.values) && !sheetB) {\n      sheetB = inp.json.values; // full sheet B values (header + data)\n    }\n    if (inp.json && firstValue === null) {\n      if (Array.isArray(inp.json.values) && inp.json.values.length > 0) {\n        // take first column of first row from Sheet A result set\n        const row0 = inp.json.values[0];\n        if (Array.isArray(row0)) firstValue = row0[0]; else firstValue = row0;\n      }\n      if (firstValue === null && inp.json['Invoice No.'] !== undefined) firstValue = inp.json['Invoice No.'];\n      if (firstValue === null && inp.json.value !== undefined) firstValue = inp.json.value;\n    }\n  }\n\n  if (firstValue === null || firstValue === '') {\n    return [{ json: { status: 'not_found_first_value', message: 'Не найдено первое значение (первый столбец Sheet A)', firstValue } }];\n  }\n  if (!sheetB || sheetB.length < 2) { // need at least header + one data row\n    return [{ json: { status: 'no_sheetB_data', message: 'Sheet B пустой или нет данных', firstValue } }];\n  }\n\n  function norm(v){ return v == null ? '' : String(v).trim().toLowerCase(); }\n  const target = norm(firstValue);\n\n  // Iterate ONLY first column (index 0) of Sheet B data rows (skip header row 0).\n  const matches = [];\n  for (let r = 1; r < sheetB.length; r++) {\n    const cell = sheetB[r] && sheetB[r][0];\n    if (norm(cell) === target) matches.push(cell);\n  }\n\n  let status;\n  let matchedCell = matches[0] || '';\n  if (matches.length === 0) status = 'not_found';\n  else if (matches.length === 1) status = 'match';\n  else status = 'duplicate';\n\n  const outRow = [ String(firstValue), String(matchedCell), status, new Date().toISOString(), matches.length ];\n  return [{ json: { firstValue, status, occurrences: matches.length, matchedCell, append_row: outRow } }];\n} catch (err) {\n  return [{ json: { error: true, message: err.message, stack: err.stack } }];\n}\n"
+      },
+      "id": "edee9f60-72b1-4be2-b7b2-67ed906205a2",
+      "name": "Compare FirstValue vs TableB",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg",
+          "mode": "list",
+          "cachedResultName": "ila table",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "714b2467-f603-4fc2-a45a-276ef7741981",
+      "name": "Append Result Row (Sheet C)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        48
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "passThrough",
+        "options": {}
+      },
+      "id": "a414fc26-5233-4508-9268-dda10b322675",
+      "name": "Merge A+B",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI",
+          "mode": "list",
+          "cachedResultName": "Новая ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "90ebba37-f234-4672-83ab-eb2acebe5233",
+      "name": "Get First Value (Sheet A)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        48,
+        288
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg",
+          "mode": "list",
+          "cachedResultName": "Новая 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "qwerty",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "dbfcabfd-5999-498d-ba87-6138e0c0baa6",
+      "name": "Get Table B (clients)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        400
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node: per-item decision using Merge run index.\n// Reads A (Get First Value) and B (Get Table B) for current $runIndex,\n// then yields append_row and status: match | not_found | duplicate.\ntry {\n  const A_NODE = 'Get First Value (Sheet A)';\n  const B_NODE = 'Get Table B (clients)';\n\n  const idx = $runIndex;\n  const aArr = $items(A_NODE, 0, idx) || [];\n  const bArr = $items(B_NODE, 0, idx) || [];\n\n  function pickFirstValue(aItem) {\n    const j = aItem?.json ?? {};\n    if (j['Invoice No.'] !== undefined) return j['Invoice No.'];\n    if (Array.isArray(j.values)) {\n      if (Array.isArray(j.values[0])) return j.values[0][0];\n      return j.values[0];\n    }\n    if (j.value !== undefined) return j.value;\n    return null;\n  }\n\n  const firstValue = pickFirstValue(aArr[0]);\n  if (firstValue === null || firstValue === undefined || firstValue === '') {\n    return [{ json: { status: 'not_found_first_value', message: 'Не найдено первое значение в Sheet A', firstValue } }];\n  }\n\n  const matches = Array.isArray(bArr) ? bArr.length : 0;\n  let status = 'not_found';\n  let matchedCell = '';\n\n  if (matches === 1) {\n    status = 'match';\n    const j = bArr[0]?.json ?? {};\n    matchedCell = (j['Invoice No.'] ?? j.value ?? '');\n  } else if (matches > 1) {\n    status = 'duplicate';\n    const j = bArr[0]?.json ?? {};\n    matchedCell = (j['Invoice No.'] ?? j.value ?? '');\n  }\n\n  const outRow = [ String(firstValue), String(matchedCell), status, new Date().toISOString(), matches ];\n  return [{ json: { firstValue, status, matches, matchedCell, append_row: outRow } }];\n} catch (err) {\n  return [{ json: { error: true, message: err.message, stack: err.stack } }];\n}\n"
+      },
+      "id": "dcec63ca-7eda-49f5-8c79-3005ec93ec1d",
+      "name": "Compare FirstValue vs TableB1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg",
+          "mode": "list",
+          "cachedResultName": "ila table",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "0c388ae7-088e-4d41-b9e4-0300f32572a3",
+      "name": "Append Result Row (Sheet C)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        288
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get First Value (Sheet A)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get First Value (Sheet A)": {
+      "main": [
+        [
+          {
+            "node": "Get Table B (clients)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table B (clients)": {
+      "main": [
+        [
+          {
+            "node": "Compare FirstValue vs TableB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare FirstValue vs TableB": {
+      "main": [
+        [
+          {
+            "node": "Append Result Row (Sheet C)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge A+B": {
+      "main": [
+        [
+          {
+            "node": "Compare FirstValue vs TableB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get First Value (Sheet A)1": {
+      "main": [
+        [
+          {
+            "node": "Get Table B (clients)1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge A+B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table B (clients)1": {
+      "main": [
+        [
+          {
+            "node": "Merge A+B",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare FirstValue vs TableB1": {
+      "main": [
+        [
+          {
+            "node": "Append Result Row (Sheet C)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "51859983-ba78-417a-8b11-e1c33ec4a75f",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "DwmRNhAYKVxsvJtK"
+}
