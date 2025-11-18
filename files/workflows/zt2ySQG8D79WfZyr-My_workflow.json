@@ -1,0 +1,167 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17lCa1Juax3gwiA_3S5oJ4wQGCUUC6EDUhSfxiBGZRdM",
+          "mode": "list",
+          "cachedResultName": "HEE_employess",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17lCa1Juax3gwiA_3S5oJ4wQGCUUC6EDUhSfxiBGZRdM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17lCa1Juax3gwiA_3S5oJ4wQGCUUC6EDUhSfxiBGZRdM/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "sales_department",
+              "lookupValue": "=true"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4faff489-ed5e-4693-9809-dbf0035b2bf0",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        0
+      ],
+      "id": "f4bd24b5-091b-44ed-a23a-3d989fc26883",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {
+    "Get row(s) in sheet": [
+      {
+        "json": {
+          "row_number": 6,
+          "tg_account": 6233243773,
+          "user_name": "tafanasi",
+          "1c_name": "Афанасьева Татьяна",
+          "sales_department": true
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "tg_account": 8041897638,
+          "user_name": "vilchenko",
+          "1c_name": "Ильченко Вероника",
+          "sales_department": true
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "tg_account": 564727223,
+          "user_name": "diarmolo",
+          "1c_name": "Ярмолович Дарья",
+          "sales_department": true
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "tg_account": 156644104,
+          "user_name": "aryzhov",
+          "1c_name": "Рыжов Алексей",
+          "sales_department": true
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "tg_account": 524419218,
+          "user_name": "idzhafar",
+          "1c_name": "Джафар Икрам",
+          "sales_department": true
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "tg_account": 490417887,
+          "user_name": "lserputko",
+          "1c_name": "Серпутько Лилия",
+          "sales_department": true
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "tg_account": 544911412,
+          "user_name": "ailchenk",
+          "1c_name": "Ильченко Алексей",
+          "sales_department": true
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "tg_account": "",
+          "user_name": "arumyant",
+          "1c_name": "Румянцев Алексей",
+          "sales_department": true
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "edc48834-0461-4e33-966f-d9eeaaad40e7",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "zt2ySQG8D79WfZyr"
+}

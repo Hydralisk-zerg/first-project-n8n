@@ -1,0 +1,166 @@
+{
+  "name": "Compare First Value vs Second Table and Write Result",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [120, 240]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "SPREADSHEET_ID_A",
+          "mode": "list",
+          "cachedResultName": "SheetA"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SheetA",
+          "mode": "list",
+          "cachedResultName": "SheetA"
+        },
+        "options": {
+          "range": "A1:A1"
+        }
+      },
+      "id": "get-first-value",
+      "name": "Get First Value (Sheet A)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [360, 240],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "SPREADSHEET_ID_B",
+          "mode": "list",
+          "cachedResultName": "SheetB"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SheetB",
+          "mode": "list",
+          "cachedResultName": "SheetB"
+        },
+        "options": {
+          "range": "A:Z",
+          "returnAll": true
+        }
+      },
+      "id": "get-second-table",
+      "name": "Get Table B (clients)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [600, 240],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node: compare first value from Sheet A with values from Sheet B and prepare append rows\ntry {\n  // Find Sheet A result (first cell) and Sheet B values in inputs\n  let firstValue = null; // string\n  let sheetB = null; // array of rows (header + data)\n\n  for (const inp of $input.all()) {\n    if (inp.json && Array.isArray(inp.json.values) && !sheetB) {\n      sheetB = inp.json.values;\n    }\n    // the Get First Value node may return the value in different shapes; check common forms\n    if (inp.json && firstValue === null) {\n      // check for values array with single cell\n      if (Array.isArray(inp.json.values) && inp.json.values.length > 0 && Array.isArray(inp.json.values[0])) {\n        firstValue = inp.json.values[0][0];\n      }\n      // or check for a single field 'value'\n      if (firstValue === null && inp.json.value) firstValue = inp.json.value;\n    }\n  }\n\n  // fallback: first input first cell\n  if (firstValue === null && $input.first()?.json?.values && Array.isArray($input.first().json.values)) {\n    firstValue = $input.first().json.values[0] && $input.first().json.values[0][0];\n  }\n\n  if (firstValue === null) {\n    return [{ json: { error: 'no_first_value_found' } }];\n  }\n  if (!sheetB || sheetB.length === 0) {\n    return [{ json: { error: 'no_sheetB_values' } }];\n  }\n\n  // Normalize function for safe comparison (trim, lowercase, remove quotes)function norm(s) {\n    if (s === null || s === undefined) return '';\n    return s.toString().toLowerCase().replace(/[]/g, '').replace(/\\s+/g, ' ').trim();\n  }\n\n  const target = norm(firstValue);// Assume sheetB first row is header; find the column to compare (prefer column A or header named 'name'/'client')\n  const header = sheetB[0].map(h => (h || '').toString().toLowerCase());\n  let compareCol = 0;\n  for (let i = 0; i < header.length; i++) {\n    const h = header[i];\n    if (h.includes('name') || h.includes('client') || h.includes('company')) { compareCol = i; break; }\n  }\n\n  // Prepare result rows: each row will be [firstValue, matchedValueFromB (or empty), status] and we append a single row for this checklet matched = false;\n  let matchedCell = null;\n  for (let r = 1; r < sheetB.length; r++) {\n    const cell = sheetB[r][compareCol] || '';\n    if (norm(cell) === target) { matched = true; matchedCell = sheetB[r][compareCol]; break; }\n  }\n\n  const status = matched ? 'true' : 'false';\n  const outRow = [ firstValue, matched ? matchedCell : '', status ];\n\n  // Return as a single item containing the row to append (we'll use Write node to append it)return [{ json: { append_row: outRow, firstValue, matched, status } }];\n} catch (err) {\n  return [{ json: { error: true, message: err.message, stack: err.stack } }];\n}\n"
+      },
+      "id": "compare-code",
+      "name": "Compare FirstValue vs TableB",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [840, 240]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "SPREADSHEET_ID_RESULT",
+          "mode": "list",
+          "cachedResultName": "ResultSheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Result",
+          "mode": "list",
+          "cachedResultName": "ResultSheet"
+        },
+        "options": {
+          "range": "A:C",
+          "valueInputMode": "RAW",
+          "values": "={{ $json.append_row }}",
+          "append": true
+        }
+      },
+      "id": "append-result",
+      "name": "Append Result Row (Sheet C)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [1080, 240],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get First Value (Sheet A)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get First Value (Sheet A)": {
+      "main": [
+        [
+          {
+            "node": "Get Table B (clients)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table B (clients)": {
+      "main": [
+        [
+          {
+            "node": "Compare FirstValue vs TableB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare FirstValue vs TableB": {
+      "main": [
+        [
+          {
+            "node": "Append Result Row (Sheet C)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": "compare-firstvalue-vs-tableb"
+}

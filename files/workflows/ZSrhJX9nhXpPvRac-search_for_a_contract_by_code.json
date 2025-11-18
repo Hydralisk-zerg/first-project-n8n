@@ -47,7 +47,7 @@
     },
     {
       "parameters": {
-        "jsCode": "function parseDateFlexible(s) {\n  if (!s && s !== 0) return null;\n  s = String(s).trim();\n  if (!s) return null;\n\n  // Попробуем распознать форматы типа 07.05.2019 или 7/5/2019 или 07-05-2019\n  const dmy = s.match(/^(\\d{1,2})[.\\-\\/](\\d{1,2})[.\\-\\/](\\d{2,4})$/);\n  if (dmy) {\n    let day = parseInt(dmy[1], 10);\n    let month = parseInt(dmy[2], 10);\n    let year = parseInt(dmy[3], 10);\n    if (year < 100) { // two-digit year heuristic\n      year += year >= 70 ? 1900 : 2000;\n    }\n    // Validate\n    const dateObj = new Date(year, month - 1, day);\n    if (!isNaN(dateObj)) return dateObj;\n  }\n\n  // Попробуем ISO или встроенный парсер\n  const iso = Date.parse(s);\n  if (!isNaN(iso)) return new Date(iso);\n\n  return null;\n}\n\n// Возвращает строку с ведущими нулями согласно вашим правилам (только нули)\nfunction zeroPrefixForId(id) {\n  if (id === undefined || id === null || id === '') return '';\n  const str = String(id).trim();\n  const n = Number(str);\n  if (Number.isNaN(n)) return '';\n  if (n >= 0 && n <= 9) return '0000';\n  if (n <= 99) return '000';\n  if (n <= 999) return '00';\n  if (n <= 9999) return '0';\n  return '';\n}\n\n// Паддинг id: возвращает строку с нулями + id, либо просто id если нулей не требуется\nfunction padIdString(id) {\n  const z = zeroPrefixForId(id);\n  if (z === '') return String(id === undefined || id === null ? '' : String(id).trim());\n  return z + String(id).trim();\n}\n\n// Сравнение двух записей: возвращает true если a is newer than b\nfunction isANewerThanB(a, b) {\n  const da = parseDateFlexible(a.agreement_date);\n  const db = parseDateFlexible(b.agreement_date);\n\n  if (da && db) {\n    if (da.getTime() !== db.getTime()) return da.getTime() > db.getTime();\n    // даты равны -> tie-breaker: сравниваем padded-строки\n    const padA = padIdString(a.id);\n    const padB = padIdString(b.id);\n    if (padA === padB) return false; // при равенстве не заменяем\n    return padA > padB;\n  }\n\n  // если только одна из дат есть — предпочитаем существующую дату (новее)\n  if (da && !db) return true;\n  if (!da && db) return false;\n\n  // обе даты отсутствуют — tie-breaker по padded id\n  const padA2 = padIdString(a.id);\n  const padB2 = padIdString(b.id);\n  if (padA2 === padB2) return false;\n  return padA2 > padB2;\n}\n\n// Основная логика\nconst mapByCode = new Map();\n\n// Поддерживаем вход как массив items (каждый item.json — объект)\nfor (const item of items) {\n  const obj = item.json ?? {};\n  const code = String(obj.customer_code ?? '').trim();\n  if (!code) {\n    // если нет customer_code — пропускаем (можно менять политику)\n    continue;\n  }\n\n  if (!mapByCode.has(code)) {\n    mapByCode.set(code, obj);\n  } else {\n    const existing = mapByCode.get(code);\n    if (isANewerThanB(obj, existing)) {\n      mapByCode.set(code, obj);\n    }\n  }\n}\n\n// Собираем результат в формате n8n items, добавляя ключ `zero` — строка нулей по правилам\nconst output = [];\nfor (const kept of mapByCode.values()) {\n  const zero = zeroPrefixForId(kept.id);\n  output.push({ json: { ...kept, zero } });\n}\n\nreturn output;"
+        "jsCode": "function parseDateFlexible(s) {\n  if (!s && s !== 0) return null;\n  s = String(s).trim();\n  if (!s) return null;\n\n  // Попробуем распознать форматы типа 07.05.2019 или 7/5/2019 или 07-05-2019\n  const dmy = s.match(/^(\\d{1,2})[.\\-\\/](\\d{1,2})[.\\-\\/](\\d{2,4})$/);\n  if (dmy) {\n    let day = parseInt(dmy[1], 10);\n    let month = parseInt(dmy[2], 10);\n    let year = parseInt(dmy[3], 10);\n    if (year < 100) { // two-digit year heuristic\n      year += year >= 70 ? 1900 : 2000;\n    }\n    // Validate\n    const dateObj = new Date(year, month - 1, day);\n    if (!isNaN(dateObj)) return dateObj;\n  }\n\n  // Попробуем ISO или встроенный парсер\n  const iso = Date.parse(s);\n  if (!isNaN(iso)) return new Date(iso);\n\n  return null;\n}\n\n// Возвращает строку с ведущими нулями согласно вашим правилам (только нули)\nfunction zeroPrefixForId(id) {\n  if (id === undefined || id === null || id === '') return '';\n  const str = String(id).trim();\n  const n = Number(str);\n  if (Number.isNaN(n)) return '';\n  if (n >= 0 && n <= 9) return '0000';\n  if (n <= 99) return '000';\n  if (n <= 999) return '00';\n  if (n <= 9999) return '0';\n  return '';\n}\n\n// Паддинг id: возвращает строку с нулями + id, либо просто id если нулей не требуется\nfunction padIdString(id) {\n  const z = zeroPrefixForId(id);\n  if (z === '') return String(id === undefined || id === null ? '' : String(id).trim());\n  return z + String(id).trim();\n}\n\n// Сравнение двух записей: возвращает true если a is newer than b\nfunction isANewerThanB(a, b) {\n  const da = parseDateFlexible(a.agreement_date);\n  const db = parseDateFlexible(b.agreement_date);\n\n  if (da && db) {\n    if (da.getTime() !== db.getTime()) return da.getTime() > db.getTime();\n    // даты равны -> tie-breaker: сравниваем padded-строки\n    const padA = padIdString(a.id);\n    const padB = padIdString(b.id);\n    if (padA === padB) return false; // при равенстве не заменяем\n    return padA > padB;\n  }\n\n  // если только одна из дат есть — предпочитаем существующую дату (новее)\n  if (da && !db) return true;\n  if (!da && db) return false;\n\n  // обе даты отсутствуют — tie-breaker по padded id\n  const padA2 = padIdString(a.id);\n  const padB2 = padIdString(b.id);\n  if (padA2 === padB2) return false;\n  return padA2 > padB2;\n}\n\n// Основная логика\nconst mapByCode = new Map();\n\n// Поддерживаем вход как массив items (каждый item.json — объект)\nfor (const item of items) {\n  const obj = item.json ?? {};\n  const code = String(obj.customer_code ?? '').trim();\n  if (!code) {\n    // если нет customer_code — пропускаем (можно менять политику)\n    continue;\n  }\n\n  if (!mapByCode.has(code)) {\n    mapByCode.set(code, obj);\n  } else {\n    const existing = mapByCode.get(code);\n    if (isANewerThanB(obj, existing)) {\n      mapByCode.set(code, obj);\n    }\n  }\n}\nconst chat_id = $('Edit Fields').first().json.chat_id;\n// Собираем результат в формате n8n items, добавляя ключ `zero` — строка нулей по правилам\nconst output = [];\nfor (const kept of mapByCode.values()) {\n  const zero = zeroPrefixForId(kept.id);\n  output.push({ json: { ...kept, zero, chat_id} });\n}\n\nreturn output;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -65,10 +65,8 @@
         "filter": {
           "folderId": {
             "__rl": true,
-            "value": "1oyWESm0sGtkj_xGruQVcRfKw2R9FAHi5",
             "mode": "list",
-            "cachedResultName": "Agreements",
-            "cachedResultUrl": "https://drive.google.com/drive/folders/1oyWESm0sGtkj_xGruQVcRfKw2R9FAHi5"
+            "value": ""
           }
         },
         "options": {}
@@ -81,10 +79,11 @@
       ],
       "id": "2502c3b9-2194-4c52-83b7-131ed24bee79",
       "name": "Search files and folders",
+      "alwaysOutputData": false,
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "28Nvzmlq86EJNtJD",
-          "name": "Google Drive account"
+          "id": "gz0l5dMxyUhekxFA",
+          "name": "Google Drive account 2"
         }
       }
     },
@@ -112,8 +111,8 @@
       "name": "Download file",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "28Nvzmlq86EJNtJD",
-          "name": "Google Drive account"
+          "id": "gz0l5dMxyUhekxFA",
+          "name": "Google Drive account 2"
         }
       }
     },
@@ -127,7 +126,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2128,
+        1776,
         -16
       ],
       "id": "a921f9d2-8314-4e18-8f47-68f2cfc045a6",
@@ -155,13 +154,13 @@
               "leftValue": "={{ $json.customer_code }}",
               "rightValue": "",
               "operator": {
-                "type": "string",
-                "operation": "notEmpty",
+                "type": "number",
+                "operation": "exists",
                 "singleValue": true
               }
             }
           ],
-          "combinator": "and"
+          "combinator": "or"
         },
         "options": {}
       },
@@ -205,7 +204,7 @@
           "values": [
             {
               "lookupColumn": "customer_name",
-              "lookupValue": "={{ $json.output.parseJson().target_company }}"
+              "lookupValue": "={{ $json.output }}"
             }
           ]
         },
@@ -392,7 +391,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Ты — модуль сопоставления названий компаний.\n\nВходные данные:\n\nclient_name — строка с названием компании клиента.\n\ndirectory — список строк со справочными названиями компаний.\n\nЗадача:\n\nНайти в списке directory одно название, которое наиболее похоже на client_name.\n\nПри сравнении игнорировать организационно-правовые формы (ТОВ, ТЗОВ, АТЗТ, ПрАТ, ПП, ФОП и т.д.), кавычки, регистр, лишние пробелы.\n\nДопускать опечатки и небольшие различия.\n\nОпределить уверенность совпадения от 0 до 100 (строка).\n\nЕсли найдено хорошее совпадение — вернуть точное название из directory.\n\nЕсли нет подходящего совпадения — вернуть target_company = null и Confidence = \"0\".\n\nФормат ответа:\nВывести строго один JSON-объект, без любого лишнего текста.\nТолько два ключа:\n\n\"target_company\" — строка или null\n\n\"Confidence\" — строка с числом\n\nНикаких комментариев, пояснений, пояснительных фраз, примеров, Markdown, текста вне JSON. client_name == {{ $json.company }} directory == {{ $json.companies }}\n",
+        "text": "=Ты — модуль сопоставления названий компаний.\nВход:\nclient_name == {{ $json.company }}\ndirectory == {{ $json.companies }}\n\nЗадача:\nНайти в списке directory одно название, наиболее похожее на client_name.\nПравила:\n\nИгнорировать организационно‑правовые формы: ТОВ, ТЗОВ, АТЗТ, ПрАТ, ПП, ФОП и их варианты (укр/рус/англ), кавычки, скобки, регистр, лишние пробелы и пунктуацию вокруг имени.\nДопускать опечатки, флексию, перестановку слов, сокращения и небольшие различия.\nСравнивать нормализованные строки, но возвращать точное оригинальное название из directory.\nВывод:\nВывести ровно одну строку: либо найденное точное название (из directory), либо пустую строку, если подходящего совпадения нет.\nНикакого другого текста, JSON, пояснений или форматирования — только одна строка с названием или пустая строка.",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -418,7 +417,7 @@
       "typeVersion": 1.2,
       "position": [
         912,
-        704
+        688
       ],
       "id": "70fa5be3-5699-4e9d-8f93-33fbc72c303a",
       "name": "OpenAI Chat Model1",
@@ -435,8 +434,8 @@
       {
         "json": {
           "chat_id": "544911412",
-          "company_code": "05540209",
-          "company_name": "ДП \"КДЕЗ ІХП НАН УКРАЇНИ 435\""
+          "company_code": "45400081",
+          "company_name": "ВЕНТСОЛ"
         }
       }
     ]
@@ -615,7 +614,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "d198d15c-f78f-465d-b0be-7eafe3fc0458",
+  "versionId": "72e632b3-3be5-4adc-b059-5c9fb5ede76a",
   "meta": {
     "templateCredsSetupCompleted": true
   },
