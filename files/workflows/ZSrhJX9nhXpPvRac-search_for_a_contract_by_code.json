@@ -39,8 +39,8 @@
       "retryOnFail": false,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "ZgRWFe7RWXYmmBlY",
-          "name": "Google Sheets account 2"
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
         }
       },
       "onError": "continueRegularOutput"
@@ -269,19 +269,19 @@
             {
               "id": "67f6675b-7ee1-4672-b4ad-c18e59699efe",
               "name": "chat_id",
-              "value": "={{ $json.chat_id }}",
+              "value": "={{ $json.tg_account }}",
               "type": "string"
             },
             {
               "id": "9b6f53b8-15cf-4814-bd90-7b5ee60e6147",
               "name": "company_code",
-              "value": "={{ $json.company_code }}",
+              "value": "={{ $json.customer_code }}",
               "type": "string"
             },
             {
               "id": "c11574fe-2ee0-4569-a36d-34bec9686a8a",
               "name": "company_name",
-              "value": "={{ $json.company_name }}",
+              "value": "={{ $json.customer_name }}",
               "type": "string"
             }
           ]
@@ -433,9 +433,58 @@
     "When Executed by Another Workflow": [
       {
         "json": {
-          "chat_id": "544911412",
-          "company_code": "45400081",
-          "company_name": "ВЕНТСОЛ"
+          "customer_code": "35523434",
+          "customer_name": "ТОВ \"АГРОФІРМА \"ПОЛЕ\"",
+          "manager": "Афанасьева Татьяна",
+          "tg_account": 6233243773
+        }
+      },
+      {
+        "json": {
+          "customer_code": "35901580",
+          "customer_name": "ТОВ \"САН ТЕХ РАЙ\"",
+          "manager": "Афанасьева Татьяна",
+          "tg_account": 6233243773
+        }
+      },
+      {
+        "json": {
+          "customer_code": "35523434",
+          "customer_name": "ТОВ\" АГРОФІРМА\"ПОЛЕ\"",
+          "manager": "Афанасьева Татьяна",
+          "tg_account": 6233243773
+        }
+      },
+      {
+        "json": {
+          "customer_code": "34585898",
+          "customer_name": "ТОВ \"АМЕКС-УКРАЇНА\"",
+          "manager": "Афанасьева Татьяна",
+          "tg_account": 6233243773
+        }
+      },
+      {
+        "json": {
+          "customer_code": "36397241",
+          "customer_name": "ТОВ \"СТАРОКОНСТЯТИНІВЦУКОР\"",
+          "manager": "Ярмолович Дарья",
+          "tg_account": 564727223
+        }
+      },
+      {
+        "json": {
+          "customer_code": "33061594",
+          "customer_name": "ТОВ \"АЛ-КО КОБЕР\"",
+          "manager": "Ярмолович Дарья",
+          "tg_account": 564727223
+        }
+      },
+      {
+        "json": {
+          "customer_code": "44234776",
+          "customer_name": "ТОВ \"СУДНОБУДІВНО-СУДОРЕМОНТНИЙ ЗАВОД \"НІБУЛОН\"",
+          "manager": "Ярмолович Дарья",
+          "tg_account": 564727223
         }
       }
     ]
@@ -614,7 +663,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "72e632b3-3be5-4adc-b059-5c9fb5ede76a",
+  "versionId": "3ccd62e4-907d-451e-a420-c4c3de9c817b",
   "meta": {
     "templateCredsSetupCompleted": true
   },

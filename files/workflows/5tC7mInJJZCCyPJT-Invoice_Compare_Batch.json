@@ -1,0 +1,366 @@
+{
+  "name": "Invoice Compare Batch",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI",
+          "mode": "list",
+          "cachedResultName": "Новая ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1319457475,
+          "mode": "list",
+          "cachedResultName": "Лист2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1T-_AO3Ki2pxULL7L-Yoj888oN8T7QJZPUBQPT4CwHLI/edit#gid=1319457475"
+        },
+        "options": {}
+      },
+      "id": "e33e65e3-c06d-4109-9e61-c8d98de108b4",
+      "name": "Get First Value (Sheet A)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1216,
+        -288
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg",
+          "mode": "list",
+          "cachedResultName": "Новая 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "qwerty",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KZGminYi1Fu0Y2vCLV0nzaMTYcNWRjoP1xcy0JiRKhg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Invoice No.",
+              "lookupValue": "={{ $json[\"Invoice No.\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c9dcb5dd-0634-4856-b806-05bcf8ef0c54",
+      "name": "Get Table B (clients)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -704,
+        112
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1WRivfEhgRd-JbnONRkrjPRGnSMos_via6s0jZP3oASs",
+          "mode": "list",
+          "cachedResultName": "результат 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WRivfEhgRd-JbnONRkrjPRGnSMos_via6s0jZP3oASs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WRivfEhgRd-JbnONRkrjPRGnSMos_via6s0jZP3oASs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Vendor account",
+              "displayName": "Vendor account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Recancellation_date",
+              "displayName": "Recancellation_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Invoice No.",
+              "displayName": "Invoice No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Beliaglo_id",
+              "displayName": "Beliaglo_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Document date",
+              "displayName": "Document date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "USD_amount",
+              "displayName": "USD_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "EUR_amount",
+              "displayName": "EUR_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Shipment number",
+              "displayName": "Shipment number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CostCenter",
+              "displayName": "CostCenter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Столбец1",
+              "displayName": "Столбец1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "75ee425c-9230-463a-b1d7-b4734b979dea",
+      "name": "Append Result Row (Sheet C)1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        -304
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -848,
+        -288
+      ],
+      "id": "9f35cbda-aeb9-4f16-97fb-1bbad031934a",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -112
+      ],
+      "id": "806c94a8-da9f-447b-9b1a-0f28eef56c8f"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        -112
+      ],
+      "id": "435cb488-32e5-4391-9c24-3d27884a7451",
+      "name": "Wait",
+      "webhookId": "6c5fa9e2-14b7-4fc6-af22-8fdbfbe9c11b"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get First Value (Sheet A)1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Table B (clients)1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Append Result Row (Sheet C)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Table B (clients)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7c39a1a8-63b9-4ee3-9056-c3465045d315",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "5tC7mInJJZCCyPJT"
+}

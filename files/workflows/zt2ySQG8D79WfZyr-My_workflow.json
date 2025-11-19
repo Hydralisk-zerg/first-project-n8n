@@ -33,7 +33,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        224,
+        112,
         0
       ],
       "id": "4faff489-ed5e-4693-9809-dbf0035b2bf0",
@@ -52,93 +52,216 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        32,
+        -128,
         0
       ],
       "id": "f4bd24b5-091b-44ed-a23a-3d989fc26883",
       "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        640,
+        0
+      ],
+      "id": "27673e57-74de-4a6c-b2bd-5c0c700da621",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        816,
+        128
+      ],
+      "id": "33fc2755-0748-430e-bc61-7e85f9378862"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1N7PFcLsC5_wZMFz7mW-62KH4ggXLNYYyGrKjScyRXhg",
+          "mode": "list",
+          "cachedResultName": "Копия clients_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N7PFcLsC5_wZMFz7mW-62KH4ggXLNYYyGrKjScyRXhg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N7PFcLsC5_wZMFz7mW-62KH4ggXLNYYyGrKjScyRXhg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "manager",
+              "lookupValue": "={{ $json['1c_name'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        976,
+        128
+      ],
+      "id": "1c135dbc-3cea-428d-9443-12333bc01696",
+      "name": "Get row(s) in sheet1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Variant A (fixed): return separate items with tg_account fallback to $node['Get row(s) in sheet']\nconst itemsOut = [];\nconst seen = new Set();\n\n// Try to read tg_account from the 'Get row(s) in sheet' node (first item)\nlet sheetTg;\ntry {\n  // adjust node name if your node has a different name\n  sheetTg = $('Edit Fields').first().json.tg_account;\n} catch (e) {\n  sheetTg = undefined;\n}\n\nfor (const item of $input.all()) {\n  // skip completely empty items\n  if (!item || !item.json || Object.keys(item.json).length === 0) continue;\n\n  const code = item.json?.customer_code;\n  if (code === undefined || code === null || code === '') continue;\n\n  const manager = item.json?.manager ?? '';\n  const company = item.json?.customer_name ?? '';\n  // prefer item.json.tg_account; fallback to sheetTg; final fallback to empty string\n  const tg = (item.json?.tg_account !== undefined && item.json?.tg_account !== null && item.json?.tg_account !== '') \n    ? item.json.tg_account\n    : (sheetTg !== undefined ? sheetTg : '');\n\n  const key = `${code}||${company}||${manager}||${tg}`;\n  if (seen.has(key)) continue;\n  seen.add(key);\n\n  itemsOut.push({\n    json: {\n      customer_code: code.toString(),\n      customer_name: company,\n      manager,\n      tg_account: tg\n    }\n  });\n}\n\nreturn itemsOut; "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "4aa00ef6-918b-4828-a0c8-a5bfa5d14cc8",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bab84995-66b8-4ffc-84e3-cbdb51f2f257",
+              "name": "tg_account",
+              "value": "={{ $json.tg_account }}",
+              "type": "number"
+            },
+            {
+              "id": "5943c6fb-8a15-45f6-8630-ca931c371e47",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "8ae72f0a-7dc7-49f8-aaf0-c9392e072963",
+              "name": "user_name",
+              "value": "={{ $json.user_name }}",
+              "type": "string"
+            },
+            {
+              "id": "52a89d85-1b62-4765-b0c3-5e8a6ad18424",
+              "name": "1c_name",
+              "value": "={{ $json[\"1c_name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "7c531a28-c03f-4bd9-8fcb-6743478748c2",
+              "name": "sales_department",
+              "value": "={{ $json.sales_department }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        336,
+        0
+      ],
+      "id": "fa48c3fc-af76-4726-a92f-f2a1e1cef53c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca41a170-3f69-4f39-b924-a136da25cb5d",
+              "name": "customer_name",
+              "value": "={{ $json.customer_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4b84cb95-556e-43b7-9928-e10d77545ec8",
+              "name": "customer_code",
+              "value": "={{ $json.customer_code }}",
+              "type": "number"
+            },
+            {
+              "id": "08b08e00-832a-4e6c-a7de-dfd466468808",
+              "name": "manager",
+              "value": "={{ $json.manager }}",
+              "type": "string"
+            },
+            {
+              "id": "9c1341c0-5183-4d74-8a90-f6019d8f241f",
+              "name": "tg_account",
+              "value": "={{ $('Edit Fields').item.json.tg_account }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        128
+      ],
+      "id": "48eda443-08e4-4092-accf-ad218987480d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sJd5tH0i83qfGgdj",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/sJd5tH0i83qfGgdj",
+          "cachedResultName": "CSV Lookup by ua_customer_code (v2)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1104,
+        -96
+      ],
+      "id": "c19df571-e35e-4872-b7ab-180a7fbaebc4",
+      "name": "Call 'CSV Lookup by ua_customer_code (v2)'"
     }
   ],
-  "pinData": {
-    "Get row(s) in sheet": [
-      {
-        "json": {
-          "row_number": 6,
-          "tg_account": 6233243773,
-          "user_name": "tafanasi",
-          "1c_name": "Афанасьева Татьяна",
-          "sales_department": true
-        }
-      },
-      {
-        "json": {
-          "row_number": 7,
-          "tg_account": 8041897638,
-          "user_name": "vilchenko",
-          "1c_name": "Ильченко Вероника",
-          "sales_department": true
-        }
-      },
-      {
-        "json": {
-          "row_number": 9,
-          "tg_account": 564727223,
-          "user_name": "diarmolo",
-          "1c_name": "Ярмолович Дарья",
-          "sales_department": true
-        }
-      },
-      {
-        "json": {
-          "row_number": 10,
-          "tg_account": 156644104,
-          "user_name": "aryzhov",
-          "1c_name": "Рыжов Алексей",
-          "sales_department": true
-        }
-      },
-      {
-        "json": {
-          "row_number": 11,
-          "tg_account": 524419218,
-          "user_name": "idzhafar",
-          "1c_name": "Джафар Икрам",
-          "sales_department": true
-        }
-      },
-      {
-        "json": {
-          "row_number": 12,
-          "tg_account": 490417887,
-          "user_name": "lserputko",
-          "1c_name": "Серпутько Лилия",
-          "sales_department": true
-        }
-      },
-      {
-        "json": {
-          "row_number": 14,
-          "tg_account": 544911412,
-          "user_name": "ailchenk",
-          "1c_name": "Ильченко Алексей",
-          "sales_department": true
-        }
-      },
-      {
-        "json": {
-          "row_number": 15,
-          "tg_account": "",
-          "user_name": "arumyant",
-          "1c_name": "Румянцев Алексей",
-          "sales_department": true
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Get row(s) in sheet": {
       "main": [
-        []
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "When clicking ‘Execute workflow’": {
@@ -146,6 +269,79 @@
         [
           {
             "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Call 'CSV Lookup by ua_customer_code (v2)'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
@@ -159,7 +355,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "edc48834-0461-4e33-966f-d9eeaaad40e7",
+  "versionId": "d70b9819-0851-40a3-bcfc-921f8540ddb9",
   "meta": {
     "templateCredsSetupCompleted": true
   },
