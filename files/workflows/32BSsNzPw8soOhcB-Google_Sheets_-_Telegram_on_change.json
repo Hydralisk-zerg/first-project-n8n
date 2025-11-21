@@ -1,0 +1,413 @@
+{
+  "name": "Google Sheets -> Telegram on change",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs",
+          "mode": "list",
+          "cachedResultName": "А",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Google Sheets Trigger3",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        0
+      ],
+      "id": "18e526ca-d9e5-43b4-93fb-57e75047d1ee",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "Jwzdhlae3EJnyvBZ",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "=544911412",
+        "text": "=изменение",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Telegram3",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        528,
+        -16
+      ],
+      "id": "044d6edf-abb6-4104-83a4-8c7daef44fcc",
+      "webhookId": "ca32b5cc-1a11-4e4b-a6b9-96ba436dd06a",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nif (!input || !input.json) return [];\nconst raw = input.json;\nconst sheetName = raw.sheetName || raw.sheetId || raw.spreadsheetTitle || (raw.spreadsheet && raw.spreadsheet.title) || 'Google Sheet';\n\n// Helper: parse A1/A1:A10 ranges to rows\nfunction parseRangeToRows(rangeStr){\nif (!rangeStr || typeof rangeStr !== 'string') return [];\n// If it's like 'Sheet1!A2:C4' or 'A2' or 'A2:A4' or 'A2,C4'\nconst s = rangeStr.split('!').pop();\nconst parts = s.split(',');\nconst rows = [];\nparts.forEach(function(p){\np = p.trim();\nif (!p) return;\nif (p.indexOf(':') !== -1){\nconst [startColRow, endColRow] = p.split(':');\nconst start = parseInt(startColRow.replace(/[^0-9]/g,''),10);\nconst end = parseInt(endColRow.replace(/[^0-9]/g,''),10);\nif (!isNaN(start) && !isNaN(end)){\nfor (let r = start; r <= end; r++) rows.push(r);\n}\n} else {\nconst n = parseInt(p.replace(/[^0-9]/g,''),10);\nif (!isNaN(n)) rows.push(n);\n}\n});\nreturn rows;\n}\n\n// Collect rows\nconst rowsSet = new Set();\nlet countOnly = null;\nlet changedKeys = [];\n\nfunction addRow(n){ if (!isNaN(n)) rowsSet.add(Number(n)); }\n\n// Common variants\nif (raw.range) parseRangeToRows(raw.range).forEach(addRow);\nif (raw.ranges && Array.isArray(raw.ranges)) raw.ranges.forEach(r => parseRangeToRows(r).forEach(addRow));\nif (raw.changedRange) parseRangeToRows(raw.changedRange).forEach(addRow);\nif (raw.changedRanges && Array.isArray(raw.changedRanges)) raw.changedRanges.forEach(r => parseRangeToRows(r).forEach(addRow));\nif (raw.row) addRow(raw.row);\nif (raw.rows && Array.isArray(raw.rows)) raw.rows.forEach(r => addRow(r));\nif (raw.startRow && raw.endRow) for (let r = Number(raw.startRow); r <= Number(raw.endRow); r++) addRow(r);\nif (raw.valueRanges && Array.isArray(raw.valueRanges)) {\nraw.valueRanges.forEach(vr => {\nif (vr.range) parseRangeToRows(vr.range).forEach(addRow);\nif (vr.values && Array.isArray(vr.values)) {\nif (vr.values.length && Array.isArray(vr.values[0])) countOnly = vr.values.length;\n}\n});\n}\nif (raw.valueRange && raw.valueRange.range) parseRangeToRows(raw.valueRange.range).forEach(addRow);\nif (raw.values && Array.isArray(raw.values)) {\nif (Array.isArray(raw.values[0])) countOnly = raw.values.length;\n}\n\n// If object contains row-like fields but no index, list changed keys\nif (rowsSet.size === 0 && typeof raw === 'object') {\nconst keys = Object.keys(raw).filter(k => !['sheetName','sheetId','spreadsheetTitle','range','ranges','values','valueRanges','valueRange','changedRange','changedRanges','row','rows','startRow','endRow'].includes(k));\nif (keys.length) changedKeys = keys;\nif (changedKeys.length && countOnly === null) countOnly = 1;\n}\n\nconst rows = Array.from(rowsSet).sort((a,b)=>a-b);\nconst count = rows.length > 0 ? rows.length : (countOnly !== null ? countOnly : 0);\n\nfunction escapeHtml(s){ return String(s||'').replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/\"/g,'\"'); }\n\nlet message;\nif (rows.length) message = `Google Sheet ${sheetName} изменён: изменены ${rows.length} строк(и): ${rows.join(', ')}`;\nelse if (countOnly) message = `Google Sheet ${sheetName} изменён: изменены ${countOnly} строк(и)${changedKeys.length ? '. Изменён(ы) столбец(ы): ' + changedKeys.join(', ') : ''}`;\nelse message = `Google Sheet ${sheetName} изменён (подробности отсутствуют). Ключи payload: ${Object.keys(raw).join(', ')}`;\n\nreturn [{ json: { rows, count, changedKeys, message: escapeHtml(message), raw } }];"
+      },
+      "name": "Build Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -304
+      ],
+      "id": "2cb91a4f-e471-456f-ae7c-1d953538f1f4"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {}
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        -160
+      ],
+      "id": "caa02780-8f5c-4253-a379-607f40e50569",
+      "name": "Chat Memory Manager"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        160
+      ],
+      "id": "7dcdb4aa-fba8-4566-a9a8-b3abd393d038",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs",
+          "mode": "list",
+          "cachedResultName": "вытяжка по клиентам",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -304
+      ],
+      "id": "1c20eddd-8ffa-40bf-97d4-b5c1b5fef64d",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "Jwzdhlae3EJnyvBZ",
+          "name": "Google Sheets Trigger account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nif (!input || !input.json) return [];\nconst raw = input.json;\nconst sheetName = raw.sheetName || raw.sheetId || raw.spreadsheetTitle || (raw.spreadsheet && raw.spreadsheet.title) || 'Google Sheet';\n\nfunction parseRangeToRows(rangeStr){\n  if (!rangeStr || typeof rangeStr !== 'string') return [];\n  const s = rangeStr.split('!').pop();\n  const parts = s.split(',');\n  const rows = [];\n  parts.forEach(function(p){\n    p = p.trim();\n    if (!p) return;\n    if (p.indexOf(':') !== -1){\n      var parts2 = p.split(':');\n      var start = parseInt(parts2[0].replace(/[^0-9]/g,''),10);\n      var end = parseInt(parts2[1].replace(/[^0-9]/g,''),10);\n      if (!isNaN(start) && !isNaN(end)){ for (var r = start; r <= end; r++) rows.push(r); }\n    } else {\n      var n = parseInt(p.replace(/[^0-9]/g,''),10);\n      if (!isNaN(n)) rows.push(n);\n    }\n  });\n  return rows;\n}\n\nvar rowsSet = new Set();\nvar countOnly = null;\nvar changedKeys = [];\n\nif (raw.range) parseRangeToRows(raw.range).forEach(function(r){ rowsSet.add(r); });\nif (raw.ranges && Array.isArray(raw.ranges)) raw.ranges.forEach(function(r){ parseRangeToRows(r).forEach(function(rr){ rowsSet.add(rr); }); });\nif (raw.changedRange) parseRangeToRows(raw.changedRange).forEach(function(r){ rowsSet.add(r); });\nif (raw.changedRanges && Array.isArray(raw.changedRanges)) raw.changedRanges.forEach(function(r){ parseRangeToRows(r).forEach(function(rr){ rowsSet.add(rr); }); });\nif (raw.row) rowsSet.add(Number(raw.row));\nif (raw.rows && Array.isArray(raw.rows)) raw.rows.forEach(function(r){ rowsSet.add(Number(r)); });\nif (raw.startRow && raw.endRow) for (var rr = Number(raw.startRow); rr <= Number(raw.endRow); rr++) rowsSet.add(rr);\nif (raw.valueRanges && Array.isArray(raw.valueRanges)) {\n  raw.valueRanges.forEach(function(vr){\n    if (vr.range) parseRangeToRows(vr.range).forEach(function(r){ rowsSet.add(r); });\n    if (vr.values && Array.isArray(vr.values) && Array.isArray(vr.values[0])) countOnly = vr.values.length;\n  });\n}\nif (raw.valueRange && raw.valueRange.range) parseRangeToRows(raw.valueRange.range).forEach(function(r){ rowsSet.add(r); });\nif (raw.values && Array.isArray(raw.values)) { if (Array.isArray(raw.values[0])) countOnly = raw.values.length; }\n\nif (rowsSet.size === 0 && typeof raw === 'object') {\n  var keys = Object.keys(raw).filter(function(k){ return ['sheetName','sheetId','spreadsheetTitle','range','ranges','values','valueRanges','valueRange','changedRange','changedRanges','row','rows','startRow','endRow'].indexOf(k) === -1; });\n  if (keys.length) changedKeys = keys;\n  if (changedKeys.length && countOnly === null) countOnly = 1;\n}\n\nvar rows = Array.from(rowsSet).sort(function(a,b){ return a-b; });\nvar count = rows.length > 0 ? rows.length : (countOnly !== null ? countOnly : 0);\nfunction escapeHtml(s){ return String(s||'').split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split(String.fromCharCode(34)).join('&quot;'); }\nvar message = '';\nif (rows.length) message = 'Google Sheet ' + sheetName + ' изменён: изменены ' + rows.length + ' строк(и): ' + rows.join(', ');\nelse if (count) message = 'Google Sheet ' + sheetName + ' изменён: изменены ' + count + ' строк(и)' + (changedKeys.length ? '. Изменён(ы) столбец(ы): ' + changedKeys.join(', ') : '');\nelse message = 'Google Sheet ' + sheetName + ' изменён (подробности отсутствуют). Ключи payload: ' + Object.keys(raw).join(', ');\nreturn [{ json: { rows: rows, count: count, changedKeys: changedKeys, message: escapeHtml(message), raw: raw } }];"
+      },
+      "name": "Build Telegram Message1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -304
+      ],
+      "id": "d67738e8-da06-48cf-8ab0-0cb0339da1b7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Function node: prepare insert queries per row\nfunction esc(v){\n  if (v === null || v === undefined) return '';\n  return String(v).replace(/'/g, \"''\");\n}\nconst out = [];\nfor (const item of items) {\n  // если Google Sheets вернул объект с ключами-headers:\n  const ccode = esc(item.json['Client Code'] || item.json['customer_code'] || item.json['clientCode']);\n  const name  = esc(item.json['Name'] || item.json['customer_name'] || item.json['name']);\n  const mgr   = esc(item.json['Manager'] || item.json['manager']);\n  const amtRaw = item.json['Amount'] || item.json['amount'] || item.json['AMOUNT'];\n  const amount = (amtRaw === undefined || amtRaw==='' ) ? 'NULL' : Number(amtRaw) || 'NULL';\n  const query = `INSERT INTO sheet_import (customer_code, customer_name, manager, amount) VALUES ('${ccode}$input.first().json.customer_code', '${name}', '${mgr}', ${amount});`;\n  out.push({ json: { query } });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        0
+      ],
+      "id": "7aa69834-02f0-4279-912c-b7e4b17538f6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $('Code in JavaScript').item.json.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        336,
+        336
+      ],
+      "id": "46b04c15-a70b-4c99-bf43-b84fe1f081d7",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        320,
+        0
+      ],
+      "id": "192800f5-e29b-4c6a-b97c-c2b072eb4202",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS sheet_import (\n  id SERIAL PRIMARY KEY,\n  client_code TEXT,\n  client_name TEXT,\n  manager TEXT,\n  amount NUMERIC,\n  created_at TIMESTAMPTZ DEFAULT now()\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -384,
+        0
+      ],
+      "id": "d9992b54-d09e-4a71-9acc-68e459245d4d",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs",
+          "mode": "list",
+          "cachedResultName": "А",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13Jw0NtF5vAgFTLMxEs-rnVpBzIPk3uHwHS3dze3n2vs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "bdd883b4-6674-497b-914e-9aa5e8b432b4",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        464,
+        112
+      ],
+      "id": "9f1918d5-054c-43f5-8ff9-5a143c9c0c47"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger3": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Message": {
+      "main": [
+        []
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Chat Memory Manager",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Telegram Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Message1": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Telegram3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "669e1e97-cc7a-4ea3-b3e4-88bc69f33d70",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "32BSsNzPw8soOhcB"
+}

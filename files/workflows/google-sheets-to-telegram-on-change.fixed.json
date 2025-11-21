@@ -1,0 +1,69 @@
+{
+  "name": "Google Sheets -> Telegram on change",
+  "nodes": [
+    {
+      "parameters": {
+        "sheetId": "={{$json.sheetId || ''}}",
+        "range": "={{$json.range || 'Sheet1'}}",
+        "options": {}
+      },
+      "name": "Google Sheets Trigger",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "google-sheets-trigger-1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nif (!input || !input.json) return [];\nconst raw = input.json;\nconst sheetName = raw.sheetName || raw.sheetId || raw.spreadsheetTitle || (raw.spreadsheet && raw.spreadsheet.title) || 'Google Sheet';\n\nfunction parseRangeToRows(rangeStr){\n  if (!rangeStr || typeof rangeStr !== 'string') return [];\n  const s = rangeStr.split('!').pop();\n  const parts = s.split(',');\n  const rows = [];\n  parts.forEach(function(p){\n    p = p.trim();\n    if (!p) return;\n    if (p.indexOf(':') !== -1){\n      var parts2 = p.split(':');\n      var start = parseInt(parts2[0].replace(/[^0-9]/g,''),10);\n      var end = parseInt(parts2[1].replace(/[^0-9]/g,''),10);\n      if (!isNaN(start) && !isNaN(end)){ for (var r = start; r <= end; r++) rows.push(r); }\n    } else {\n      var n = parseInt(p.replace(/[^0-9]/g,''),10);\n      if (!isNaN(n)) rows.push(n);\n    }\n  });\n  return rows;\n}\n\nvar rowsSet = new Set();\nvar countOnly = null;\nvar changedKeys = [];\n\nif (raw.range) parseRangeToRows(raw.range).forEach(function(r){ rowsSet.add(r); });\nif (raw.ranges && Array.isArray(raw.ranges)) raw.ranges.forEach(function(r){ parseRangeToRows(r).forEach(function(rr){ rowsSet.add(rr); }); });\nif (raw.changedRange) parseRangeToRows(raw.changedRange).forEach(function(r){ rowsSet.add(r); });\nif (raw.changedRanges && Array.isArray(raw.changedRanges)) raw.changedRanges.forEach(function(r){ parseRangeToRows(r).forEach(function(rr){ rowsSet.add(rr); }); });\nif (raw.row) rowsSet.add(Number(raw.row));\nif (raw.rows && Array.isArray(raw.rows)) raw.rows.forEach(function(r){ rowsSet.add(Number(r)); });\nif (raw.startRow && raw.endRow) for (var rr = Number(raw.startRow); rr <= Number(raw.endRow); rr++) rowsSet.add(rr);\nif (raw.valueRanges && Array.isArray(raw.valueRanges)) {\n  raw.valueRanges.forEach(function(vr){\n    if (vr.range) parseRangeToRows(vr.range).forEach(function(r){ rowsSet.add(r); });\n    if (vr.values && Array.isArray(vr.values) && Array.isArray(vr.values[0])) countOnly = vr.values.length;\n  });\n}\nif (raw.valueRange && raw.valueRange.range) parseRangeToRows(raw.valueRange.range).forEach(function(r){ rowsSet.add(r); });\nif (raw.values && Array.isArray(raw.values)) { if (Array.isArray(raw.values[0])) countOnly = raw.values.length; }\n\nif (rowsSet.size === 0 && typeof raw === 'object') {\n  var keys = Object.keys(raw).filter(function(k){ return ['sheetName','sheetId','spreadsheetTitle','range','ranges','values','valueRanges','valueRange','changedRange','changedRanges','row','rows','startRow','endRow'].indexOf(k) === -1; });\n  if (keys.length) changedKeys = keys;\n  if (changedKeys.length && countOnly === null) countOnly = 1;\n}\n\nvar rows = Array.from(rowsSet).sort(function(a,b){ return a-b; });\nvar count = rows.length > 0 ? rows.length : (countOnly !== null ? countOnly : 0);\nfunction escapeHtml(s){ return String(s||'').split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;').split(String.fromCharCode(34)).join('&quot;'); }\nvar message = '';\nif (rows.length) message = 'Google Sheet ' + sheetName + ' изменён: изменены ' + rows.length + ' строк(и): ' + rows.join(', ');\nelse if (count) message = 'Google Sheet ' + sheetName + ' изменён: изменены ' + count + ' строк(и)' + (changedKeys.length ? '. Изменён(ы) столбец(ы): ' + changedKeys.join(', ') : '');\nelse message = 'Google Sheet ' + sheetName + ' изменён (подробности отсутствуют). Ключи payload: ' + Object.keys(raw).join(', ');\nreturn [{ json: { rows: rows, count: count, changedKeys: changedKeys, message: escapeHtml(message), raw: raw } }];"
+      },
+      "name": "Build Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300],
+      "id": "build-message-1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId || '' }}",
+        "text": "={{ $json.message }}",
+        "options": {
+          "parseMode": "HTML"
+        }
+      },
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [780, 300],
+      "id": "telegram-1"
+    }
+  ],
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "timeZone": "Europe/Kiev"
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "name": "CSV Lookup by ua_customer_code (v3)",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const inputs = $input.all() || [] ;\nvar rows = [];\nfor (var ii = 0; ii < inputs.length; ii++) {\n  var nodeItem = inputs[ii] && inputs[ii][0] ? inputs[ii][0].json : (inputs[ii] && inputs[ii].json ? inputs[ii].json : null);\n  if (!nodeItem) continue;\n  rows.push(nodeItem);\n}\nif (rows.length === 0) return [];\nvar byManager = {};\nfor (var i=0;i<rows.length;i++) {\n  var r = rows[i] || {};\n  var manager = (r.manager !== undefined && r.manager !== null) ? r.manager.toString().trim() : (r._manager || 'No Manager');\n  var code = (r.ua_customer_code !== undefined && r.ua_customer_code !== null) ? r.ua_customer_code.toString().replace(/\\\\.0+$/,'') : (r.customer_code || r._customer_code || 'unknown');\n  var cname = (r.customer_name !== undefined && r.customer_name !== null) ? r.customer_name.toString() : (r._customer_name || code);\n  r._customer_code = code; r._customer_name = cname; r._manager = manager;\n  if (!byManager[manager]) byManager[manager] = { manager: manager, customers: {} };\n  if (!byManager[manager].customers[code]) byManager[manager].customers[code] = { sheetName: cname, rows: [] };\n  byManager[manager].customers[code].rows.push(r);\n}\nvar out = [];\nfor (var m in byManager) {\n  var mgrEntry = byManager[m];\n  var sheets = [];\n  for (var c in mgrEntry.customers) {\n    var cust = mgrEntry.customers[c];\n    var cleanRows = cust.rows.map(function(rr){ var copy = {}; for (var k in rr) { if (k.indexOf('_')===0) continue; copy[k]=rr[k]; } return copy; });\n    sheets.push({ sheetName: cust.sheetName || c, rows: cleanRows });\n  }\n  out.push({ json: { manager: mgrEntry.manager, sheets: sheets } });\n}\nreturn out;\n "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        48
+      ],
+      "name": "Find in CSV by ua_customer_code",
+      "id": "fd2b92a2-4efe-433a-a9d4-394589337ef2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group rows (items) by manager and by customer, produce one item per manager with sheets array\nconst inputs = $input.all() || [] ;\nvar rows = [];\nfor (var ii = 0; ii < inputs.length; ii++) {\n  var nodeItem = inputs[ii] && inputs[ii][0] ? inputs[ii][0].json : (inputs[ii] && inputs[ii].json ? inputs[ii].json : null);\n  if (!nodeItem) continue;\n  rows.push(nodeItem);\n}\nif (rows.length === 0) return [];\nvar byManager = {};\nfor (var i=0;i<rows.length;i++) {\n  var r = rows[i] || {};\n  var manager = (r.manager !== undefined && r.manager !== null) ? r.manager.toString().trim() : (r._manager || 'No Manager');\n  var code = (r.ua_customer_code !== undefined && r.ua_customer_code !== null) ? r.ua_customer_code.toString().replace(/\\.0+$/,'') : (r.customer_code || r._customer_code || 'unknown');\n  var cname = (r.customer_name !== undefined && r.customer_name !== null) ? r.customer_name.toString() : (r._customer_name || code);\n  r._customer_code = code; r._customer_name = cname; r._manager = manager;\n  if (!byManager[manager]) byManager[manager] = { manager: manager, customers: {} };\n  if (!byManager[manager].customers[code]) byManager[manager].customers[code] = { sheetName: cname, rows: [] };\n  byManager[manager].customers[code].rows.push(r);\n}\nvar out = [];\nfor (var m in byManager) {\n  var mgrEntry = byManager[m];\n  var sheets = [];\n  for (var c in mgrEntry.customers) {\n    var cust = mgrEntry.customers[c];\n    var cleanRows = cust.rows.map(function(rr){ var copy = {}; for (var k in rr) { if (k.indexOf('_')===0) continue; copy[k]=rr[k]; } return copy; });\n    sheets.push({ sheetName: cust.sheetName || c, rows: cleanRows });\n  }\n  out.push({ json: { manager: mgrEntry.manager, sheets: sheets } });\n}\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        48
+      ],
+      "name": "Group By Manager",
+      "id": "af98edff-3135-4956-9e23-21d5a3da4864",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        240,
+        48
+      ],
+      "name": "Loop Managers",
+      "id": "6e8f73e7-ab3c-47d9-a802-c86bc6d3dc8c",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        480,
+        48
+      ],
+      "name": "Prepare FileName",
+      "id": "83d380b9-3d97-4aea-9acc-4c86af6c695d"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        720,
+        48
+      ],
+      "name": "Write JSON Summary (fallback)",
+      "id": "1a5743ff-a9ca-4883-9888-a473650aa62f"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -448,
+        48
+      ],
+      "id": "05612cf7-1acf-487b-ba2b-87717c4577b7",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "customer_code": "35523434",
+          "customer_name": "ТОВ \"АГРОФІРМА \"ПОЛЕ\"",
+          "manager": "Афанасьева Татьяна",
+          "tg_account": 6233243773
+        }
+      },
+      {
+        "json": {
+          "customer_code": "35901580",
+          "customer_name": "ТОВ \"САН ТЕХ РАЙ\"",
+          "manager": "Афанасьева Татьяна",
+          "tg_account": 6233243773
+        }
+      },
+      {
+        "json": {
+          "customer_code": "34585898",
+          "customer_name": "ТОВ \"АМЕКС-УКРАЇНА\"",
+          "manager": "Афанасьева Татьяна",
+          "tg_account": 6233243773
+        }
+      },
+      {
+        "json": {
+          "customer_code": "36397241",
+          "customer_name": "ТОВ \"СТАРОКОНСТЯТИНІВЦУКОР\"",
+          "manager": "Ярмолович Дарья",
+          "tg_account": 564727223
+        }
+      },
+      {
+        "json": {
+          "customer_code": "33061594",
+          "customer_name": "ТОВ \"АЛ-КО КОБЕР\"",
+          "manager": "Ярмолович Дарья",
+          "tg_account": 564727223
+        }
+      },
+      {
+        "json": {
+          "customer_code": "44234776",
+          "customer_name": "ТОВ \"СУДНОБУДІВНО-СУДОРЕМОНТНИЙ ЗАВОД \"НІБУЛОН\"",
+          "manager": "Ярмолович Дарья",
+          "tg_account": 564727223
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Find in CSV by ua_customer_code": {
+      "main": [
+        [
+          {
+            "node": "Group By Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Group By Manager": {
+      "main": [
+        [
+          {
+            "node": "Loop Managers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Managers": {
+      "main": [
+        [
+          {
+            "node": "Prepare FileName",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Managers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare FileName": {
+      "main": [
+        [
+          {
+            "node": "Write JSON Summary (fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Find in CSV by ua_customer_code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a7dc8363-1613-47c2-b81b-9e518d8ca329",
+  "meta": null,
+  "id": "hwIpnPUDmqemmpDR"
+}

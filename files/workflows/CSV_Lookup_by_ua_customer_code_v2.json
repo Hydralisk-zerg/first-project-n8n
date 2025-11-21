@@ -15,39 +15,76 @@
         },
         "options": {}
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3,
-      "position": [200, 200],
-      "name": "Set Code Example",
-      "id": "set-code-1-v2"
-    },
-    {
-      "parameters": {
-        "filePath": "/files/transport_data_2025.csv"
-      },
-      "type": "n8n-nodes-base.readBinaryFile",
-      "typeVersion": 1,
-      "position": [440, 200],
-      "name": "Read CSV File",
-      "id": "read-file-1-v2"
-    },
-    {
-      "parameters": {
-        "jsCode": "const raw = $input.first()?.json?.stdout ?? ($input.first()?.binary?.data?.data ? Buffer.from($input.first().binary.data.data, 'base64').toString('utf8') : '');\nif (!raw) {\n  return [{ json: { message: 'no_input' } }];\n}\n\n// normalize newlines\nconst text = raw.replace(/\\r\\n/g, '\\n').replace(/\\r/g, '\\n');\n\n// robust CSV parser (semicolon delimiter)\nfunction parseCSV(s, delimiter) {\n  delimiter = delimiter || ';';\n  const rows = [];\n  let cur = '';\n  let row = [];\n  let inQuotes = false;\n  for (let i = 0; i < s.length; i++) {\n    const ch = s[i];\n    if (inQuotes) {\n      if (ch === '\"') {\n        if (i + 1 < s.length && s[i+1] === '\"') { cur += '\"'; i++; }\n        else { inQuotes = false; }\n      } else { cur += ch; }\n    } else {\n      if (ch === '\"') { inQuotes = true; }\n      else if (ch === delimiter) { row.push(cur); cur = ''; }\n      else if (ch === '\\n') { row.push(cur); cur = ''; rows.push(row); row = []; }\n      else { cur += ch; }\n    }\n  }\n  if (cur !== '' || row.length > 0) { row.push(cur); rows.push(row); }\n  return rows;\n}\n\nconst rowsAll = parseCSV(text, ';');\nif (!rowsAll || rowsAll.length === 0) { return [{ json: { message: 'no_rows' } }]; }\n\nconst header = rowsAll.shift().map(h => (h || '').toString().trim());\n\nconst sanitizeKey = (k, idx) => {\n  if (!k || k.trim() === '') return `col_${idx+1}`;\n  return k.replace(/\\s+/g, '_').replace(/[^\\w\\-]/g, '_');\n};\nconst keys = header.map((h, i) => sanitizeKey(h, i));\n\nconst items = rowsAll.map(r => {\n  const obj = {};\n  for (let i = 0; i < keys.length; i++) {\n    obj[keys[i]] = (r[i] !== undefined) ? r[i] : '';\n  }\n  return obj;\n});\n\nfunction quoteField(f) {\n  if (f === null || f === undefined) return '';\n  const s = f.toString();\n  if (s.indexOf(';') !== -1 || s.indexOf('\"') !== -1 || s.indexOf('\\n') !== -1 || s.indexOf('\\r') !== -1) {\n    return '\"' + s.replace(/\"/g, '\"\"') + '\"';\n  }\n  return s;\n}\n\nconst outLines = [ header.map(quoteField).join(';') ];\nfor (const r of rowsAll) {\n  const cols = [];\n  for (let i = 0; i < keys.length; i++) { cols.push( quoteField( (r[i] !== undefined) ? r[i] : '' ) ); }\n  outLines.push(cols.join(';'));\n}\n\nconst csvText = outLines.join('\\r\\n') + '\\r\\n';\n// add BOM so Excel will display Cyrillic correctly\nconst b64 = Buffer.from('\\uFEFF' + csvText, 'utf8').toString('base64');\nconst codeVal = $input.first()?.json?.code ?? 'result';\nconst filename = `matches_${codeVal}.csv`;\n\nconst output = [];\nif (items.length === 0) {\n  output.push({ json: { message: 'no_matches' } });\n} else {\n  output.push({\n    json: items[0],\n    binary: {\n      data: {\n        data: b64,\n        fileName: filename,\n        mimeType: 'text/csv; charset=utf-8'\n      }\n    }\n  });\n  for (let i = 1; i < items.length; i++) { output.push({ json: items[i] }); }\n}\n\nreturn output;\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [720, 200],
-      "name": "Find in CSV by ua_customer_code",
-      "id": "code-search-1-v2"
-    }
-  ],
-  "connections": {
-    "Set Code Example": { "main": [ [ { "node": "Read CSV File", "type": "main", "index": 0 } ] ] },
-    "Read CSV File": { "main": [ [ { "node": "Find in CSV by ua_customer_code", "type": "main", "index": 0 } ] ] },
-    "Find in CSV by ua_customer_code": { "main": [ [] ] }
-  },
-  "active": false,
-  "settings": { "executionOrder": "v1" },
-  "id": "CSV-Lookup-ua_customer_code-2025-v2"
-}
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [720, 200],
+            "name": "Find in CSV by ua_customer_code",
+            "id": "code-search-1-v2"
+          },
+          {
+            "parameters": {
+              "jsCode": "// Group rows (items) by manager and by customer, produce one item per manager with sheets array\nconst inputs = $input.all() || [] ;\nvar rows = [];\nfor (var ii = 0; ii < inputs.length; ii++) {\n  var nodeItem = inputs[ii] && inputs[ii][0] ? inputs[ii][0].json : (inputs[ii] && inputs[ii].json ? inputs[ii].json : null);\n  if (!nodeItem) continue;\n  rows.push(nodeItem);\n}\nif (rows.length === 0) return [];\nvar byManager = {};\nfor (var i=0;i<rows.length;i++) {\n  var r = rows[i] || {};\n  var manager = (r.manager !== undefined && r.manager !== null) ? r.manager.toString().trim() : (r._manager || 'No Manager');\n  var code = (r.ua_customer_code !== undefined && r.ua_customer_code !== null) ? r.ua_customer_code.toString().replace(/\\.0+$/,'') : (r.customer_code || r._customer_code || 'unknown');\n  var cname = (r.customer_name !== undefined && r.customer_name !== null) ? r.customer_name.toString() : (r._customer_name || code);\n  r._customer_code = code; r._customer_name = cname; r._manager = manager;\n  if (!byManager[manager]) byManager[manager] = { manager: manager, customers: {} };\n  if (!byManager[manager].customers[code]) byManager[manager].customers[code] = { sheetName: cname, rows: [] };\n  byManager[manager].customers[code].rows.push(r);\n}\nvar out = [];\nfor (var m in byManager) {\n  var mgrEntry = byManager[m];\n  var sheets = [];\n  for (var c in mgrEntry.customers) {\n    var cust = mgrEntry.customers[c];\n    var cleanRows = cust.rows.map(function(rr){ var copy = {}; for (var k in rr) { if (k.indexOf('_')===0) continue; copy[k]=rr[k]; } return copy; });\n    sheets.push({ sheetName: cust.sheetName || c, rows: cleanRows });\n  }\n  out.push({ json: { manager: mgrEntry.manager, sheets: sheets } });\n}\nreturn out;"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [980, 200],
+            "name": "Group By Manager",
+            "id": "group-by-manager-v1"
+          },
+          {
+            "parameters": {
+              "options": {
+                "batchSize": 1
+              }
+            },
+            "type": "n8n-nodes-base.splitInBatches",
+            "typeVersion": 3,
+            "position": [1220, 200],
+            "name": "Loop Managers",
+            "id": "split-managers-v1"
+          },
+          {
+            "parameters": {
+              "assignments": {
+                "assignments": [
+                  {
+                    "id": "file-assign-1",
+                    "name": "fileName",
+                    "value": "={{ $json.manager.replace(/[/\\\\?%*:|\\\"<>]/g, '_') + '.xlsx' }}",
+                    "type": "string"
+                  }
+                ]
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3,
+            "position": [1460, 200],
+            "name": "Prepare FileName",
+            "id": "set-filename-v1"
+          },
+          {
+            "parameters": {
+              "path": "/files/{{ $json.fileName }}",
+              "binaryPropertyName": "data"
+            },
+            "type": "n8n-nodes-base.writeBinaryFile",
+            "typeVersion": 1,
+            "position": [1700, 200],
+            "name": "Write JSON Summary (fallback)",
+            "id": "write-json-summary-v1"
+          }
+        ],
+        "connections": {
+          "Set Code Example": { "main": [ [ { "node": "Read CSV File", "type": "main", "index": 0 } ] ] },
+          "Read CSV File": { "main": [ [ { "node": "Find in CSV by ua_customer_code", "type": "main", "index": 0 } ] ] },
+          "Find in CSV by ua_customer_code": { "main": [ [ { "node": "Group By Manager", "type": "main", "index": 0 } ] ] },
+          "Group By Manager": { "main": [ [ { "node": "Loop Managers", "type": "main", "index": 0 } ] ] },
+          "Loop Managers": { "main": [ [ { "node": "Prepare FileName", "type": "main", "index": 0 } ], [] ] },
+          "Prepare FileName": { "main": [ [ { "node": "Write JSON Summary (fallback)", "type": "main", "index": 0 } ] ] },
+          "Write JSON Summary (fallback)": { "main": [ [] ] }
+        },
+        "active": false,
+        "settings": { "executionOrder": "v1" },
+        "id": "CSV-Lookup-ua_customer_code-2025-v2"
+      }
