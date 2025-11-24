@@ -1,0 +1,311 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        -16
+      ],
+      "id": "9502cd85-67b6-4f75-8ad8-294abaef1591",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "On board",
+              "lookupValue": "+"
+            },
+            {
+              "lookupColumn": "ATA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        16,
+        -16
+      ],
+      "id": "5fa14b3e-d23c-4e94-a99c-cb32145d7834",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "de475d25-6308-45a8-9b2f-b46c6eb722ed",
+              "leftValue": "={{ $json.Shipping_line }}",
+              "rightValue": "Maersk",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "f8b214e9-1f8b-4b24-b9f0-693a5e01cdfc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f479295e-ee52-4790-b0f9-8c6758b5ac74",
+              "name": "Booking_number",
+              "value": "={{ $json.Booking_number }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        -288
+      ],
+      "id": "7face6b9-b220-4c0c-a476-72e84ed84720",
+      "name": "Set Maersk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2448c30f-c466-4ae6-95a4-ec0fb96a20cf",
+              "name": "Booking_number",
+              "value": "={{ $json.Booking_number }}",
+              "type": "string"
+            },
+            {
+              "id": "2fdc41d0-288c-471c-8116-ef52a0204890",
+              "name": "Shipping_line",
+              "value": "={{ $json.Shipping_line }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        80
+      ],
+      "id": "e7011b2a-569e-4be4-9125-32bad0d41e58",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "task": "MTIwNDI2NTA5MjAzMjY4OTgyMjM6MDow",
+        "title": "=проверить буккинг  {{ $json.Booking_number }} по линии {{ $json.Shipping_line }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        688,
+        80
+      ],
+      "id": "df698a48-46e9-4464-bd29-fd155b33be60",
+      "name": "Create a task",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "IcWZlry8LncRCsED",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=апдейт букинга  {{ $('Edit Fields').item.json.Booking_number }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        -288
+      ],
+      "id": "e293fb06-5b72-4e2d-8082-8f22c5382d70",
+      "name": "Send a text message",
+      "webhookId": "9e113dcf-62e6-44d3-8b8c-2ccaa2fda42f",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "task": "MTIwNDI2NTA5MjAzMjY4OTgyMjM6MDow",
+        "taskId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -288
+      ],
+      "id": "75a3d283-05ea-44ef-a7a0-04b8a6261086",
+      "name": "Get a task",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "IcWZlry8LncRCsED",
+          "name": "Google Tasks account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set Maersk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Create a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a task": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Maersk": {
+      "main": [
+        []
+      ]
+    },
+    "Create a task": {
+      "main": [
+        [
+          {
+            "node": "Get a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "93dc5bfb-7cbe-44c0-aec7-6e7da494d434",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "CpWS9XAd5y7g79xw"
+}

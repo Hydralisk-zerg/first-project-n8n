@@ -1,0 +1,267 @@
+{
+  "name": "Telegram Inline Callback Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "name": "Telegram Trigger (Callback)",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        592
+      ],
+      "id": "6eec3e25-7915-4ea8-9c4a-398a75ecb3ba",
+      "webhookId": "f3f90bbb-9a3a-4d3a-bad0-7b450901f229",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// parse callback data 'token:abc123|booking:12345'\nconst message = $json.callback_query && $json.callback_query.data ? $json.callback_query.data : ($json.data || '');\nconst chatId = $json.callback_query && $json.callback_query.from ? $json.callback_query.from.id : ($json.from && $json.from.id ? $json.from.id : $json.chatId );\nconst text = $json.callback_query && $json.callback_query.message && $json.callback_query.message.text ? $json.callback_query.message.text : '';\nconst match = (message || '').match(/token:([^|]+)\\|?booking:?(.*)/i);\nconst token = match ? match[1] : null;\nconst booking = match && match[2] ? match[2] : null;\nreturn [{ json: { token, booking, chatId, text } }];"
+      },
+      "name": "Parse callback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        592
+      ],
+      "id": "38071e63-29ff-495f-a7cb-d7f7cf490b2c"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM telegram_pending WHERE token = '{{ $json.token }}' AND state = 'waiting' LIMIT 1;",
+        "additionalFields": {}
+      },
+      "name": "Select pending",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        32,
+        592
+      ],
+      "id": "fe736a86-b052-4829-859c-23a6a84b160b",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json[0] && $json[0].id ? $json[0].id : '' }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "If pending present",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        240,
+        592
+      ],
+      "id": "9283a3de-b9ec-47d0-a485-87036b7e6bf0"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE telegram_pending SET state='answered', answer = '{{ $json.text }}', answered_at = now() WHERE token = '{{ $json.token }}' RETURNING *;",
+        "additionalFields": {}
+      },
+      "name": "Update pending as answered",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        432,
+        528
+      ],
+      "id": "ced6ee13-5107-4912-bdd4-ae73aa5f6d12",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "= {{ $json.chatId }}",
+        "text": "=Спасибо — ответ зафиксирован. Обрабатываю...",
+        "additionalFields": {}
+      },
+      "name": "Ack User",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        640,
+        528
+      ],
+      "id": "f30e348a-87e7-4fb4-837b-26eb6d9029af",
+      "webhookId": "3a2fd4ce-f722-4123-b9d3-49c1034af5a1",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "answerCallback"
+      },
+      "name": "Answer Callback",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        640,
+        768
+      ],
+      "id": "9dad76e0-994e-4cba-8170-83441243acbc",
+      "webhookId": "b4b9f6c2-c951-42bb-aa7a-aac026353134",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM sheet_import WHERE customer_code = '{{ $json.booking }}' LIMIT 1;",
+        "additionalFields": {}
+      },
+      "name": "Get booking row",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        832,
+        528
+      ],
+      "id": "17d0ab4d-d0fc-4bcd-a1fe-0e142f8cf74b",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build message about booking (single row)\nconst rows = items.map(i => i.json);\nif (!rows.length) return [];\nconst r = rows[0];\nconst msg = `Booking ${r.customer_code || r.booking_id || 'unknown'} status updated. Name: ${r.customer_name||'-'} Manager: ${r.manager||'-'} Amount: ${r.amount||'-'}`;\nreturn [{ json: { message: msg } }];"
+      },
+      "name": "Build Result Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        528
+      ],
+      "id": "f68230a0-c902-433a-b79b-d4d5074c1555"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger (Callback)": {
+      "main": [
+        [
+          {
+            "node": "Parse callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse callback": {
+      "main": [
+        [
+          {
+            "node": "Select pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select pending": {
+      "main": [
+        [
+          {
+            "node": "If pending present",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If pending present": {
+      "main": [
+        [
+          {
+            "node": "Update pending as answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update pending as answered": {
+      "main": [
+        [
+          {
+            "node": "Ack User",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Answer Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ack User": {
+      "main": [
+        [
+          {
+            "node": "Get booking row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get booking row": {
+      "main": [
+        [
+          {
+            "node": "Build Result Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2951c1e0-5d09-4f0a-9c47-b0367919e683",
+  "id": "Z4jdfofzJdQR1ktf"
+}

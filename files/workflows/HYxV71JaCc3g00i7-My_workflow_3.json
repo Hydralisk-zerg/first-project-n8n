@@ -1,0 +1,134 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "update",
+        "task": "MTIwNDI2NTA5MjAzMjY4OTgyMjM6MDow",
+        "taskId": "букинг обновлен ",
+        "updateFields": {}
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "3592d5bf-a5f0-4267-881e-b9ec83163094",
+      "name": "Update a task",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "IcWZlry8LncRCsED",
+          "name": "Google Tasks account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": ",erbyu j,yjdkty ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "32fea9aa-a5e8-469c-a9b1-4c7c6c5239aa",
+      "name": "Send a text message",
+      "webhookId": "9e113dcf-62e6-44d3-8b8c-2ccaa2fda42f",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "* * * * 1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "3030be79-70c4-4134-9d30-0e5de8a1ed15",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "task": "MTIwNDI2NTA5MjAzMjY4OTgyMjM6MDow"
+      },
+      "type": "n8n-nodes-base.googleTasks",
+      "typeVersion": 1,
+      "position": [
+        160,
+        0
+      ],
+      "id": "a9ac2c6c-a54e-49fd-974e-31d2746af15d",
+      "name": "Get a task",
+      "credentials": {
+        "googleTasksOAuth2Api": {
+          "id": "IcWZlry8LncRCsED",
+          "name": "Google Tasks account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Update a task": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a task": {
+      "main": [
+        [
+          {
+            "node": "Update a task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "610b3256-fb73-4e99-b48b-55cf9138df8b",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "HYxV71JaCc3g00i7"
+}
