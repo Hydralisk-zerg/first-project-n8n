@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# NOTE: Kept for reference. Primary entrypoint is scripts/bootstrap.ps1.
+
 # Simple cross-distro bootstrap for Docker + project deploy
 # Supports:
 # - Debian/Ubuntu (apt)
@@ -75,7 +77,6 @@ esac
 
 wait_for_docker
 
-# Run deploy (expects .env as per .env.example)
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="${SCRIPT_DIR}/.."
 cd "$PROJECT_DIR"
@@ -85,7 +86,6 @@ if [ ! -f .env ]; then
   echo -e "${YELLOW}Created .env from template. Please edit .env and rerun if needed.${NC}"
 fi
 
-# Generate ENCRYPTION_KEY if placeholder
 if grep -q '^ENCRYPTION_KEY=CHANGE_ME_GENERATED' .env || ! grep -q '^ENCRYPTION_KEY=' .env; then
   HEX=$(openssl rand -hex 32 2>/dev/null || cat /proc/sys/kernel/random/uuid | tr -d '-')
   sed -i.bak "s/^ENCRYPTION_KEY=.*/ENCRYPTION_KEY=${HEX}/" .env || echo "ENCRYPTION_KEY=${HEX}" >> .env
@@ -99,4 +99,4 @@ docker compose up -d
 log "Tail last 50 n8n logs"
 docker compose logs n8n --tail 50 || true
 
-echo -e "${GREEN}Done.${NC} Open your n8n URL from .env (N8N_EDITOR_BASE_URL) and activate the workflow."
+echo -e "${GREEN}Done.${NC}"

@@ -33,29 +33,16 @@ Copy-Item .env.example .env -Force
 - CLOUDFLARED_TOKEN → из Cloudflare
 - TELEGRAM_TOKEN → из BotFather
 
-4) Запустите стек:
-
-```powershell
-scripts\deploy.ps1
-```
-
-Или полностью автоматический bootstrap (+ установка Docker Desktop):
+4) Запустите полностью автоматический bootstrap (+ установка Docker Desktop):
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; scripts\bootstrap.ps1
 ```
 
-## Быстрый старт (Linux/macOS)
+## Linux/macOS
 
-1) Клонируйте репозиторий и откройте терминал в его каталоге.
-2) Создайте `.env` из шаблона (скрипт сделает это сам при отсутствии).
-3) Запустите автоматический bootstrap, который установит/запустит Docker и развернёт проект:
-
-```bash
-bash scripts/bootstrap.sh
-```
-
-На macOS потребуется Docker Desktop и пользовательское подтверждение при первом запуске. Скрипт покажет подсказки, если потребуется ручное действие.
+Основной entrypoint в этом репозитории — `scripts/bootstrap.ps1` (Windows).
+Для справки оставлен `tools/bootstrap.sh`, но он не является основным путём.
 
 Скрипт выполнит:
 - Проверит наличие `.env` (создаст из шаблона при отсутствии)
@@ -69,16 +56,18 @@ bash scripts/bootstrap.sh
 
 ```powershell
 # URL берите из Production URL узла Telegram Trigger (после активации воркфлоу)
-scripts\set-telegram-webhook.ps1 -Url "https://YOUR_DOMAIN/webhook/<path>/webhook"
+tools\set-telegram-webhook.ps1 -Url "https://YOUR_DOMAIN/webhook/<path>/webhook"
 
 # Проверить текущую настройку вебхука
-scripts\set-telegram-webhook.ps1 -InfoOnly
+tools\set-telegram-webhook.ps1 -InfoOnly
 ```
+
+Скрипт находится в `tools/set-telegram-webhook.ps1`.
 
 ## Сервисы
 
 - postgres:16-alpine → база данных n8n
-- n8n:latest → движок автоматизации
+- n8n:2.0.0 → движок автоматизации
 - gotenberg:8 → конвертация Word→PDF для OCR
 - ocr-api (node:18-alpine) → OCR‑микросервис
 - cloudflared → публикует n8n через именованный Cloudflare туннель
@@ -181,13 +170,7 @@ Copy-Item .env.example .env -Force
 - CLOUDFLARED_TOKEN → from Cloudflare
 - TELEGRAM_TOKEN → from BotFather
 
-4) Start the stack:
-
-```powershell
-scripts\deploy.ps1
-```
-
-Or a fully automated bootstrap (installs Docker Desktop too):
+4) Run the fully automated bootstrap (installs Docker Desktop too):
 
 ```powershell
 Set-ExecutionPolicy Bypass -Scope Process -Force; scripts\bootstrap.ps1
@@ -207,36 +190,20 @@ Optional: set the Telegram webhook via helper script
 
 ```powershell
 # Copy the Production URL from the Telegram Trigger node (after activating the workflow)
-scripts\set-telegram-webhook.ps1 -Url "https://YOUR_DOMAIN/webhook/<path>/webhook"
+tools\set-telegram-webhook.ps1 -Url "https://YOUR_DOMAIN/webhook/<path>/webhook"
 
 # Inspect current webhook info
-scripts\set-telegram-webhook.ps1 -InfoOnly
+tools\set-telegram-webhook.ps1 -InfoOnly
 ```
 
-## Linux / macOS bootstrap
+## Linux / macOS
 
-Use the `scripts/bootstrap.sh` helper:
-
-```bash
-bash scripts/bootstrap.sh
-```
-
-The script attempts to install Docker where possible, start the engine, and deploy the project. On macOS, Docker Desktop requires user confirmation.
-
-## Linux / macOS bootstrap
-
-Для Linux/macOS можно использовать скрипт `scripts/bootstrap.sh`:
-
-```bash
-bash scripts/bootstrap.sh
-```
-
-Скрипт попытается установить Docker (где возможно), запустить сервис и развернуть проект. На macOS потребуется Docker Desktop и подтверждение пользователем.
+The primary entrypoint in this repo is `scripts/bootstrap.ps1` (Windows). For reference only, there is `tools/bootstrap.sh`.
 
 ## Services
 
 - postgres:16-alpine → n8n database
-- n8n:latest → automation engine
+- n8n:2.0.0 → automation engine
 - gotenberg:8 → Word→PDF conversion for OCR
 - ocr-api (node:18-alpine) → OCR microservice
 - cloudflared → publishes n8n via a Cloudflare named tunnel

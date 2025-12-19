@@ -4,8 +4,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$root = Split-Path -Parent $scriptDir
+$root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
 $abs = Resolve-Path $Path

@@ -2,8 +2,7 @@
 $ErrorActionPreference = 'Stop'
 
 # Move to repo root
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$root = Split-Path -Parent $scriptDir
+$root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
 # Ensure output directory exists (host path)

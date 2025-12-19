@@ -6,7 +6,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 Write-Host "==> n8n DB diagnostics" -ForegroundColor Cyan
-Push-Location (Split-Path $PSCommandPath -Parent | Split-Path -Parent)
+Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
   $sql = @'
 \echo --- workflow counts ---
