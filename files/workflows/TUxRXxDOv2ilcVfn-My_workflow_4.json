@@ -1,0 +1,224 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        -16
+      ],
+      "id": "9f845e47-9475-4c61-b32b-784332282014",
+      "name": "Telegram Trigger",
+      "webhookId": "a5e91148-e108-49b1-8acb-6570f5070547",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=найдив тексте {{ $json.message.text }} имя и фамилию и сопаставь с списком   {{ $('Code in JavaScript').item.json.data.map(item => item.json.ONE_C_name) }} верни его ONE_C_name в сторгом соответствии с списком без маркдаунови доп текста ",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        400,
+        -16
+      ],
+      "id": "24b9bf09-eb7a-435c-b417-94d654936a97",
+      "name": "AI Agent",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        240
+      ],
+      "id": "59f38cf0-b68b-4ed3-a2d2-295eb3d4ce1a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6o3E6CtmYsqbpVFq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xcVnOtiQfHS5OOia",
+          "mode": "list",
+          "cachedResultName": "HEE_employess",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -16
+      ],
+      "id": "2f050d77-5db1-495c-85af-39c11be4efb9",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// // Loop over input items and add a new field called 'myNewField' to the JSON of each one\n// for (const item of $input.all()) {\n//   item.json.myNewField = 1;\n// }\n\nreturn [\n  {\n    data: $input.all()\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -16
+      ],
+      "id": "e48d43e4-e7ac-485d-b9bb-f733b95a9a2a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d8346429-e2d2-4d40-b9f2-5960d8ffb6cf",
+              "name": "message.text",
+              "value": "={{ $('Telegram Trigger').all().map(i => i.json.message.text) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -16
+      ],
+      "id": "7bd9daee-c912-447c-97d9-856666445805",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 305052598,
+          "message": {
+            "message_id": 2346,
+            "from": {
+              "id": 544911412,
+              "is_bot": false,
+              "first_name": "Alexey",
+              "last_name": "Ilchenko",
+              "username": "Batman_ila",
+              "language_code": "uk"
+            },
+            "chat": {
+              "id": 544911412,
+              "first_name": "Alexey",
+              "last_name": "Ilchenko",
+              "username": "Batman_ila",
+              "type": "private"
+            },
+            "date": 1764766437,
+            "text": "отправь сообщение Ильченко Алексею"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26e9dea1-e9f2-4490-8768-6516657ea3bd",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "TUxRXxDOv2ilcVfn"
+}

@@ -37,7 +37,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM telegram_pending WHERE token = '{{ $json.token }}' AND state = 'waiting' LIMIT 1;",
+        "query": "SELECT * FROM telegram_form_pending WHERE token = '{{ $json.token }}' AND state = 'waiting' LIMIT 1;",
         "additionalFields": {}
       },
       "name": "Select pending",
@@ -78,7 +78,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE telegram_pending SET state='answered', answer = '{{ $json.text }}', answered_at = now() WHERE token = '{{ $json.token }}' RETURNING *;",
+        "query": "-- Save inline answer inside answers JSONB and mark as answered\nUPDATE telegram_form_pending\nSET state='answered', answers = COALESCE(answers, '{}'::jsonb) || jsonb_build_object('inline_answer', $$ {{ $json.text }} $$), updated_at = now() WHERE token = '{{ $json.token }}' RETURNING *;",
         "additionalFields": {}
       },
       "name": "Update pending as answered",

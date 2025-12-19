@@ -1,0 +1,218 @@
+{
+  "name": "Telegram Inline Form Callback Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "updatePolling": false,
+        "options": {}
+      },
+      "name": "Telegram Trigger (Callback)",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "tg-trigger-form-callback",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse callback_data like: token:abc123|booking:12345|line:Maersk\nconst cb = $json.callback_query || {};\nconst data = cb.data || $json.data || '';\nlet token = null; let booking = null; let line = null;\nif (data) {\n  const parts = data.split('|');\n  parts.forEach(p => { const kv = p.split(':'); if (kv.length>=2) { const k=kv[0].trim().toLowerCase(); const v=kv.slice(1).join(':').trim(); if(k==='token') token=v; if(k==='booking') booking=v; if(k==='line') line=v; } });\n}\nconst chatId = (cb.from && cb.from.id) || ($json.from && $json.from.id) || $json.chatId || null;\nreturn [{ json: { token, booking, line, chatId } }];"
+      },
+      "name": "Parse callback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "id": "parse-form-callback"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM telegram_form_pending WHERE token = '{{ $json.token }}' AND state = 'waiting' LIMIT 1;"
+      },
+      "name": "Select form pending",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "id": "select-form-pending",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json[0] && $json[0].id ? $json[0].id : '' }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "If pending present",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "id": "if-form-pending"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE telegram_form_pending SET state = 'collecting', current_question = 1, updated_at = now() WHERE token = '{{ $json.token }}' RETURNING *;"
+      },
+      "name": "Start collecting",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "id": "start-collecting",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Пожалуйста, введите контактное лицо:",
+        "additionalFields": {
+          "reply_markup": "=JSON.stringify({force_reply:true})"
+        }
+      },
+      "name": "Ask contact name",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1250, 300],
+      "id": "ask-contact",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE telegram_form_pending SET last_question_message_id = {{ $node['Ask contact name'].json.message_id }}, updated_at = now() WHERE token = '{{ $node['Start collecting'].json[0].token }}' RETURNING *;"
+      },
+      "name": "Store last question id",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "id": "store-last-question-id",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "answerCallback",
+        "additionalFields": {
+          "text": "Начинаем форму — отправьте ответ в этом чате",
+          "show_alert": false
+        }
+      },
+      "name": "Answer Callback",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1250, 380],
+      "id": "answer-callback-form",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger (Callback)": {
+      "main": [
+        [
+          {
+            "node": "Parse callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse callback": {
+      "main": [
+        [
+          {
+            "node": "Select form pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select form pending": {
+      "main": [
+        [
+          {
+            "node": "If pending present",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If pending present": {
+      "main": [
+        [
+          {
+            "node": "Start collecting",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Start collecting": {
+      "main": [
+        [
+          {
+            "node": "Ask contact name",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Answer Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask contact name": {
+      "main": [
+        [
+          {
+            "node": "Store last question id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "timeZone": "Europe/Kiev"
+  }
+}

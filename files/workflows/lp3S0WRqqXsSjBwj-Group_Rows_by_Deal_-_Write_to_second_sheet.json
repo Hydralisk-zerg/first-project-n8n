@@ -1,0 +1,228 @@
+{
+  "name": "Group Rows by Deal -> Write to second sheet",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        80
+      ],
+      "id": "7de49685-2c97-46b7-be70-88c8ab698399",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI",
+          "mode": "list",
+          "cachedResultName": "Result",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1054397373,
+          "mode": "list",
+          "cachedResultName": "сводная таблица",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit#gid=1054397373"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        80
+      ],
+      "id": "6ce34e2a-0c43-45df-b41d-40abae95574d",
+      "name": "Get all rows1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawRows = items.map(i => i.json || {});\nif (!rawRows.length) return [];\n\nconst normRows = rawRows.map(r => {\n  const nr = {};\n  Object.keys(r).forEach(k => {\n    nr[String(k).trim()] = r[k];\n  });\n  return nr;\n});\nconst keys = Object.keys(normRows[0] || {});\nconst keyForGroup = keys.find(k => k && k.toString().toLowerCase().includes('сделка')) || keys[0];\n\nconst groups = {};\nnormRows.forEach(r => {\n  const v = (r[keyForGroup] ?? '').toString();\n  (groups[v] = groups[v] || []).push(r);\n});\n\nconst colors = ['#ffffff', '#f7f7f7'];\n\nconst groupKeys = Object.keys(groups).sort((a, b) => {\n  const na = +(a.match(/\\d+/)?.[0] || 0);\n  const nb = +(b.match(/\\d+/)?.[0] || 0);\n  if (na !== nb) return na - nb;\n  return a.localeCompare(b);\n});\n\nconst outItems = [];\ngroupKeys.forEach((g, idx) => {\n  const color = colors[idx % colors.length];\n  groups[g].forEach(r => {\n    outItems.push({ json: { ...r, __bg: color } });\n  });\n});\n\nreturn outItems;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        672,
+        80
+      ],
+      "id": "4de913e7-284b-487f-bc23-a563990ab354",
+      "name": "Group Rows by 1st Column1"
+    },
+    {
+      "parameters": {
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "value": "1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI",
+          "mode": "list",
+          "cachedResultName": "Result",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2016259679,
+          "mode": "list",
+          "cachedResultName": "Сортерованная таблица",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit#gid=2016259679"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        864,
+        80
+      ],
+      "id": "64a93041-8471-486f-83c5-db8223a9edec",
+      "name": "Clear target sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $node['Group Rows by 1st Column1'].json;\nif (!source) return [];\nif (Array.isArray(source)) { return source.map(r => ({ json: r }));}\nreturn [{ json: source }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        80
+      ],
+      "id": "38c703ae-7eaa-4573-a904-2efbe8cea588",
+      "name": "Flatten rows1",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI",
+          "mode": "list",
+          "cachedResultName": "Result",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2016259679,
+          "mode": "list",
+          "cachedResultName": "Сортерованная таблица",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit#gid=2016259679"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1216,
+        80
+      ],
+      "id": "ea605c67-6858-4bca-988f-0ccda6eca040",
+      "name": "Append grouped rows1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Get all rows1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all rows1": {
+      "main": [
+        [
+          {
+            "node": "Group Rows by 1st Column1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Group Rows by 1st Column1": {
+      "main": [
+        [
+          {
+            "node": "Clear target sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear target sheet1": {
+      "main": [
+        [
+          {
+            "node": "Flatten rows1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten rows1": {
+      "main": [
+        [
+          {
+            "node": "Append grouped rows1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "98ebad24-23c8-4239-8839-b68cc895d6ff",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "lp3S0WRqqXsSjBwj"
+}

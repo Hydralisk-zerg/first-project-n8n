@@ -1,0 +1,2847 @@
+{
+  "name": "ATA, Vessel and ETA Update",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "callbackQuery"
+        ],
+        "additionalFields": {}
+      },
+      "id": "702fe2fe-ad28-4c18-b3b4-5e9ee236fabf",
+      "name": "Telegram Callback",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        128
+      ],
+      "webhookId": "af481634-2c3b-4f96-bb6c-17157826e3f3",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=Укажи предварительную дату выгрузки ЕТА для букинга {{ $json.booking }} (формат YYYY-MM-DD) по линии {{ $json.line }} для {{ $json.quantity }}",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "reply_to_message_id": "={{ $json.button_message_id }}"
+        }
+      },
+      "id": "6a85d436-59e2-4bcd-a086-609a66e8f6bd",
+      "name": "Ask ETA date",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        272
+      ],
+      "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
+      "notesInFlow": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.message.reply_to_message?.text || '';\nconst input = $json.message.text || '';\n\n// букинг из текста вопроса\nconst mBooking = text.match(/букинга\\s+([^\\s)]+)/i);\nconst booking = mBooking ? mBooking[1] : '';\n\n// тип обновления по вопросу\nlet updateType = /ата/i.test(text) ? 'ATA' : (/ета/i.test(text) ? 'ETA' : '');\n\n// Vessel-запрос: \"Добавте новое название судна для букинга ...\"\nconst vesselMatch = text.match(/название\\s+судна.*букинга\\s+([^\\s)]+)/i);\nif (vesselMatch) {\n  updateType = 'Vessel';\n}\n\n// row_number из callback_data\nconst row = $json.message.reply_to_message?.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data\n  ?.split('|')?.[2] || '';\n\n// валидация даты для ATA/ETA\nconst dateRegex = /^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;\nconst isDateValid = dateRegex.test(input);\nlet valid_date = false;\n\nif (updateType === 'Vessel') {\n  // для Vessel пропускаем без проверки даты\n  valid_date = true;\n} else if (updateType === 'ATA' || updateType === 'ETA') {\n  valid_date = isDateValid;\n}\n\nreturn [{\n  json: {\n    chat_id: $json.message.chat.id,\n    date: input,          // дата или текст (для Vessel – новое название судна)\n    booking,\n    row_number: row,\n    update_type: updateType,\n    valid_date\n  }\n}];"
+      },
+      "id": "33140945-8eae-47d5-b2c5-645a31f46176",
+      "name": "Extract ETA & booking",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ETA": "={{ $('Extract ETA & booking').item.json.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "558f1b86-d272-4c9e-80a2-85838e1b12d2",
+      "name": "Update ETA",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.callback_query?.data || '';\nconst [row_number, booking, data, line, quantity, type_update] = raw.split('|');\n\nreturn [{\n  json: {\n    row_number: row_number || '',\n    booking: booking || '',\n    data: data || '',\n    line: line || '',\n    quantity: quantity || '', \n    type_update: type_update || '',\n    chat_id: $json.callback_query?.from?.id || $json.callback_query?.message?.chat?.id || '',\n    button_message_id: $json.callback_query?.message?.message_id || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        336
+      ],
+      "id": "43c153eb-af87-4f51-8524-f8a6536794d4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2267cb80-1247-4300-9228-d13fa3157cdf",
+              "leftValue": "={{ $json.callback_query ? 'hasCb' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        128
+      ],
+      "id": "6d56ac28-9c9a-4c6d-885a-982cd4c0aa90",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Booking_number",
+              "keyValue": "={{ $json.booking }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        576,
+        -128
+      ],
+      "id": "69ca8695-7b9c-4bcc-9a15-42c2519bbcae",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Callback').item.json.message.chat.id }}",
+        "messageId": "={{ $('Telegram Callback').item.json.message.reply_to_message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2320,
+        -560
+      ],
+      "id": "b9d24c0b-4ed9-4658-9221-8cb578ff79d7",
+      "name": "Delete a chat message",
+      "webhookId": "ab4b898a-a6bd-498e-a2df-ca946266aafc",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=Укажи дату выгрузки АТА с борта судна для букинга {{ $json.booking }} (формат YYYY-MM-DD) по линии {{ $json.line }} для {{ $json.quantity }}",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "39e27204-fb9b-4942-9c85-7d95300e2f90",
+      "name": "Ask ATA date",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        96
+      ],
+      "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ATA": "={{ $('Extract ETA & booking').item.json.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2e741b2b-d942-4321-85ac-760c22eb4652",
+      "name": "Update АТА",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -336
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xcVnOtiQfHS5OOia",
+          "mode": "list",
+          "cachedResultName": "HEE_employess",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ONE_C_name",
+              "keyValue": "={{ $json.Manager }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        -528
+      ],
+      "id": "ff8cbcca-2e6c-4bfa-ac6d-94f5861e5bd7",
+      "name": "Get row(s)1"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=Букинг  {{ $('Update АТА').item.json.Booking_number }} с {{ $('Update АТА').item.json.Quantity  }} прибыл в {{ $('Update АТА').item.json.POL }} {{ $('Update АТА').item.json.ATA }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        -528
+      ],
+      "id": "adff953c-e984-4480-acd7-5cc141469265",
+      "name": "Извещение менеджеру о прибытии",
+      "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type_update }}",
+                    "rightValue": "ATA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fd49c529-b0c2-4b07-b4ce-bece7e140829"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b405f286-239e-454f-a5bd-425a0e1f1af2",
+                    "leftValue": "={{ $json.type_update }}",
+                    "rightValue": "ETA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "811d4e82-338e-4cf9-9a66-57e6f7252a9c",
+                    "leftValue": "={{ $json.type_update }}",
+                    "rightValue": "^(?!(ATA|ETA)$).*$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        352,
+        320
+      ],
+      "id": "839193b6-864d-4e4c-b223-378e62122824",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=Добавте новое название судна для букинга {{ $json.booking }}",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "fe5cf7c6-ac30-4829-907e-ca7038791c26",
+      "name": "Ask ETA date1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        464
+      ],
+      "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Extract ETA & booking').item.json.update_type }}",
+                    "rightValue": "=ATA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "49b8f2c8-d6b6-4d3e-8d11-3b9d10d23f25"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e08b3548-ccb9-43ba-b924-1d170a331bc9",
+                    "leftValue": "={{ $('Extract ETA & booking').item.json.update_type }}",
+                    "rightValue": "ETA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "82baa027-c4be-4b21-ac82-bb4208a0e972",
+                    "leftValue": "={{ $('Extract ETA & booking').item.json.update_type }}",
+                    "rightValue": "Vessel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        816,
+        -144
+      ],
+      "id": "0c33ccc6-82b9-4c5d-b71f-d1d6a90771fd",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "610db5b6-948e-45da-bb7e-a929c1b482a8",
+              "leftValue": "={{ $json.valid_date }}",
+              "rightValue": "ETA",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        -112
+      ],
+      "id": "dbf61d50-f9d0-4f25-849a-da5e6c2bffbb",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1f455021-51f0-4f26-b97f-2e9fd50d484c",
+              "leftValue": "={{ $json.update_type }}",
+              "rightValue": "ATA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        352,
+        144
+      ],
+      "id": "90cd0f99-133b-4ffb-9e09-3fb144edc38d",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('If').item.json.message.from.id }}",
+        "text": "=Дата прибытия обновлена:\nБукинг: {{ $json.Booking_number }}\nАTA: {{ $('If').item.json.message.text }}\nОбновил: {{ $('Telegram Callback').item.json.message.reply_to_message.chat.last_name }} {{ $('If').item.json.message.from.first_name }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "8f20a4f6-e738-45ad-b12c-68d4f20c49d1",
+      "name": "Confirm АТА",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        -336
+      ],
+      "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('If').item.json.message.from.id }}",
+        "text": "=Дата прибытия обновлена:\nБукинг: {{ $json.Booking_number }}\nETA: {{ $('If').item.json.message.text }}\nОбновил:  {{ $('If').item.json.message.chat.last_name }} {{ $('If').item.json.message.chat.first_name }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7587ec6a-92d4-429d-a3b7-d995b0cd9ab8",
+      "name": "Confirm ЕТА",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        -128
+      ],
+      "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('If').item.json.message.from.id }}",
+        "text": "=Судно для букинга: {{ $json.Booking_number }} обновлено\nНовое судно: {{ $('Extract ETA & booking').item.json.date }}\nОбновил:  {{ $('If').item.json.message.chat.last_name }} {{ $('If').item.json.message.chat.first_name }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "9915e0a6-90f8-4d9e-b582-aa0345f588e9",
+      "name": "Confirm Vessel",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        320
+      ],
+      "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Booking_number",
+              "keyValue": "={{ $('Extract ETA & booking').item.json.booking }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Vessel": "={{ $('Extract ETA & booking').item.json.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "76695eb6-182e-4cb4-9da5-e709e5361a28",
+      "name": "Update Vessel",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "61a7a687-da55-405b-a98c-80d5e5c63846",
+              "leftValue": "={{ $json.etaDueSoon }}",
+              "rightValue": "={{ $('Update ETA').item.json.ETA }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -128
+      ],
+      "id": "459851d7-3727-4b1d-ac50-4703dff762f5",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tz = 'Europe/Kyiv';\nconst text = (\n  $json.result?.text ||\n  $json.message?.text ||\n  $json.text ||\n  ''\n).toString();\n\nconst m = text.match(/ETA:\\s*(\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01]))/i);\nconst etaStr = m ? m[1] : '';\n\nlet etaDueSoon = false;\nlet diffDays = null;\n\nif (etaStr) {\n  const [y, mth, d] = etaStr.split('-').map(Number);\n  const etaUtc = Date.UTC(y, mth - 1, d);\n  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: tz });\n  const [ty, tm, td] = todayStr.split('-').map(Number);\n  const todayUtc = Date.UTC(ty, tm - 1, td);\n\n  diffDays = (etaUtc - todayUtc) / 86400000;\n  etaDueSoon = diffDays >= 0 && diffDays <= 7;\n}\n\nreturn [{\n  json: {\n    ...$json,\n    diffDays,\n    etaDueSoon\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        -128
+      ],
+      "id": "fc8e1210-16ba-4027-acd3-21b451b2ab1e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xcVnOtiQfHS5OOia",
+          "mode": "list",
+          "cachedResultName": "HEE_employess",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ONE_C_name",
+              "keyValue": "={{ $('Update ETA').item.json.Manager }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        -128
+      ],
+      "id": "0a408378-220c-4e27-a16f-cd5efa9de137",
+      "name": "Get row(s)2"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=Букинг  {{ $('Update ETA').item.json.Booking_number }} с  {{ $('Update ETA').item.json.Quantity }} прибудет примерно через {{ $('If3').item.json.diffDays }} дней в порт {{ $('Update ETA').item.json.POD }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2336,
+        -128
+      ],
+      "id": "c0331262-bf69-45ea-b243-775ca8025f16",
+      "name": "Извещение менеджеру о прибытии1",
+      "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "5KMOZoRPuMNtm4c9",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/5KMOZoRPuMNtm4c9"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "description": "=Внесены изменения в колонку {{ $('Extract ETA & booking').item.json.update_type }} по букингу {{ $('Extract ETA & booking').item.json.booking }}. Внесено: {{ $('Extract ETA & booking').item.json.date }}",
+            "user": "={{ $('If').item.json.message.reply_to_message.chat.last_name }} {{ $('If').item.json.message.reply_to_message.chat.first_name }}",
+            "event": "=Update {{ $('Extract ETA & booking').item.json.update_type }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -672
+      ],
+      "id": "c88b1a47-c5b2-4807-b357-47df5fef39e5",
+      "name": "Insert update log book"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xcVnOtiQfHS5OOia",
+          "mode": "list",
+          "cachedResultName": "HEE_employess",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ONE_C_name",
+              "keyValue": "={{ $('Get row(s)').item.json.Manager }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        80
+      ],
+      "id": "495fce1d-1068-4202-9152-79ef20fc8b78",
+      "name": "Get row(s)3"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=Судно по букингу {{ $('Update Vessel').item.json.Booking_number }} обновлено на {{ $('Telegram Callback').item.json.message.text }}. Обновил {{ $('Telegram Callback').item.json.message.chat.last_name }} {{ $('Telegram Callback').item.json.message.chat.last_name }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1536,
+        80
+      ],
+      "id": "c45e7080-ab9d-4894-b938-ab02e92c18a2",
+      "name": "Извещение менеджеру о прибытии2",
+      "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1694299978,
+          "mode": "list",
+          "cachedResultName": "test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Booking_number": "={{ $json.Booking_number }}",
+            "Vessel": "={{ $json.Vessel }}",
+            "updateAt": "={{ $now.day }}-{{ $now.month }}-{{ $now.year }} в {{ $now.hour + 7 }}:{{ $now.minute }}"
+          },
+          "matchingColumns": [
+            "Booking_number"
+          ],
+          "schema": [
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imp/exp",
+              "displayName": "Imp/exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "On board",
+              "displayName": "On board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "P/S",
+              "displayName": "P/S",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Telex release",
+              "displayName": "Telex release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updateAt",
+              "displayName": "updateAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        320
+      ],
+      "id": "916ea5e0-dc35-4e34-a8fb-c263e5abfefc",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1694299978,
+          "mode": "list",
+          "cachedResultName": "test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Booking_number": "={{ $json.Booking_number }}",
+            "ETA": "={{ $json.ETA }}",
+            "updateAt": "={{ $now.day }}-{{ $now.month }}-{{ $now.year }} в {{ $now.hour + 7 }}:{{ $now.minute }}"
+          },
+          "matchingColumns": [
+            "Booking_number"
+          ],
+          "schema": [
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imp/exp",
+              "displayName": "Imp/exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "On board",
+              "displayName": "On board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "P/S",
+              "displayName": "P/S",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Telex release",
+              "displayName": "Telex release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updateAt",
+              "displayName": "updateAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        -128
+      ],
+      "id": "838a2777-fa89-4551-889b-d30db60f23e4",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1694299978,
+          "mode": "list",
+          "cachedResultName": "test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Booking_number": "={{ $json.Booking_number }}",
+            "ATA": "={{ $json.ATA }}",
+            "updateAt": "={{ $now.day }}-{{ $now.month }}-{{ $now.year }} в {{ $now.hour + 7 }}:{{ $now.minute }}"
+          },
+          "matchingColumns": [
+            "Booking_number"
+          ],
+          "schema": [
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imp/exp",
+              "displayName": "Imp/exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "On board",
+              "displayName": "On board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "P/S",
+              "displayName": "P/S",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Telex release",
+              "displayName": "Telex release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updateAt",
+              "displayName": "updateAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        -336
+      ],
+      "id": "24726097-9c01-41a6-916a-d8344d2e657d",
+      "name": "Update row in sheet2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Callback": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ETA & booking": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update ETA": {
+      "main": [
+        [
+          {
+            "node": "Insert update log book",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask ETA date": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Extract ETA & booking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message": {
+      "main": [
+        []
+      ]
+    },
+    "Ask ATA date": {
+      "main": [
+        []
+      ]
+    },
+    "Update АТА": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert update log book",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Извещение менеджеру о прибытии",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Ask ATA date",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask ETA date",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask ETA date1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask ETA date1": {
+      "main": [
+        []
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Update АТА",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update ETA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Vessel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Ask ATA date",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask ETA date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm АТА": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm ЕТА": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Vessel": {
+      "main": [
+        [
+          {
+            "node": "Insert update log book",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s)3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)2": {
+      "main": [
+        [
+          {
+            "node": "Извещение менеджеру о прибытии1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)3": {
+      "main": [
+        [
+          {
+            "node": "Извещение менеджеру о прибытии2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Confirm Vessel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Confirm ЕТА",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Confirm АТА",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Извещение менеджеру о прибытии1": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Извещение менеджеру о прибытии2": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "aa2ecf31-f469-41f9-bc9e-0f6ebb141ad1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "O53EqnIO7LJ1Axrv",
+  "activeVersionId": null
+}

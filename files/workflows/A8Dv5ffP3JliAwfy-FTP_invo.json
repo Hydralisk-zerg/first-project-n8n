@@ -1,0 +1,58 @@
+{
+  "name": "FTP invo",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ddbc25d5-639c-4880-98b7-70f7a42fa5b0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "path": "/invoices/"
+      },
+      "type": "n8n-nodes-base.ftp",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "11a4ea58-6652-44dc-869b-a28df24b2a4e",
+      "name": "FTP",
+      "alwaysOutputData": true,
+      "credentials": {
+        "ftp": {
+          "id": "1MldjJkG0ZYCUQYZ",
+          "name": "FTP account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "FTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "faed7c36-b47a-49ef-81c8-f784e632f62b",
+  "id": "A8Dv5ffP3JliAwfy"
+}

@@ -1,0 +1,77 @@
+{
+  "name": "Sort Table (group by deal)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [260, 240],
+      "id": "manual-trigger-sort",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": "=YOUR_SOURCE_SHEET_DOCUMENT_ID",
+        "sheetName": "=gid=YOUR_SOURCE_SHEET_GID",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [520, 240],
+      "id": "get-rows-source",
+      "name": "Get all rows (source)",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CRED_ID",
+          "name": "Google Sheets credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group all rows by 'Сделка' (extract deal number like 'Сделка 00009079').\nconst rows = items.map(i => i.json || i);\nif(!rows.length) return [];\nconst groups = {};\nrows.forEach(r => {\n  const s = (r['Сделка'] || '').toString();\n  // Capture digits after 'Сделка', allow normal spaces and NBSP\n  const m = s.match(/Сделка[ \u00A0]*([0-9]+)/);\n  const key = m ? (`Сделка ${m[1]}`) : s.trim();\n  (groups[key] = groups[key] || []).push(r);\n});\nconst out = [];\nObject.keys(groups).sort().forEach(k => groups[k].forEach(r => out.push(r)));\nreturn out.map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [820, 240],
+      "id": "filter-by-deal",
+      "name": "Group by Deal"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "=YOUR_TARGET_SHEET_DOCUMENT_ID",
+        "sheetName": "=gid=YOUR_TARGET_SHEET_GID",
+        "valueInputMode": "RAW",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [1100, 240],
+      "id": "append-deal-rows",
+      "name": "Append deal rows (target)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YOUR_GOOGLE_SHEETS_CRED_ID",
+          "name": "Google Sheets credential"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Get all rows (source)", "type": "main", "index": 0 }]] },
+    "Get all rows (source)": { "main": [[{ "node": "Filter by Deal", "type": "main", "index": 0 }]] },
+    "Filter by Deal": { "main": [[{ "node": "Append deal rows (target)", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": true }
+}

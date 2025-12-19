@@ -1,0 +1,293 @@
+{
+  "name": "Maersk Booking Quick Check (Inline Form)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [ -192, -16 ],
+      "id": "schedule-trigger"
+    },
+    {
+      "parameters": {
+        "documentId": "=1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+        "sheetName": "=gid=0",
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "On board",
+              "lookupValue": "+"
+            },
+            {
+              "lookupColumn": "ATA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [ 16, -16 ],
+      "id": "get-rows",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.Shipping_line }}",
+              "rightValue": "Maersk",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [ 224, -16 ],
+      "id": "if-maersk",
+      "name": "If Shipping_line Maersk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "Booking_number",
+              "value": "={{ $json.Booking_number }}",
+              "type": "string"
+            },
+            {
+              "name": "Shipping_line",
+              "value": "={{ $json.Shipping_line }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [ 432, 96 ],
+      "id": "set-fields",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "Booking_number",
+              "value": "={{ $json.Booking_number }}",
+              "type": "string"
+            },
+            {
+              "name": "Shipping_line",
+              "value": "={{ $json.Shipping_line }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [ 432, -96 ],
+      "id": "set-maersk",
+      "name": "Set Maersk"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate a short hex token without relying on Node 'crypto' module (works inside n8n Code nodes)\nfunction genToken(len = 8) { let token = ''; for (let i = 0; i < len; i++) token += Math.floor(Math.random() * 16).toString(16); return token; }\nconst token = genToken(8);\nconst booking = $json.Booking_number || '';\nconst line = $json.Shipping_line || '';\nconst chatId = 544911412; // replace if dynamic or provide mapping\nconst question = `Пожалуйста, подтвердите букинг ${booking} (линия ${line}).`;\nconst inline = { inline_keyboard: [[{ text: 'Подтвердить', callback_data: `token:${token}|booking:${booking}|line:${line}` }]] };\nreturn [{ json: { token, booking, line, chatId, question, inlineStr: JSON.stringify(inline) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [ 640, 0 ],
+      "id": "gen-token",
+      "name": "Generate token + message"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS telegram_form_pending ( id SERIAL PRIMARY KEY, booking_id TEXT, shipping_line TEXT, chat_id BIGINT, token TEXT, state TEXT DEFAULT 'waiting', current_question INTEGER DEFAULT 0, last_question_message_id INTEGER, answers JSONB DEFAULT '{}'::jsonb, question TEXT, created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ );\nCREATE UNIQUE INDEX IF NOT EXISTS telegram_form_pending_token_idx ON telegram_form_pending (token);"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [ 860, 0 ],
+      "id": "ensure-table",
+      "name": "Ensure pending table",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO telegram_form_pending (booking_id, shipping_line, chat_id, token, question) VALUES ('{{$json.booking}}', '{{ $json.line }}', {{$json.chatId}}, '{{$json.token}}', $$ {{ $json.question }} $$) RETURNING id;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [ 1060, 0 ],
+      "id": "insert-pending",
+      "name": "Insert pending",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.question }}",
+        "additionalFields": {
+          "reply_markup": "={{ $json.inlineStr }}",
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [ 1260, 0 ],
+      "id": "send-inline",
+      "name": "Send inline message",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If Shipping_line Maersk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Shipping_line Maersk": {
+      "main": [
+        [
+          {
+            "node": "Set Maersk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Maersk": {
+      "main": [
+        [
+          {
+            "node": "Generate token + message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Generate token + message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate token + message": {
+      "main": [
+        [
+          {
+            "node": "Ensure pending table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure pending table": {
+      "main": [
+        [
+          {
+            "node": "Insert pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert pending": {
+      "main": [
+        [
+          {
+            "node": "Send inline message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "timeZone": "Europe/Kiev"
+  }
+}

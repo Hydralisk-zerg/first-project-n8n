@@ -1,0 +1,550 @@
+{
+  "name": "Update sea fright data table",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sea",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "448d0a3e-37e7-4fae-8a8d-7a4aa1487eb4",
+      "name": "Get rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        -32
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 23,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -960,
+        -32
+      ],
+      "id": "2ff1adf2-4799-438e-8fe3-dbd4b6e2f20d",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "condition": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        -32
+      ],
+      "id": "6b7312b7-c74d-4b46-ac8d-43656542be89",
+      "name": "Clear sea fright",
+      "alwaysOutputData": true,
+      "notesInFlow": false,
+      "executeOnce": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get rows').item.json.row_number }}",
+            "Deals": "={{ $json.Deals }}",
+            "Manager": "={{ $json.Manager }}",
+            "Imp_exp": "={{ $json.Imp_exp }}",
+            "Shipping_line": "={{ $json.Shipping_line }}",
+            "Agent": "={{ $json.Agent }}",
+            "Booking_number": "={{ $json.Booking_number }}",
+            "POL": "={{ $json.POL }}",
+            "Customer": "={{ $json.Customer }}",
+            "POD": "={{ $json.POD }}",
+            "Container_type": "={{ $json.Container_type }}",
+            "Quantity": "={{ $json.Quantity }}",
+            "Cargo": "={{ $json.Cargo }}",
+            "Vessel": "={{ $json.Vessel }}",
+            "ETD": "={{ $json.ETD }}",
+            "ETA": "={{ $json.ETA }}",
+            "On_board": "={{ $json.On_board }}",
+            "HBL": "={{ $json.HBL }}",
+            "Invoice": "={{ $json.Invoice }}",
+            "Profit_Share": "={{ $json.Profit_Share }}",
+            "Telex_release": "={{ $json.Telex_release }}",
+            "DTHC": "={{ $json.DTHC }}",
+            "ATA": "={{ $json.ATA }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "optimizeBulk": true
+        }
+      },
+      "id": "f3eb3119-58d6-4ac8-b3cc-f07a8b020846",
+      "name": "Upsert sea fright",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -32
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -32
+      ],
+      "id": "eece70c3-0a05-4fd6-97e4-653f324d621b",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "5KMOZoRPuMNtm4c9",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/5KMOZoRPuMNtm4c9"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event": "update sea fright data table",
+            "description": "=sheet -> datatable updated",
+            "user": "n8n"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -32
+      ],
+      "id": "323c19bf-920f-4781-93ea-7a1a458feeec",
+      "name": "Insert log book"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -32
+      ],
+      "id": "60b0a8f8-db2e-43fb-8bff-0c9ab833f35c",
+      "name": "Aggregate1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get rows": {
+      "main": [
+        [
+          {
+            "node": "Upsert sea fright",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Clear sea fright",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear sea fright": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert sea fright": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Insert log book",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert log book": {
+      "main": [
+        []
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Get rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2f51423d-3622-4dbf-94a3-e53d7d320f95",
+  "meta": null,
+  "id": "2HVmlzFx0uRTYhP1",
+  "activeVersionId": null
+}

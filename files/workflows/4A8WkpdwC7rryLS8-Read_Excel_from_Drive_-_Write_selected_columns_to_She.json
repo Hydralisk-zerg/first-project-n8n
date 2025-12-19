@@ -1,0 +1,342 @@
+{
+  "name": "Read Excel from Drive -> Write selected columns to Sheet",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        64
+      ],
+      "id": "bd750b48-014b-4460-9ea9-aafa70d8c2df",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1_F9BWcXPidKytRcG0UqlgzspPgYUgw1B",
+          "mode": "list",
+          "cachedResultName": "United 2022-2025.xlsx",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1_F9BWcXPidKytRcG0UqlgzspPgYUgw1B/edit?usp=drivesdk&ouid=108146117046448424436&rtpof=true&sd=true"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        64
+      ],
+      "id": "8cd390c6-f0d6-497e-8a75-26daf122e8d1",
+      "name": "Download Excel from Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "gz0l5dMxyUhekxFA",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "sheetName": "SB-CASH"
+        }
+      },
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [
+        64,
+        64
+      ],
+      "id": "a0ca0026-a512-4dff-93e8-0e919e3efc50",
+      "name": "Read spreadsheet (Excel)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const wanted = ['Номер','Дата','Вид оплаты','Плательщик/поставщик','Сумма УЕ','Статус счета', 'Сделка','Клиент сделки','Примечание','Номер счёта Bypass','Дата оплаты Bypass','Статус счёта bypass','Это счёт Bypass?','Поставщик','Номер счета', 'payment type']; \nconst rows = items.map(i => i.json || i); if(rows.length && Array.isArray(rows[0])){ const header = rows[0]; const data = rows.slice(1); const idx = wanted.map(w=> header.indexOf(w)); const out = data.map(r => { const obj = {}; idx.forEach((i, j)=>{ let v = i>=0 ? r[i] : ''; if(typeof v === 'string') v = v.trim(); if(wanted[j] === 'Сумма УЕ' && typeof v === 'string'){ v = v.split(' ').join('').split(String.fromCharCode(160)).join('').replace(',', '.'); const n = Number(v); v = isNaN(n) ? r[i] : n; } if(wanted[j] === 'Сделка' && typeof v === 'string'){ v = v.slice(0,15); } obj[wanted[j]] = v; }); return obj; }); return out.map(r=>({ json: r })); } const out = rows.map(r=>{ const obj = {}; wanted.forEach(k=>{ let v = r[k] !== undefined ? r[k] : ''; if(typeof v === 'string') v = v.trim(); if(k === 'Сумма УЕ' && typeof v === 'string'){ v = v.split(' ').join('').split(String.fromCharCode(160)).join('').replace(',', '.'); const n = Number(v); v = isNaN(n) ? r[k] : n; } if(k === 'Сделка' && typeof v === 'string'){ v = v.slice(0,15); } obj[k] = v; }); return obj; }); return out.map(r=>({ json: r }));\n  "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        336,
+        64
+      ],
+      "id": "725c5dde-9eb3-401a-81f2-5155672ee01a",
+      "name": "Select Columns"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI",
+          "mode": "list",
+          "cachedResultName": "Result",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1054397373,
+          "mode": "list",
+          "cachedResultName": "сводная таблица",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WmjK9uCbI8Vm38FkSN92dfKByNWRBL3NjcimRPo3gLI/edit#gid=1054397373"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Номер",
+              "displayName": "Номер",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Дата",
+              "displayName": "Дата",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Вид оплаты",
+              "displayName": "Вид оплаты",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Плательщик/поставщик",
+              "displayName": "Плательщик/поставщик",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Сумма УЕ",
+              "displayName": "Сумма УЕ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Статус счета",
+              "displayName": "Статус счета",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Сделка",
+              "displayName": "Сделка",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Клиент сделки",
+              "displayName": "Клиент сделки",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Примечание",
+              "displayName": "Примечание",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Номер счёта Bypass",
+              "displayName": "Номер счёта Bypass",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Дата оплаты Bypass",
+              "displayName": "Дата оплаты Bypass",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Статус счёта bypass",
+              "displayName": "Статус счёта bypass",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Offset date from",
+              "displayName": "Offset date from",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Это счёт Bypass?",
+              "displayName": "Это счёт Bypass?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Поставщик",
+              "displayName": "Поставщик",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Номер счета",
+              "displayName": "Номер счета",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment type",
+              "displayName": "payment type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        592,
+        64
+      ],
+      "id": "a4917a4e-9148-4dd9-9528-7dd7dca0a665",
+      "name": "Append selected columns to Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download Excel from Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Excel from Drive": {
+      "main": [
+        [
+          {
+            "node": "Read spreadsheet (Excel)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read spreadsheet (Excel)": {
+      "main": [
+        [
+          {
+            "node": "Select Columns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Columns": {
+      "main": [
+        [
+          {
+            "node": "Append selected columns to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f3759386-dcb9-4fef-90ec-5d1240f2590e",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "4A8WkpdwC7rryLS8"
+}

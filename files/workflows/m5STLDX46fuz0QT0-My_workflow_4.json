@@ -1,0 +1,105 @@
+{
+  "name": "My workflow 4",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "sea-freight-data",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "SeaFreight Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        336
+      ],
+      "id": "fa129e8f-632c-49a2-a1d9-c5145fe74d5e",
+      "webhookId": "c136f6e6-ab93-4664-ba83-6a27efb7651f",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1694299978,
+          "mode": "list",
+          "cachedResultName": "test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+        },
+        "options": {}
+      },
+      "name": "Get row(s) in sheet1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        336
+      ],
+      "id": "c225952e-576a-4868-9b66-00733b57ab0c",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// // Loop over input items and add a new field called 'myNewField' to the JSON of each one\n// for (const item of $input.all()) {\n//   item.json.myNewField = 1;\n// }\n\nreturn [\n  {\n\n      data: items.map((item) => item.json),\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        336
+      ],
+      "id": "4ca8507f-c87e-4d05-ac61-120322a30864",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "SeaFreight Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "69da822b-ec63-4461-b1a5-a62e932e986c",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "m5STLDX46fuz0QT0"
+}

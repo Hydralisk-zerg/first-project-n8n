@@ -116,8 +116,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        192,
-        -288
+        432,
+        -96
       ],
       "id": "7face6b9-b220-4c0c-a476-72e84ed84720",
       "name": "Set Maersk"
@@ -146,7 +146,7 @@
       "typeVersion": 3.4,
       "position": [
         432,
-        80
+        96
       ],
       "id": "e7011b2a-569e-4be4-9125-32bad0d41e58",
       "name": "Edit Fields"
@@ -160,8 +160,8 @@
       "type": "n8n-nodes-base.googleTasks",
       "typeVersion": 1,
       "position": [
-        688,
-        80
+        608,
+        288
       ],
       "id": "df698a48-46e9-4464-bd29-fd155b33be60",
       "name": "Create a task",
@@ -175,14 +175,14 @@
     {
       "parameters": {
         "chatId": "544911412",
-        "text": "=апдейт букинга  {{ $('Edit Fields').item.json.Booking_number }}",
+        "text": "=апдейт букинга ",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        832,
-        -288
+        1056,
+        96
       ],
       "id": "e293fb06-5b72-4e2d-8082-8f22c5382d70",
       "name": "Send a text message",
@@ -203,8 +203,8 @@
       "type": "n8n-nodes-base.googleTasks",
       "typeVersion": 1,
       "position": [
-        416,
-        -288
+        816,
+        288
       ],
       "id": "75a3d283-05ea-44ef-a7a0-04b8a6261086",
       "name": "Get a task",
@@ -216,7 +216,1263 @@
       }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Get row(s) in sheet": [
+      {
+        "json": {
+          "row_number": 2,
+          "Deals": 11142,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "ONE ",
+          "Agent": "MRF",
+          "Booking_number": "NB5IBH846800",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "ONE TRADITION   027W",
+          "ETD": "18.08.2025",
+          "ETA": "26.11.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "Deals": 11228,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN8F582A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC GIOIA TAURO GL536W",
+          "ETD": "13.09.2025",
+          "ETA": "19.11.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "Deals": 11212,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN8F583A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC GIOIA TAURO GL536W",
+          "ETD": "13.09.2025",
+          "ETA": "19.11.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "Deals": 11220,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN8F588A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC GIOIA TAURO GL536W",
+          "ETD": "13.09.2025",
+          "ETA": "19.11.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "Deals": 11227,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177FCACAS441100",
+          "POL": "Shanghai",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC IERANTO QB538W",
+          "ETD": "22.09.2025",
+          "ETA": "19.11.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "Deals": 11242,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "CMA CGM",
+          "Agent": "AAA",
+          "Booking_number": "CHN2682228",
+          "POL": "Shanghai",
+          "Customer": "Algol",
+          "POD": "Odesa",
+          "Container_type": "20'",
+          "Quantity": "2x20'",
+          "Cargo": "chemistry",
+          "Vessel": "COSCO SHIPPING KILIMANJARO",
+          "ETD": "16.09.2025",
+          "ETA": "04.12.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 21,
+          "Deals": 11230,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN8F674A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC ALEXANDRA",
+          "ETD": "19.09.2025",
+          "ETA": "19.11.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 22,
+          "Deals": 11258,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177LNCNCN9G886A",
+          "POL": "Ningbo",
+          "Customer": "Ameks",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC ORION/GA537W",
+          "ETD": "29.09.2025",
+          "ETA": "20.11.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 23,
+          "Deals": 11263,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Hapag",
+          "Agent": "",
+          "Booking_number": 36868624,
+          "POL": "East London",
+          "Customer": "Schreder",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "lamps",
+          "Vessel": "SANTA URSULA",
+          "ETD": "25.09.2025",
+          "ETA": "27.11.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "+",
+          "Telex release": "+",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 24,
+          "Deals": 11269,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 259749659,
+          "POL": "Kaohsiung",
+          "Customer": "Kreptech",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "IRENES REWARD",
+          "ETD": "10.10.2025",
+          "ETA": "04.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "P/S": "",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 25,
+          "Deals": 11272,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "AAA",
+          "Booking_number": 259854722,
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Constanta",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "SALAHUDDIN/541W",
+          "ETD": "12.10.2025",
+          "ETA": "07.12.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 26,
+          "Deals": 11247,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 259671280,
+          "POL": "Port Klang",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "MAERSK YOKOHAMA",
+          "ETD": "03.10.2025",
+          "ETA": "30.11.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "P/S": "+",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 27,
+          "Deals": 11268,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "MRF",
+          "Booking_number": 264778388,
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "BUSAN EXPRESS /540W ",
+          "ETD": "05.10.2025",
+          "ETA": "04.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 28,
+          "Deals": 11267,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "MRF",
+          "Booking_number": 264778387,
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "BUSAN EXPRESS /540W ",
+          "ETD": "05.10.2025",
+          "ETA": "04.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 29,
+          "Deals": 11278,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 259949159,
+          "POL": "Port Klang",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "MARIBO MAERSK",
+          "ETD": "14.10.2025",
+          "ETA": "11.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "P/S": "+",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 30,
+          "Deals": 11285,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177LGJGJN84585A",
+          "POL": "Ningbo",
+          "Customer": "AMEKS",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC ALESSIA/QB542W",
+          "ETD": "19.10.2025",
+          "ETA": "07.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 31,
+          "Deals": 11282,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "CMA CGM",
+          "Agent": "AAA",
+          "Booking_number": "TJN0775287",
+          "POL": "Xingang",
+          "Customer": "NV",
+          "POD": "Odesa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "tubes",
+          "Vessel": "CNC CHEETAH / 0XKMTS1MA",
+          "ETD": "20.10.2025",
+          "ETA": "05.01.2026",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 32,
+          "Deals": 11293,
+          "Manager": "Джафар Икрам",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Hapag",
+          "Agent": "",
+          "Booking_number": "75528830",
+          "POL": "Belawan",
+          "Customer": "Pride Ship",
+          "POD": "Constanta",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "oil",
+          "Vessel": "NORDSERAPHINA",
+          "ETD": "19.10.2025",
+          "ETA": "07.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "P/S": "",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 33,
+          "Deals": 11300,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "MRF",
+          "Booking_number": 264828586,
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "BERLIN EXPRESS",
+          "ETD": "26.10.2025",
+          "ETA": "27.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 34,
+          "Deals": 11311,
+          "Manager": "Джафар Икрам",
+          "Imp/exp": "импорт",
+          "Shipping_line": "CMA CGM",
+          "Agent": "",
+          "Booking_number": "CHN2783659",
+          "POL": "Shanghai",
+          "Customer": "Pride Ship",
+          "POD": "Odesa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "spare parts",
+          "Vessel": "COSCO SHIPPING SAKURA",
+          "ETD": "24.10.2025",
+          "ETA": "24.12.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 35,
+          "Deals": 11302,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Unicorn",
+          "Booking_number": "177LGNGNN50243A",
+          "POL": "Ningbo",
+          "Customer": "AMEKS",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC ROSE",
+          "ETD": "31.10.2025",
+          "ETA": "17.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 36,
+          "Deals": 11277,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "MRF",
+          "Booking_number": 264881982,
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "BERLIN EXPRESS",
+          "ETD": "26.10.2025",
+          "ETA": "27.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 37,
+          "Deals": 11287,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "Unicorn",
+          "Booking_number": 260080780,
+          "POL": "Xingang",
+          "Customer": "Skladservice",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "tape",
+          "Vessel": "CCNI ANGOL",
+          "ETD": "26.10.2025",
+          "ETA": "20.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 38,
+          "Deals": 11304,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Unicorn",
+          "Booking_number": "177IATATQ13948V",
+          "POL": "Qingdao",
+          "Customer": "United Forest",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "2x20'",
+          "Cargo": "paper",
+          "Vessel": "MSC SALERNO GL544W",
+          "ETD": "31.10.2025",
+          "ETA": "31.12.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 39,
+          "Deals": 11307,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Unicorn",
+          "Booking_number": "177IATATQ13962V",
+          "POL": "Qingdao",
+          "Customer": "United Forest",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "3x20'",
+          "Cargo": "paper",
+          "Vessel": "MSC SALERNO GL544W",
+          "ETD": "31.10.2025",
+          "ETA": "31.12.2025",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 40,
+          "Deals": 11314,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 261090429,
+          "POL": "Port Klang",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "ZHONG GU TIAN JIN",
+          "ETD": "13.11.2025",
+          "ETA": "08.01.2026",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 41,
+          "Deals": 11315,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 261003512,
+          "POL": "Port Klang",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "ZHONG GU TIAN JIN",
+          "ETD": "13.11.2025",
+          "ETA": "08.01.2026",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 42,
+          "Deals": 11322,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN9F235A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC IVA V.GL544W",
+          "ETD": "14.11.2025",
+          "ETA": "23.01.2026",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "P/S": "",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 43,
+          "Deals": 11320,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177FCACAS441463",
+          "POL": "Shanghai",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC GRACE",
+          "ETD": "08.11.2025",
+          "ETA": "03.01.2026",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 44,
+          "Deals": 11321,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177FCACAS441464",
+          "POL": "Shanghai",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC TAYLOR QB545W",
+          "ETD": "08.11.2025",
+          "ETA": "03.01.2026",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "-",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 45,
+          "Deals": 11323,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177KACACXTEN4512",
+          "POL": "Tianjin",
+          "Customer": "Kreptech",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC FLAVIA GA545W",
+          "ETD": "08.11.2025",
+          "ETA": "07.01.2026",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 46,
+          "Deals": 11324,
+          "Manager": "Афанасьева Татьяна",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177KACACXTEN4513",
+          "POL": "Tianjin",
+          "Customer": "Kreptech",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC FLAVIA GA545W",
+          "ETD": "08.11.2025",
+          "ETA": "07.01.2026",
+          "On board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 47,
+          "Deals": 11331,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN9F062A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC VICTORINE/GL543W",
+          "ETD": "04.11.2025",
+          "ETA": "04.01.2026",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 48,
+          "Deals": 11301,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Betterway",
+          "Booking_number": "177FJCJCJ2027905S",
+          "POL": "Anqing",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "JIA XING",
+          "ETD": "15.11.2025",
+          "ETA": "18.01.2026",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "/",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 58,
+          "Deals": 11245,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 259090314,
+          "POL": "Gdansk",
+          "Customer": "",
+          "POD": "Toronto",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "продукты питания",
+          "Vessel": "MAERSK VILNIA",
+          "ETD": "30.09.2025",
+          "ETA": "17.11.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 59,
+          "Deals": 11261,
+          "Manager": "Джафар Икрам",
+          "Imp/exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 259484707,
+          "POL": "Chornomorsk",
+          "Customer": "",
+          "POD": "Mombasa",
+          "Container_type": "40'HR",
+          "Quantity": "1x40'HR",
+          "Cargo": "курица",
+          "Vessel": "HARRISON",
+          "ETD": "23.09.2025",
+          "ETA": "17.11.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 60,
+          "Deals": 11262,
+          "Manager": "Джафар Икрам",
+          "Imp/exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 259331186,
+          "POL": "Chornomorsk",
+          "Customer": "",
+          "POD": "Mombasa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "курица",
+          "Vessel": "A OBELIX",
+          "ETD": "02.10.2025",
+          "ETA": "24.11.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 61,
+          "Deals": 11270,
+          "Manager": "Джафар Икрам",
+          "Imp/exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 259742029,
+          "POL": "Constanta",
+          "Customer": "",
+          "POD": "Mombasa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "курица",
+          "Vessel": "OEL SURYA(PA)",
+          "ETD": "04.11.2025",
+          "ETA": "29.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 62,
+          "Deals": 11312,
+          "Manager": "Джафар Икрам",
+          "Imp/exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 260768791,
+          "POL": "Constanta",
+          "Customer": "",
+          "POD": "Mombasa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "курица",
+          "Vessel": "MAX SCHULTE",
+          "ETD": "28.10.2025",
+          "ETA": "22.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 63,
+          "Deals": 11308,
+          "Manager": "Цыганкова Оксана",
+          "Imp/exp": "экспорт",
+          "Shipping_line": "MSC",
+          "Agent": "",
+          "Booking_number": "EBKG14630069",
+          "POL": "Gdansk",
+          "Customer": "",
+          "POD": "Altamira",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "vent equipment",
+          "Vessel": "MSC BARI GA544E",
+          "ETD": "06.11.2025",
+          "ETA": "27.11.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "",
+          "Telex release": "",
+          "DTHC": "",
+          "ATA": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 64,
+          "Deals": 11335,
+          "Manager": "Серпутько Лилия",
+          "Imp/exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": 261260075,
+          "POL": "Gdansk",
+          "Customer": "",
+          "POD": "Toronto",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "продукты питания",
+          "Vessel": "MAERSK NUBA",
+          "ETD": "18.11.2025",
+          "ETA": "23.12.2025",
+          "On board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "P/S": "",
+          "Telex release": "+",
+          "DTHC": "",
+          "ATA": ""
+        }
+      }
+    ],
+    "Edit Fields": [
+      {
+        "json": {
+          "Booking_number": "NB5IBH846800",
+          "Shipping_line": "ONE "
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F582A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F583A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F588A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FCACAS441100",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "CHN2682228",
+          "Shipping_line": "CMA CGM"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F674A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNCNCN9G886A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "36868624",
+          "Shipping_line": "Hapag"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LGJGJN84585A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "TJN0775287",
+          "Shipping_line": "CMA CGM"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "75528830",
+          "Shipping_line": "Hapag"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "CHN2783659",
+          "Shipping_line": "CMA CGM"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LGNGNN50243A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177IATATQ13948V",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177IATATQ13962V",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN9F235A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FCACAS441463",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FCACAS441464",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177KACACXTEN4512",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177KACACXTEN4513",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN9F062A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FJCJCJ2027905S",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "EBKG14630069",
+          "Shipping_line": "MSC"
+        }
+      }
+    ]
+  },
   "connections": {
     "Schedule Trigger": {
       "main": [
@@ -260,24 +1516,12 @@
     },
     "Edit Fields": {
       "main": [
-        [
-          {
-            "node": "Create a task",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Get a task": {
       "main": [
-        [
-          {
-            "node": "Send a text message",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Set Maersk": {
@@ -303,7 +1547,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "93dc5bfb-7cbe-44c0-aec7-6e7da494d434",
+  "versionId": "d6b93122-8b4d-4142-8f38-23ace0336570",
   "meta": {
     "templateCredsSetupCompleted": true
   },

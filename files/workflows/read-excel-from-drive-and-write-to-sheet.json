@@ -1,0 +1,83 @@
+{
+  "name": "Read Excel from Drive -> Write selected columns to Sheet",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 250],
+      "id": "manual-trigger",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": "=YOUR_DRIVE_FILE_ID_HERE"
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [500, 250],
+      "id": "google-drive-download",
+      "name": "Download Excel from Drive",
+      "credentials": { "googleDriveOAuth2Api": { "id": "YOUR_GOOGLE_DRIVE_CRED_ID", "name": "Google Drive credential" } }
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 1,
+      "position": [760, 250],
+      "id": "read-spreadsheet",
+      "name": "Read spreadsheet (Excel)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Default columns (Russian headers expected). Edit as needed. const wanted = ['Номер','Дата','Вид оплаты','Плательщик/поставщик','Валюта','Сумма УЕ','Статус счета','Менеджер','Сделка','Клиент сделки','Примечание','Номер Ч','Номер счёта Bypass','Дата оплаты Bypass','Статус счёта bypass','Планируемая дата оплаты','Конечная дата оплаты','Это счёт Bypass?','Поставщик','Номер счета']; const rows = items.map(i => i.json || i); if(rows.length && Array.isArray(rows[0])){ const header = rows[0]; const data = rows.slice(1); const idx = wanted.map(w=> header.indexOf(w)); const out = data.map(r => { const obj = {}; idx.forEach((i, j)=>{ let v = i>=0 ? r[i] : ''; if(typeof v === 'string') v = v.trim(); if(wanted[j] === 'Сумма УЕ' && typeof v === 'string'){ v = v.split(' ').join('').split(String.fromCharCode(160)).join('').replace(',', '.'); const n = Number(v); v = isNaN(n) ? r[i] : n; } if(wanted[j] === 'Сделка' && typeof v === 'string'){ v = v.slice(0,15); } obj[wanted[j]] = v; }); return obj; }); return out.map(r=>({ json: r })); } const out = rows.map(r=>{ const obj = {}; wanted.forEach(k=>{ let v = r[k] !== undefined ? r[k] : ''; if(typeof v === 'string') v = v.trim(); if(k === 'Сумма УЕ' && typeof v === 'string'){ v = v.split(' ').join('').split(String.fromCharCode(160)).join('').replace(',', '.'); const n = Number(v); v = isNaN(n) ? r[k] : n; } if(k === 'Сделка' && typeof v === 'string'){ v = v.slice(0,15); } obj[k] = v; }); return obj; }); return out.map(r=>({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1020, 250],
+      "id": "select-columns",
+      "name": "Select Columns"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sort rows by 'Сделка' so rows with same deal are adjacent. Returns items ready for append. const rows = items.map(i => i.json || i); rows.sort((a,b)=>{ const ka = (a['Сделка']||'').toString().trim(); const kb = (b['Сделка']||'').toString().trim(); if(ka < kb) return -1; if(ka > kb) return 1; return 0; }); return rows.map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1160, 250],
+      "id": "group-by-deal",
+      "name": "Group by Deal"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": "=YOUR_TARGET_SHEET_DOCUMENT_ID",
+        "sheetName": "=gid=YOUR_TARGET_SHEET_GID",
+        "valueInputMode": "RAW",
+        "columns": { "mappingMode": "defineBelow", "value": {}, "matchingColumns": [], "schema": [], "attemptToConvertTypes": false, "convertFieldsToString": false }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [1280, 250],
+      "id": "append-to-sheet",
+      "name": "Append selected columns to Sheet",
+      "credentials": { "googleSheetsOAuth2Api": { "id": "YOUR_GOOGLE_SHEETS_CRED_ID", "name": "Google Sheets credential" } }
+    }
+  ],
+    "connections": {
+    "Manual Trigger": { "main": [[{ "node": "Download Excel from Drive", "type": "main", "index": 0 }]] },
+    "Download Excel from Drive": { "main": [[{ "node": "Read spreadsheet (Excel)", "type": "main", "index": 0 }]] },
+    "Read spreadsheet (Excel)": { "main": [[{ "node": "Select Columns", "type": "main", "index": 0 }]] },
+    "Select Columns": { "main": [[{ "node": "Group by Deal", "type": "main", "index": 0 }]] },
+    "Group by Deal": { "main": [[{ "node": "Append selected columns to Sheet", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": true }
+}

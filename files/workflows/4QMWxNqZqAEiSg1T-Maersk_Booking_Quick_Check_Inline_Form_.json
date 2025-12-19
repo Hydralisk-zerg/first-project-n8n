@@ -1,0 +1,550 @@
+{
+  "name": "Maersk Booking Quick Check (Inline Form)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        96
+      ],
+      "id": "9c47877f-2f00-407a-a50d-58bde8eed63f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1694299978,
+          "mode": "list",
+          "cachedResultName": "test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "On board",
+              "lookupValue": "+"
+            },
+            {
+              "lookupColumn": "ATA"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -352,
+        96
+      ],
+      "id": "66849377-bf26-4603-bc63-cb0be5448e06",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.Shipping_line }}",
+              "rightValue": "Maersk",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        96
+      ],
+      "id": "71772058-616d-4023-a10f-b63bd3229ed2",
+      "name": "If Shipping_line Maersk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "Booking_number",
+              "value": "={{ $json.Booking_number }}",
+              "type": "string"
+            },
+            {
+              "name": "Shipping_line",
+              "value": "={{ $json.Shipping_line }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        256
+      ],
+      "id": "ea00c271-72dd-4b33-9cb3-564ba0954747",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "Booking_number",
+              "value": "={{ $json.Booking_number }}",
+              "type": "string"
+            },
+            {
+              "name": "Shipping_line",
+              "value": "={{ $json.Shipping_line }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -48
+      ],
+      "id": "4676170d-aa4c-45ea-87c6-87f4115fa58c",
+      "name": "Set Maersk"
+    },
+    {
+      "parameters": {
+        "jsCode": "function genToken(len = 8) { let token = ''; for (let i = 0; i < len; i++) token += Math.floor(Math.random() * 16).toString(16); return token; }\nconst token = genToken(8);\nconst booking = $json.Booking_number || '';\nconst line = $json.Shipping_line || '';\nconst chatId = 544911412; \nconst question = `Пожалуйста, подтвердите букинг ${booking} (линия ${line}).`;\nconst inline = { inline_keyboard: [[{ text: 'Подтвердить', callback_data: `token:${token}|booking:${booking}|line:${line}` }]] };\nreturn [{ json: { token, booking, line, chatId, question, inlineStr: JSON.stringify(inline) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        272,
+        112
+      ],
+      "id": "5345752f-a6df-437b-be65-38dd4903d657",
+      "name": "Generate token + message"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS telegram_form_pending ( id SERIAL PRIMARY KEY, booking_id TEXT, shipping_line TEXT, chat_id BIGINT, token TEXT, state TEXT DEFAULT 'waiting', current_question INTEGER DEFAULT 0, last_question_message_id INTEGER, answers JSONB DEFAULT '{}'::jsonb, question TEXT, created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ );\nCREATE UNIQUE INDEX IF NOT EXISTS telegram_form_pending_token_idx ON telegram_form_pending (token);",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        496,
+        112
+      ],
+      "id": "536feaeb-8ef1-420b-af83-829d5f2b74f1",
+      "name": "Ensure pending table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO telegram_form_pending (booking_id, shipping_line, chat_id, token, question) VALUES ('{{$json.booking}}', '{{ $json.line }}', {{$json.chatId}}, '{{$json.token}}', $$ {{ $json.question }} $$) RETURNING id;",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        704,
+        112
+      ],
+      "id": "a6dd7e43-7931-4d7e-b7a1-a6a233f0d2dc",
+      "name": "Insert pending",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.question }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        896,
+        112
+      ],
+      "id": "487664a6-f3e8-40fe-a8ee-f16417c9711d",
+      "name": "Send inline message",
+      "webhookId": "5fae8ff2-f933-4ab5-8562-40b6df762d7b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Set Maersk": [
+      {
+        "json": {
+          "Booking_number": "259749659",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "259854722",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "259671280",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "264778388",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "264778387",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "259949159",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "264828586",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "264881982",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "260080780",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "261090429",
+          "Shipping_line": "Maersk"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "261003512",
+          "Shipping_line": "Maersk"
+        }
+      }
+    ],
+    "Edit Fields": [
+      {
+        "json": {
+          "Booking_number": "NB5IBH846800",
+          "Shipping_line": "ONE "
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F582A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F583A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F588A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FCACAS441100",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "CHN2682228",
+          "Shipping_line": "CMA CGM"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN8F674A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNCNCN9G886A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "36868624",
+          "Shipping_line": "Hapag"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LGJGJN84585A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "TJN0775287",
+          "Shipping_line": "CMA CGM"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "75528830",
+          "Shipping_line": "Hapag"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "CHN2783659",
+          "Shipping_line": "CMA CGM"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LGNGNN50243A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177IATATQ13948V",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177IATATQ13962V",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN9F235A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FCACAS441463",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FCACAS441464",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177KACACXTEN4512",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177KACACXTEN4513",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177LNVNVN9F062A",
+          "Shipping_line": "MSC"
+        }
+      },
+      {
+        "json": {
+          "Booking_number": "177FJCJCJ2027905S",
+          "Shipping_line": "MSC"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If Shipping_line Maersk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Shipping_line Maersk": {
+      "main": [
+        [
+          {
+            "node": "Set Maersk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Maersk": {
+      "main": [
+        [
+          {
+            "node": "Generate token + message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Generate token + message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate token + message": {
+      "main": [
+        [
+          {
+            "node": "Ensure pending table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure pending table": {
+      "main": [
+        [
+          {
+            "node": "Insert pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert pending": {
+      "main": [
+        [
+          {
+            "node": "Send inline message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1eb0f2d0-f2a5-4ef3-9bb4-391e43ee11a0",
+  "meta": null,
+  "id": "4QMWxNqZqAEiSg1T"
+}

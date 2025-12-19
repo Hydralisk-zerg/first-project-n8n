@@ -1,0 +1,357 @@
+{
+  "name": "Telegram Inline Form Reply Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "updatePolling": false,
+        "options": {}
+      },
+      "name": "Telegram Trigger (Message)",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "id": "tg-trigger-form-reply",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract reply info\nconst msg = $json.message || $json;\nconst chatId = msg.chat && msg.chat.id ? msg.chat.id : (msg.from && msg.from.id ? msg.from.id : null);\nconst replyTo = msg.reply_to_message && msg.reply_to_message.message_id ? msg.reply_to_message.message_id : null;\nconst text = msg.text || msg.data || '';\nreturn [{ json: { chatId, replyTo, text } }];"
+      },
+      "name": "Parse reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "id": "parse-reply"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM telegram_form_pending WHERE chat_id = {{ $json.chatId }} AND last_question_message_id = {{ $json.replyTo }} AND state = 'collecting' ORDER BY updated_at DESC LIMIT 1;"
+      },
+      "name": "Select collecting pending",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "id": "select-collecting-pending",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json[0] && $json[0].id ? $json[0].id : '' }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "If pending found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300],
+      "id": "if-pending-found"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Build answer update\n-- Determine question key on current_question number returned from select-collecting-pending\nUPDATE telegram_form_pending\nSET answers = COALESCE(answers, '{}'::jsonb) || jsonb_build_object(\n  CASE WHEN current_question = 1 THEN 'contact_name'\n       WHEN current_question = 2 THEN 'comment'\n       ELSE 'answer_' || current_question::text END, $$ {{ $node['Parse reply'].json.text }} $$\n), current_question = current_question + 1, updated_at = now(), last_question_message_id = NULL\nWHERE id = {{ $json[0].id }}\nRETURNING *;"
+      },
+      "name": "Save answer and advance",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "id": "save-answer",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- After update, select the row to decide next step\nSELECT * FROM telegram_form_pending WHERE id = {{ $json[0].id }};"
+      },
+      "name": "Select updated pending",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1250, 300],
+      "id": "select-updated-pending",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json[0] && $json[0].current_question ? Number($json[0].current_question) : 0 }}",
+              "value2": 3,
+              "operation": "lessThan"
+            }
+          ]
+        }
+      },
+      "name": "If more questions",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "id": "if-more-questions"
+    },
+    {
+      "parameters": {
+        "chatId": "= {{ $json[0].chat_id }}",
+        "text": "=Пожалуйста, укажите комментарий (если есть):",
+        "additionalFields": {
+          "reply_markup": "=JSON.stringify({force_reply:true})"
+        }
+      },
+      "name": "Ask comment",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1650, 300],
+      "id": "ask-comment",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE telegram_form_pending SET last_question_message_id = {{ $node['Ask comment'].json.message_id || $json[0].message_id }}, updated_at = now() WHERE id = {{ $node['Select updated pending'].json[0].id }} RETURNING *;"
+      },
+      "name": "Store last question id (comment)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1850, 300],
+      "id": "store-last-question-id-comment",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Finalize the form: set state=done and return the row\nUPDATE telegram_form_pending SET state = 'done', updated_at = now() WHERE id = {{ $json[0].id }} RETURNING *;"
+      },
+      "name": "Finalize form",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [1650, 420],
+      "id": "finalize-form",
+      "credentials": {
+        "postgres": {
+          "id": "iAbiO90L3smo9ncE",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build row for Google Sheets from finalized pending row\nconst row = $json[0];\nconst answers = row.answers || {};\nreturn [{ json: { 'Booking number': row.booking_id, 'Shipping line': row.shipping_line || row.shipping_line || '', 'Contact name': answers.contact_name || '', 'Comment': answers.comment || '', 'chatId': row.chat_id } }];"
+      },
+      "name": "Prepare sheet row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [1750, 420],
+      "id": "prepare-sheet-row"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "=1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+        "range": "A1",
+        "valueInputMode": "RAW",
+        "options": {},
+        "columns": [
+          "Booking number",
+          "Shipping line",
+          "Contact name",
+          "Comment"
+        ]
+      },
+      "name": "Append to sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [1850, 420],
+      "id": "append-sheet",
+      "credentials": {
+        "googleApi": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json['Chat Id'] || $json['chatId'] || $json.chatId || $json[0].chat_id }}",
+        "text": "Спасибо — ответ записан и добавлен в лист",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send confirmation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [2050, 420],
+      "id": "send-confirmation",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger (Message)": {
+      "main": [
+        [
+          {
+            "node": "Parse reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse reply": {
+      "main": [
+        [
+          {
+            "node": "Select collecting pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select collecting pending": {
+      "main": [
+        [
+          {
+            "node": "If pending found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If pending found": {
+      "main": [
+        [
+          {
+            "node": "Save answer and advance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Save answer and advance": {
+      "main": [
+        [
+          {
+            "node": "Select updated pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select updated pending": {
+      "main": [
+        [
+          {
+            "node": "If more questions",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Finalize form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If more questions": {
+      "main": [
+        [
+          {
+            "node": "Ask comment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finalize form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask comment": {
+      "main": [
+        [
+          {
+            "node": "Store last question id (comment)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize form": {
+      "main": [
+        [
+          {
+            "node": "Prepare sheet row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare sheet row": {
+      "main": [
+        [
+          {
+            "node": "Append to sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "timeZone": "Europe/Kiev"
+  }
+}

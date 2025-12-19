@@ -1,0 +1,1226 @@
+{
+  "name": "Receive ETA and Update",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "callbackQuery"
+        ],
+        "additionalFields": {}
+      },
+      "id": "702fe2fe-ad28-4c18-b3b4-5e9ee236fabf",
+      "name": "Telegram Callback",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        48
+      ],
+      "webhookId": "af481634-2c3b-4f96-bb6c-17157826e3f3",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=Укажи предварительную дату выгрузки ЕТА для букинга {{ $json.booking }} (формат YYYY-MM-DD) по линии {{ $json.line }} для {{ $json.quantity }}",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "6a85d436-59e2-4bcd-a086-609a66e8f6bd",
+      "name": "Ask ETA date",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        64
+      ],
+      "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('If').item.json.message.text }}",
+              "rightValue": "\\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              },
+              "id": "c26ed183-c8a2-4869-8b79-34fc65e019d9"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c8895722-b0e7-45be-a618-1bc2fa969e5d",
+      "name": "If valid date & reply",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.message.reply_to_message?.text || '';\n\n// букинг после слова \"букинга\"\nconst mBooking = text.match(/букинга\\s+([^\\s)]+)/i);\nconst booking = mBooking ? mBooking[1] : '';\n\n// тип обновления по наличию ЕТА/ATA в тексте вопроса\nconst updateType = /ата/i.test(text)\n  ? 'ATA'\n  : (/ета/i.test(text) ? 'ETA' : '');\n\n// row_number из callback_data, если оно было в inline_keyboard\nconst row = $json.message.reply_to_message?.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data?.split('|')[2] || '';\n\nreturn [{\n  json: {\n    chat_id: $json.message.chat.id,\n    date: $json.message.text,    // введённая дата (можешь назвать eta/ata по необходимости)\n    booking,\n    row_number: row,\n    update_type: updateType\n  }\n}];"
+      },
+      "id": "33140945-8eae-47d5-b2c5-645a31f46176",
+      "name": "Extract ETA & booking",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ETA": "={{ $('Extract ETA & booking').item.json.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "558f1b86-d272-4c9e-80a2-85838e1b12d2",
+      "name": "Update ETA",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('If').item.json.message.from.id }}",
+        "text": "=Дата прибытия обновлена:\nБукинг: {{ $json.Booking_number }}\nETA: {{ $('If').item.json.message.text }}\nОбновил:  {{ $('If').item.json.message.chat.last_name }} {{ $('If').item.json.message.chat.first_name }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "7587ec6a-92d4-429d-a3b7-d995b0cd9ab8",
+      "name": "Confirm",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        -112
+      ],
+      "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.callback_query?.data || '';\nconst [row_number, booking, data, line, quantity, type_update] = raw.split('|');\n\nreturn [{\n  json: {\n    row_number: row_number || '',\n    booking: booking || '',\n    data: data || '',\n    line: line || '',\n    quantity: quantity || '', \n    type_update: type_update || '',\n    chat_id: $json.callback_query?.from?.id || $json.callback_query?.message?.chat?.id || '',\n    button_message_id: $json.callback_query?.message?.message_id || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        64
+      ],
+      "id": "43c153eb-af87-4f51-8524-f8a6536794d4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2267cb80-1247-4300-9228-d13fa3157cdf",
+              "leftValue": "={{ $json.callback_query ? 'hasCb' : '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        48
+      ],
+      "id": "6d56ac28-9c9a-4c6d-885a-982cd4c0aa90",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Booking_number",
+              "keyValue": "={{ $json.booking }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -112
+      ],
+      "id": "69ca8695-7b9c-4bcc-9a15-42c2519bbcae",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.result.chat.id }}",
+        "messageId": "={{ $('Code in JavaScript').item.json.button_message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        64
+      ],
+      "id": "b9d24c0b-4ed9-4658-9221-8cb578ff79d7",
+      "name": "Delete a chat message",
+      "webhookId": "ab4b898a-a6bd-498e-a2df-ca946266aafc",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Extract ETA & booking').item.json.chat_id }}",
+        "messageId": "={{ $('Telegram Callback').item.json.message.reply_to_message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        -112
+      ],
+      "id": "e95950d8-73b5-476f-9892-e99b5eb13724",
+      "name": "Delete a chat message1",
+      "webhookId": "a6d1f9f9-5831-4cfb-86ac-452b1e8afd04",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5a829ad9-b920-4a34-ae2e-3dcc3f17fcda",
+              "leftValue": "={{ $json.type_update }}",
+              "rightValue": "ETA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        64
+      ],
+      "id": "76f34c73-af7d-4292-a619-8942e142fa9c",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.result.chat.id }}",
+        "messageId": "={{ $('Telegram Callback').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        240
+      ],
+      "id": "c57655d2-a596-4d9d-b56f-91580d3a702e",
+      "name": "Delete a chat message2",
+      "webhookId": "ab4b898a-a6bd-498e-a2df-ca946266aafc",
+      "alwaysOutputData": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "=Укажи дату выгрузки АТА с борта судна для букинга {{ $json.booking }} (формат YYYY-MM-DD) по линии {{ $json.line }} для {{ $json.quantity }}",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "39e27204-fb9b-4942-9c85-7d95300e2f90",
+      "name": "Ask ATA date",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        240
+      ],
+      "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e22a8266-60ac-4bcb-a5a7-53ae158c4193",
+              "leftValue": "={{ $('Extract ETA & booking').item.json.update_type }}",
+              "rightValue": "ATA",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        -112
+      ],
+      "id": "9c7d0222-77d0-4ff7-8bdf-532170ce5e3f",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('If').item.json.message.from.id }}",
+        "text": "=Дата прибытия обновлена:\nБукинг: {{ $json.Booking_number }}\nАTA: {{ $('If').item.json.message.text }}\nОбновил: {{ $('Telegram Callback').item.json.message.reply_to_message.chat.last_name }} {{ $('If').item.json.message.from.first_name }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "8f20a4f6-e738-45ad-b12c-68d4f20c49d1",
+      "name": "Confirm1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        -304
+      ],
+      "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.result.chat.id }}",
+        "messageId": "={{ $('Telegram Callback').item.json.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        -304
+      ],
+      "id": "6a7c9874-a665-45df-a4ae-10b5daffa359",
+      "name": "Delete a chat message3",
+      "webhookId": "a6d1f9f9-5831-4cfb-86ac-452b1e8afd04",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ATA": "={{ $('Extract ETA & booking').item.json.date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2e741b2b-d942-4321-85ac-760c22eb4652",
+      "name": "Update АТА",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "xcVnOtiQfHS5OOia",
+          "mode": "list",
+          "cachedResultName": "HEE_employess",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ONE_C_name",
+              "keyValue": "={{ $json.Manager }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        -480
+      ],
+      "id": "ff8cbcca-2e6c-4bfa-ac6d-94f5861e5bd7",
+      "name": "Get row(s)1"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=Букинг  {{ $('Update АТА').item.json.Booking_number }} с {{ $('Update АТА').item.json.Quantity  }} прибыл в {{ $('Update АТА').item.json.POL }} {{ $('Update АТА').item.json.ATA }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1472,
+        -480
+      ],
+      "id": "adff953c-e984-4480-acd7-5cc141469265",
+      "name": "Извещение менеджеру о прибытии",
+      "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Callback": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If valid date & reply": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask ETA date",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ask ATA date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ETA & booking": {
+      "main": [
+        [
+          {
+            "node": "If valid date & reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update ETA": {
+      "main": [
+        [
+          {
+            "node": "Confirm",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask ETA date": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Extract ETA & booking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Ask ETA date",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask ATA date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask ATA date": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Update АТА",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update ETA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm1": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update АТА": {
+      "main": [
+        [
+          {
+            "node": "Confirm1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Извещение менеджеру о прибытии",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "597effe7-b33d-44a8-8df6-cf3f201295c6",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "O53EqnIO7LJ1Axrv",
+  "activeVersionId": null
+}

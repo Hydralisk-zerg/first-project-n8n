@@ -1,0 +1,520 @@
+{
+  "name": "Send update buttons",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -784,
+        -16
+      ],
+      "id": "c01f8a3c-27d8-48ab-b47f-121cd7ed3669",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tz='Europe/Kyiv';const today=new Date().toLocaleDateString('en-CA',{timeZone:tz});return items.map(item=>{const src=item.json.updatedAt||item.json.createdAt;const local=src?new Date(src).toLocaleDateString('en-CA',{timeZone:tz}):'';return{json:{...item.json,updatedToday:local===today}};});"
+      },
+      "id": "3474dc74-9b34-40c0-b22f-adc4c0d18bc7",
+      "name": "Mark updatedToday",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=ETA",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ETA"
+                    }
+                  },
+                  {
+                    "text": "=ATA",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ATA"
+                    }
+                  },
+                  {
+                    "text": "Vessel",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|Vessel"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "5a822b0b-1bd8-42f6-835e-36e9732ed43f",
+      "name": "Send button",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        -16
+      ],
+      "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -16
+      ],
+      "id": "aa7de61b-1f68-4e04-b1cc-26a9078d2888",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6fff90a6-079f-493b-8eea-8dc4584df6bc",
+              "leftValue": "={{ $json.On_board }}",
+              "rightValue": "+",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cdf428d6-847e-48b6-a65a-9d2ed66f13f3",
+              "leftValue": "={{ $json.ATA }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ca647c1c-6954-43b0-9757-31645e13ef7a",
+              "leftValue": "={{ $json.updatedToday }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        80,
+        -16
+      ],
+      "id": "5c5076ec-b4a6-4b17-8703-0c645fd2ce3f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "matchType": "allConditions",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        240
+      ],
+      "id": "6ff0e001-51b0-48c9-bed8-872caa7f06c2",
+      "name": "Get row(s)1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tz='Europe/Kyiv';const today=new Date().toLocaleDateString('en-CA',{timeZone:tz});return items.map(item=>{const src=item.json.updatedAt||item.json.createdAt;const local=src?new Date(src).toLocaleDateString('en-CA',{timeZone:tz}):'';return{json:{...item.json,updatedToday:local===today}};});"
+      },
+      "id": "148a520e-7882-4c04-ba4f-c37208867d0b",
+      "name": "Mark updatedToday1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6fff90a6-079f-493b-8eea-8dc4584df6bc",
+              "leftValue": "={{ $json.On_board }}",
+              "rightValue": "+",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cdf428d6-847e-48b6-a65a-9d2ed66f13f3",
+              "leftValue": "={{ $json.ATA }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "8d013705-6271-433c-804e-9426b83295ad",
+              "leftValue": "={{ $json.updatedToday }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "3fbaf971-ff0a-4aae-9d75-3d7f752bda4d",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        240
+      ],
+      "id": "088fbe4a-fb85-4624-9103-8efe729b2a38",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=ETA",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ETA"
+                    }
+                  },
+                  {
+                    "text": "=ATA",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ATA"
+                    }
+                  },
+                  {
+                    "text": "Vessel",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|Vessel"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "f95aea51-7861-4129-b3f6-5ff534b14bd9",
+      "name": "Send button1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        240
+      ],
+      "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const day = new Date().getDay(); // 0=вс, 6=сб\nif (day === 0 || day === 6) return []; // прекращаем выполнение\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        -16
+      ],
+      "id": "dbe4be33-0329-41b8-afe8-0d51e4b96c99",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -640,
+        240
+      ],
+      "id": "5ecb8586-2380-4c9a-807e-5bae02171545",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        240
+      ],
+      "id": "303cc0f8-fb50-40c0-b87e-8b25ebe4b78b",
+      "name": "Wait",
+      "webhookId": "c80d2856-ee68-4264-b9e6-67d9651169ae"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        240
+      ],
+      "id": "a94a7270-4b0c-4f12-aad1-7610d2f621df",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Mark updatedToday": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Mark updatedToday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send button",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send button": {
+      "main": [
+        []
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Mark updatedToday1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark updatedToday1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send button1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Send button1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "13255fcb-2ac1-4a1b-ad1f-7c8578d9b80f",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "HAaaPsJyHDenFt8j"
+}

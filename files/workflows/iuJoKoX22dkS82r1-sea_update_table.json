@@ -1,0 +1,1560 @@
+{
+  "name": "sea update table",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sea",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -144,
+        16
+      ],
+      "id": "7dbdce57-33a8-46eb-90e3-1486f4fe44aa",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4YuM90VIJt7fxZFx",
+          "name": "Google Sheets account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e4912c2b-6c47-4db5-8f74-e3198f9c49d8",
+              "leftValue": "={{ $json.On_board }}",
+              "rightValue": "+",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "fc13edd8-4502-435d-a345-f86b006bfc28",
+              "leftValue": "={{ $json.ATA }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        16
+      ],
+      "id": "b67a9763-a9e5-425e-b1cc-60aeac5f287c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        128
+      ],
+      "id": "8dc2c625-dcd3-4d3c-af05-c8d1dbcd4dce",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b868e62-502e-4338-afb5-a60aac0385da",
+              "leftValue": "={{ $json.updatedToday }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        -112
+      ],
+      "id": "c78fd505-c3ee-4844-894a-11eb4f1b2c24",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "qwerty",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "ATA",
+              "condition": "isNotEmpty"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -416
+      ],
+      "id": "7b0ee539-ad2d-47cc-9219-ccaeae01d653",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Deals": "={{ $json.Deals }}",
+            "Manager": "={{ $json.Manager }}",
+            "Imp_exp": "={{ $json.Imp_exp }}",
+            "Shipping_line": "={{ $json.Shipping_line }}",
+            "Agent": "={{ $json.Agent }}",
+            "Booking_number": "={{ $json.Booking_number }}",
+            "POL": "={{ $json.POL }}",
+            "Customer": "={{ $json.Customer }}",
+            "POD": "={{ $json.POD }}",
+            "Container_type": "={{ $json.Container_type }}",
+            "Quantity": "={{ $json.Quantity }}",
+            "Cargo": "={{ $json.Cargo }}",
+            "Vessel": "={{ $json.Vessel }}",
+            "ETD": "={{ $json.ETD }}",
+            "ETA": "={{ $json.ETA }}",
+            "On_board": "={{ $json.On_board }}",
+            "HBL": "={{ $json.HBL }}",
+            "Invoice": "={{ $json.Invoice }}",
+            "Profit_Share": "={{ $json.Profit_Share }}",
+            "Telex_release": "={{ $json.Telex_release }}",
+            "DTHC": "={{ $json.DTHC }}",
+            "ATA": "={{ $json.ATA }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -416
+      ],
+      "id": "6794d1f0-d162-4bf9-b8d5-ac16b711b78b",
+      "name": "Insert row",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        16
+      ],
+      "id": "d5e53e88-dbde-491a-8c26-608e2daf6624",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -112
+      ],
+      "id": "4539fb1b-e06d-469e-84d1-899f142fabb9",
+      "name": "Get row(s)1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const tz = 'Europe/Kyiv';\nconst today = new Date().toLocaleDateString('en-CA', { timeZone: tz }); // 2025-12-08\n\nreturn items.map(item => {\n  const src = item.json.updatedAt || item.json.createdAt;\n  const d = src ? new Date(src) : null;\n  const localDate = d\n    ? d.toLocaleDateString('en-CA', { timeZone: tz }) // 2025-12-08\n    : '';\n  const updatedToday = localDate === today;\n  return {\n    json: {\n      ...item.json,\n      updatedToday,\n      parsedDateKyiv: localDate, // для отладки можно убрать\n      todayKyiv: today           // для отладки можно убрать\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        -112
+      ],
+      "id": "439975d9-bed3-45af-91c5-de779f6bc8b4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=нужно обновить буккинги  {{ $('Get row(s)1').item.json.Booking_number }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.Booking_number }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.updatedAt }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        944,
+        -128
+      ],
+      "id": "d827adb9-41c7-42d6-896e-52c5f707b17b",
+      "name": "Send a text message",
+      "webhookId": "c89341af-5f94-4d46-ae60-2f4ebac777ef",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Get row(s)1": [
+      {
+        "json": {
+          "row_number": 2,
+          "Deals": 11142,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "ONE ",
+          "Agent": "MRF",
+          "Booking_number": "NB5IBH846800",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "ONE TRADITION   027W",
+          "ETD": "18.08.2025",
+          "ETA": "26.11.2025",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "+",
+          "DTHC": "-",
+          "ATA": "",
+          "id": 317,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 29,
+          "Deals": 11278,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": "259949159",
+          "POL": "Port Klang",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "MARIBO MAERSK",
+          "ETD": "14.10.2025",
+          "ETA": "11.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "+",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 344,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 30,
+          "Deals": 11285,
+          "Manager": "Афанасьева Татьяна",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177LGJGJN84585A",
+          "POL": "Ningbo",
+          "Customer": "AMEKS",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC ALESSIA/QB542W",
+          "ETD": "19.10.2025",
+          "ETA": "10.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "+",
+          "DTHC": "",
+          "ATA": "",
+          "id": 345,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 31,
+          "Deals": 11282,
+          "Manager": "Афанасьева Татьяна",
+          "Imp_exp": "импорт",
+          "Shipping_line": "CMA CGM",
+          "Agent": "AAA",
+          "Booking_number": "TJN0775287",
+          "POL": "Xingang",
+          "Customer": "NV",
+          "POD": "Odesa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "tubes",
+          "Vessel": "CNC CHEETAH / 0XKMTS1MA",
+          "ETD": "20.10.2025",
+          "ETA": "16.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 346,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 32,
+          "Deals": 11293,
+          "Manager": "Джафар Икрам",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Hapag",
+          "Agent": "",
+          "Booking_number": "75528830",
+          "POL": "Belawan",
+          "Customer": "Pride Ship",
+          "POD": "Constanta",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "oil",
+          "Vessel": "NORDSERAPHINA",
+          "ETD": "19.10.2025",
+          "ETA": "14.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 347,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 33,
+          "Deals": 11300,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "MRF",
+          "Booking_number": "264828586",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "BERLIN EXPRESS",
+          "ETD": "26.10.2025",
+          "ETA": "27.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "-",
+          "ATA": "",
+          "id": 348,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 34,
+          "Deals": 11311,
+          "Manager": "Джафар Икрам",
+          "Imp_exp": "импорт",
+          "Shipping_line": "CMA CGM",
+          "Agent": "",
+          "Booking_number": "CHN2783659",
+          "POL": "Shanghai",
+          "Customer": "Pride Ship",
+          "POD": "Odesa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "spare parts",
+          "Vessel": "COSCO SHIPPING SAKURA",
+          "ETD": "24.10.2025",
+          "ETA": "10.01.2026",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 349,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 35,
+          "Deals": 11302,
+          "Manager": "Афанасьева Татьяна",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Unicorn",
+          "Booking_number": "177LGNGNN50243A",
+          "POL": "Ningbo",
+          "Customer": "AMEKS",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC ROSE",
+          "ETD": "31.10.2025",
+          "ETA": "21.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 350,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 36,
+          "Deals": 11277,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "MRF",
+          "Booking_number": "264881982",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "BERLIN EXPRESS",
+          "ETD": "26.10.2025",
+          "ETA": "27.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "-",
+          "ATA": "",
+          "id": 351,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 37,
+          "Deals": 11287,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "Unicorn",
+          "Booking_number": "260080780",
+          "POL": "Xingang",
+          "Customer": "Skladservice",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "tape",
+          "Vessel": "CCNI ANGOL",
+          "ETD": "26.10.2025",
+          "ETA": "20.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 352,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 38,
+          "Deals": 11304,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Unicorn",
+          "Booking_number": "177IATATQ13948V",
+          "POL": "Qingdao",
+          "Customer": "United Forest",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "2x20'",
+          "Cargo": "paper",
+          "Vessel": "MSC SALERNO GL544W",
+          "ETD": "31.10.2025",
+          "ETA": "01.01.2026",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 353,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 39,
+          "Deals": 11307,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Unicorn",
+          "Booking_number": "177IATATQ13962V",
+          "POL": "Qingdao",
+          "Customer": "United Forest",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "3x20'",
+          "Cargo": "paper",
+          "Vessel": "MSC SALERNO GL544W",
+          "ETD": "31.10.2025",
+          "ETA": "01.01.2026",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 354,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 40,
+          "Deals": 11314,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": "261090429",
+          "POL": "Port Klang",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "ZHONG GU TIAN JIN",
+          "ETD": "13.11.2025",
+          "ETA": "08.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "+",
+          "DTHC": "",
+          "ATA": "",
+          "id": 355,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 41,
+          "Deals": 11315,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": "261003512",
+          "POL": "Port Klang",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "ZHONG GU TIAN JIN",
+          "ETD": "13.11.2025",
+          "ETA": "08.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "+",
+          "DTHC": "",
+          "ATA": "",
+          "id": 356,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 42,
+          "Deals": 11322,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN9F235A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC IVA V.GL544W",
+          "ETD": "14.11.2025",
+          "ETA": "18.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 357,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 43,
+          "Deals": 11320,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177FCACAS441463",
+          "POL": "Shanghai",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC GRACE",
+          "ETD": "08.11.2025",
+          "ETA": "10.01.2026",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "-",
+          "ATA": "",
+          "id": 358,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 44,
+          "Deals": 11321,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177FCACAS441464",
+          "POL": "Shanghai",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC TAYLOR QB545W",
+          "ETD": "08.11.2025",
+          "ETA": "10.01.2026",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "-",
+          "ATA": "",
+          "id": 359,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 45,
+          "Deals": 11323,
+          "Manager": "Афанасьева Татьяна",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177KACACXTEN4512",
+          "POL": "Tianjin",
+          "Customer": "Kreptech",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC FLAVIA GA545W",
+          "ETD": "08.11.2025",
+          "ETA": "13.01.2026",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 360,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 46,
+          "Deals": 11324,
+          "Manager": "Афанасьева Татьяна",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "AAA",
+          "Booking_number": "177KACACXTEN4513",
+          "POL": "Tianjin",
+          "Customer": "Kreptech",
+          "POD": "Gdansk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MSC FLAVIA GA545W",
+          "ETD": "08.11.2025",
+          "ETA": "13.01.2026",
+          "On_board": "+",
+          "HBL": "+",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 361,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 47,
+          "Deals": 11331,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN9F062A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC VICTORINE/GL543W",
+          "ETD": "04.11.2025",
+          "ETA": "10.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 362,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 48,
+          "Deals": 11301,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Betterway",
+          "Booking_number": "177FJCJCJ2027905S",
+          "POL": "Anqing",
+          "Customer": "Dopomoga",
+          "POD": "Gdansk",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "gloves",
+          "Vessel": "JIA XING",
+          "ETD": "15.11.2025",
+          "ETA": "18.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "/",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 363,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 49,
+          "Deals": 11332,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177FLHLHS1068257",
+          "POL": "Shanghai",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC CALYPSO / QB547W",
+          "ETD": "23.11.2025",
+          "ETA": "18.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 364,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 50,
+          "Deals": 11341,
+          "Manager": "Афанасьева Татьяна",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Hapag",
+          "Agent": "AAA",
+          "Booking_number": "HLCUNG1251146227",
+          "POL": "Ningbo",
+          "Customer": "AMEKS",
+          "POD": "Chornomorsk",
+          "Container_type": "20'",
+          "Quantity": "1x20'",
+          "Cargo": "screws",
+          "Vessel": "MAERSK ENSHI 547W",
+          "ETD": "25.11.2025",
+          "ETA": "20.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 365,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 51,
+          "Deals": 11333,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNCNCN6H236A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC IDANIA/GL546W\t",
+          "ETD": "25.11.2025",
+          "ETA": "23.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 366,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 52,
+          "Deals": 11339,
+          "Manager": "Афанасьева Татьяна",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "Betterway",
+          "Booking_number": "181AN0256130459M1",
+          "POL": "Nansha",
+          "Customer": "Algol",
+          "POD": "Odesa",
+          "Container_type": "20'",
+          "Quantity": "3x20'",
+          "Cargo": "chemistry",
+          "Vessel": "MSC NAPOLI / FD546W",
+          "ETD": "28.11.2025",
+          "ETA": "21.01.2026",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 367,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 53,
+          "Deals": 11364,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNVNVN9F302A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC ILARIA/GL547W",
+          "ETD": "06.12.2025",
+          "ETA": "06.02.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 368,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 54,
+          "Deals": 11368,
+          "Manager": "Цыганкова Оксана",
+          "Imp_exp": "импорт",
+          "Shipping_line": "MSC",
+          "Agent": "MRF",
+          "Booking_number": "177LNCNCN6H298A",
+          "POL": "Ningbo",
+          "Customer": "Sleep ID",
+          "POD": "Klaipeda",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "feather",
+          "Vessel": "MSC ILARIA/GL547W",
+          "ETD": "06.12.2025",
+          "ETA": "06.02.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 369,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 55,
+          "Deals": 11348,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "импорт",
+          "Shipping_line": "Cosco",
+          "Agent": "HWL Egypt",
+          "Booking_number": "9020320460",
+          "POL": "Alexandria",
+          "Customer": "Dopomoga",
+          "POD": "Constanta",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "wrap",
+          "Vessel": "EXPRESS SPAIN",
+          "ETD": "03.12.2025",
+          "ETA": "",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "",
+          "Profit_Share": "",
+          "Telex_release": "",
+          "DTHC": "",
+          "ATA": "",
+          "id": 370,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 61,
+          "Deals": 11270,
+          "Manager": "Джафар Икрам",
+          "Imp_exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": "259742029",
+          "POL": "Constanta",
+          "Customer": "",
+          "POD": "Mombasa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "курица",
+          "Vessel": "OEL SURYA(PA)",
+          "ETD": "04.11.2025",
+          "ETA": "29.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "",
+          "Telex_release": "+",
+          "DTHC": "",
+          "ATA": "",
+          "id": 375,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 62,
+          "Deals": 11312,
+          "Manager": "Джафар Икрам",
+          "Imp_exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": "260768791",
+          "POL": "Constanta",
+          "Customer": "",
+          "POD": "Mombasa",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "курица",
+          "Vessel": "MAX SCHULTE",
+          "ETD": "28.10.2025",
+          "ETA": "22.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "",
+          "Telex_release": "+",
+          "DTHC": "",
+          "ATA": "",
+          "id": 376,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      },
+      {
+        "json": {
+          "row_number": 64,
+          "Deals": 11335,
+          "Manager": "Серпутько Лилия",
+          "Imp_exp": "экспорт",
+          "Shipping_line": "Maersk",
+          "Agent": "",
+          "Booking_number": "261260075",
+          "POL": "Gdansk",
+          "Customer": "",
+          "POD": "Toronto",
+          "Container_type": "40'",
+          "Quantity": "1x40'",
+          "Cargo": "продукты питания",
+          "Vessel": "MAERSK NUBA",
+          "ETD": "18.11.2025",
+          "ETA": "23.12.2025",
+          "On_board": "+",
+          "HBL": "",
+          "Invoice": "+",
+          "Profit_Share": "",
+          "Telex_release": "+",
+          "DTHC": "",
+          "ATA": "",
+          "id": 378,
+          "createdAt": "2025-12-08T10:55:07.935Z",
+          "updatedAt": "2025-12-08T10:55:07.935Z"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        []
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2bb49654-554d-4229-8270-1f79f5408d36",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "iuJoKoX22dkS82r1",
+  "activeVersionId": null
+}
