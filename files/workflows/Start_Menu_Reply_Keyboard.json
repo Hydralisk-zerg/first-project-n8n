@@ -1,0 +1,139 @@
+{
+  "name": "Telegram - Start menu (Reply Keyboard) for one user",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ]
+      },
+      "id": "c7d3a7c3-6f9a-4f1a-8b0a-42a5f26e36d9",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -420,
+        0
+      ],
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f1b665f8-9c03-4d64-9c5f-62c0c2dbe50f",
+              "leftValue": "={{ $json.message.chat.id }}",
+              "rightValue": 8041897638,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "0e9a4bf4-0a42-4a40-a1b1-8a8d75f7a8e7",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b23b0b2f-d8b7-42c6-9d9e-12c4d6f2011e",
+      "name": "If start from allowed user",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Выберите действие:",
+        "replyMarkup": "keyboard",
+        "keyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "📦 Обновить букинги"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0d6ef2f7-1c88-4b90-9b74-4e4abbd5d4cc",
+      "name": "Send reply keyboard",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        40,
+        0
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If start from allowed user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If start from allowed user": {
+      "main": [
+        [
+          {
+            "node": "Send reply keyboard",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "REPLACE_ME",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

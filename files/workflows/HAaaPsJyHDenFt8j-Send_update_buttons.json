@@ -3,25 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "triggerAtHour": 9
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -784,
-        -16
-      ],
-      "id": "c01f8a3c-27d8-48ab-b47f-121cd7ed3669",
-      "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
         "jsCode": "const tz='Europe/Kyiv';const today=new Date().toLocaleDateString('en-CA',{timeZone:tz});return items.map(item=>{const src=item.json.updatedAt||item.json.createdAt;const local=src?new Date(src).toLocaleDateString('en-CA',{timeZone:tz}):'';return{json:{...item.json,updatedToday:local===today}};});"
       },
       "id": "3474dc74-9b34-40c0-b22f-adc4c0d18bc7",
@@ -29,13 +10,13 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -128,
-        -16
+        -16,
+        -32
       ]
     },
     {
       "parameters": {
-        "chatId": "544911412",
+        "chatId": "8041897638",
         "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
@@ -75,8 +56,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        352,
-        -16
+        512,
+        -32
       ],
       "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
       "credentials": {
@@ -101,8 +82,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        -352,
-        -16
+        -256,
+        -32
       ],
       "id": "aa7de61b-1f68-4e04-b1cc-26a9078d2888",
       "name": "Get row(s)"
@@ -154,46 +135,48 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        80,
-        -16
+        224,
+        -32
       ],
       "id": "5c5076ec-b4a6-4b17-8703-0c645fd2ce3f",
       "name": "If"
     },
     {
       "parameters": {
-        "operation": "get",
-        "dataTableId": {
-          "__rl": true,
-          "value": "AxASL6xXtaKV3P1T",
-          "mode": "list",
-          "cachedResultName": "sea fright",
-          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
-        },
-        "matchType": "allConditions",
-        "returnAll": true
+        "jsCode": "const day = new Date().getDay(); // 0=вс, 6=сб\nif (day === 0 || day === 6) return []; // прекращаем выполнение\nreturn items;"
       },
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1,
-      "position": [
-        -192,
-        240
-      ],
-      "id": "6ff0e001-51b0-48c9-bed8-872caa7f06c2",
-      "name": "Get row(s)1"
-    },
-    {
-      "parameters": {
-        "jsCode": "const tz='Europe/Kyiv';const today=new Date().toLocaleDateString('en-CA',{timeZone:tz});return items.map(item=>{const src=item.json.updatedAt||item.json.createdAt;const local=src?new Date(src).toLocaleDateString('en-CA',{timeZone:tz}):'';return{json:{...item.json,updatedToday:local===today}};});"
-      },
-      "id": "148a520e-7882-4c04-ba4f-c37208867d0b",
-      "name": "Mark updatedToday1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        48,
-        240
-      ]
+        -480,
+        -32
+      ],
+      "id": "dbe4be33-0329-41b8-afe8-0d51e4b96c99",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -896,
+        -16
+      ],
+      "id": "4408fa59-97d1-4d8f-9d68-e73cc8b8c6af",
+      "name": "Telegram Trigger",
+      "webhookId": "27299944-39ec-458c-9f6b-f92fdaa1a0c3",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
     },
     {
       "parameters": {
@@ -206,41 +189,21 @@
           },
           "conditions": [
             {
-              "id": "6fff90a6-079f-493b-8eea-8dc4584df6bc",
-              "leftValue": "={{ $json.On_board }}",
-              "rightValue": "+",
+              "id": "f1b665f8-9c03-4d64-9c5f-62c0c2dbe50f",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+              "rightValue": 8041897638,
               "operator": {
-                "type": "string",
+                "type": "number",
                 "operation": "equals"
               }
             },
             {
-              "id": "cdf428d6-847e-48b6-a65a-9d2ed66f13f3",
-              "leftValue": "={{ $json.ATA }}",
-              "rightValue": "",
+              "id": "0e9a4bf4-0a42-4a40-a1b1-8a8d75f7a8e7",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "rightValue": "/update_booking",
               "operator": {
                 "type": "string",
-                "operation": "empty",
-                "singleValue": true
-              }
-            },
-            {
-              "id": "8d013705-6271-433c-804e-9426b83295ad",
-              "leftValue": "={{ $json.updatedToday }}",
-              "rightValue": false,
-              "operator": {
-                "type": "boolean",
                 "operation": "equals"
-              }
-            },
-            {
-              "id": "3fbaf971-ff0a-4aae-9d75-3d7f752bda4d",
-              "leftValue": "",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
               }
             }
           ],
@@ -248,121 +211,14 @@
         },
         "options": {}
       },
+      "id": "831199f2-6f5f-40e7-9001-7a3bfb6f86fd",
+      "name": "If start from allowed user",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        288,
-        240
-      ],
-      "id": "088fbe4a-fb85-4624-9103-8efe729b2a38",
-      "name": "If1"
-    },
-    {
-      "parameters": {
-        "chatId": "544911412",
-        "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
-        "replyMarkup": "inlineKeyboard",
-        "inlineKeyboard": {
-          "rows": [
-            {
-              "row": {
-                "buttons": [
-                  {
-                    "text": "=ETA",
-                    "additionalFields": {
-                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ETA"
-                    }
-                  },
-                  {
-                    "text": "=ATA",
-                    "additionalFields": {
-                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ATA"
-                    }
-                  },
-                  {
-                    "text": "Vessel",
-                    "additionalFields": {
-                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|Vessel"
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "additionalFields": {
-          "appendAttribution": false
-        }
-      },
-      "id": "f95aea51-7861-4129-b3f6-5ff534b14bd9",
-      "name": "Send button1",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        544,
-        240
-      ],
-      "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
-      "credentials": {
-        "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const day = new Date().getDay(); // 0=вс, 6=сб\nif (day === 0 || day === 6) return []; // прекращаем выполнение\nreturn items;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -560,
+        -704,
         -16
-      ],
-      "id": "dbe4be33-0329-41b8-afe8-0d51e4b96c99",
-      "name": "Code in JavaScript"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        -640,
-        240
-      ],
-      "id": "5ecb8586-2380-4c9a-807e-5bae02171545",
-      "name": "Loop Over Items"
-    },
-    {
-      "parameters": {
-        "amount": 15
-      },
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
-      "position": [
-        -400,
-        240
-      ],
-      "id": "303cc0f8-fb50-40c0-b87e-8b25ebe4b78b",
-      "name": "Wait",
-      "webhookId": "c80d2856-ee68-4264-b9e6-67d9651169ae"
-    },
-    {
-      "parameters": {
-        "aggregate": "aggregateAllItemData",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.aggregate",
-      "typeVersion": 1,
-      "position": [
-        -880,
-        240
-      ],
-      "id": "a94a7270-4b0c-4f12-aad1-7610d2f621df",
-      "name": "Aggregate"
+      ]
     }
   ],
   "pinData": {},
@@ -372,17 +228,6 @@
         [
           {
             "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript",
             "type": "main",
             "index": 0
           }
@@ -417,51 +262,6 @@
         []
       ]
     },
-    "Get row(s)1": {
-      "main": [
-        [
-          {
-            "node": "Mark updatedToday1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Mark updatedToday1": {
-      "main": [
-        [
-          {
-            "node": "If1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If1": {
-      "main": [
-        [
-          {
-            "node": "Send button1",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        []
-      ]
-    },
-    "Send button1": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Code in JavaScript": {
       "main": [
         [
@@ -473,34 +273,22 @@
         ]
       ]
     },
-    "Loop Over Items": {
+    "Telegram Trigger": {
       "main": [
-        [],
         [
           {
-            "node": "Wait",
+            "node": "If start from allowed user",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Wait": {
+    "If start from allowed user": {
       "main": [
         [
           {
-            "node": "Get row(s)1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Aggregate": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
+            "node": "Code in JavaScript",
             "type": "main",
             "index": 0
           }
@@ -508,11 +296,14 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "13255fcb-2ac1-4a1b-ad1f-7c8578d9b80f",
+  "versionId": "dd0b913d-c3c9-430f-bdc8-05f6a6aa9bda",
   "meta": {
     "templateCredsSetupCompleted": true
   },
