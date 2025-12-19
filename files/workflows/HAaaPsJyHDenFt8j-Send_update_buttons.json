@@ -10,8 +10,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -16,
-        -32
+        -96,
+        -16
       ]
     },
     {
@@ -56,8 +56,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        512,
-        -32
+        336,
+        -112
       ],
       "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
       "credentials": {
@@ -82,8 +82,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        -256,
-        -32
+        -288,
+        -16
       ],
       "id": "aa7de61b-1f68-4e04-b1cc-26a9078d2888",
       "name": "Get row(s)"
@@ -135,8 +135,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        224,
-        -32
+        96,
+        -16
       ],
       "id": "5c5076ec-b4a6-4b17-8703-0c645fd2ce3f",
       "name": "If"
@@ -149,7 +149,7 @@
       "typeVersion": 2,
       "position": [
         -480,
-        -32
+        -16
       ],
       "id": "dbe4be33-0329-41b8-afe8-0d51e4b96c99",
       "name": "Code in JavaScript"
@@ -165,7 +165,7 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -896,
+        -880,
         -16
       ],
       "id": "4408fa59-97d1-4d8f-9d68-e73cc8b8c6af",
@@ -303,7 +303,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "dd0b913d-c3c9-430f-bdc8-05f6a6aa9bda",
+  "versionId": "c59bc22a-7db3-4715-a692-c0e324fac63b",
   "meta": {
     "templateCredsSetupCompleted": true
   },
