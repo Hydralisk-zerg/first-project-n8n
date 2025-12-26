@@ -1,0 +1,4 @@
+job_id,enabled,start_at,status,workflow_id,last_started_at,last_finished_at,last_error
+procedure_001,true,2025-12-24T09:00:00+02:00,planned,CpWS9XAd5y7g79xw,,,
+procedure_002,true,2025-12-24T09:30:00+02:00,,yAZEm9dxfVGQv9Qo,,,
+procedure_003,false,2025-12-24T10:00:00+02:00,planned,wuX1782fc91yphLG,,,
