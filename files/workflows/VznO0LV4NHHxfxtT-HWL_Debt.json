@@ -1,0 +1,1540 @@
+{
+  "name": "HWL_Debt",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "debet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -16
+      ],
+      "id": "fcc25a6d-bb7a-4c19-b31d-d80837c4684d",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.exp_payment_date }}",
+        "format": "MM-dd-yyyy",
+        "outputFieldName": "=exp_payment_date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "1c742681-e21b-46d0-a8f5-1df0c3970122",
+      "name": "Date & Time2"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1ER_GMT9REt9Znx6nSAqMJ9w9QQJ83Mxpusz-2IvQVgU",
+          "mode": "list",
+          "cachedResultName": "Debitors_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ER_GMT9REt9Znx6nSAqMJ9w9QQJ83Mxpusz-2IvQVgU/edit?usp=drivesdk"
+        },
+        "name": "={{ $now.format('yyyy-MM-dd') }}_UAH_debts",
+        "sameFolder": false,
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1QYsCX2cXzVsj7b07P6pPvjyPFXu7FtS5"
+        },
+        "options": {
+          "description": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -528,
+        192
+      ],
+      "id": "065eaafc-fc76-48e5-8ec1-97a8ed3b6891",
+      "name": "Copy file1",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "gz0l5dMxyUhekxFA",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Copy file1').item.json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "UAH_deb",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DRvRNMMFAHhg_7gAleyQZNB8vvlvItzwNG-aRR1Lff4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ $json.number }}",
+            "date": "={{ $json.date }}",
+            "payer": "={{ $json.payer }}",
+            "invoice_status": "={{ $json.invoice_status }}",
+            "deal": "={{ $json.deal }}",
+            "manager": "={{ $json.manager }}",
+            "amount_uah": "={{ $json.amount_uah }}",
+            "payment_type": "={{ $json.payment_type }}",
+            "exp_payment_date": "={{ $json.exp_payment_date }}",
+            "overdue_invoice_date": "={{ $json.overdue_invoice_date }}",
+            "payment_terms": "={{ $json.payment_terms }}",
+            "overdue_payment_terms": "={{ $json.overdue_payment_terms }}"
+          },
+          "matchingColumns": [
+            "number"
+          ],
+          "schema": [
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payer",
+              "displayName": "payer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoice_status",
+              "displayName": "invoice_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deal",
+              "displayName": "deal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "manager",
+              "displayName": "manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_uah",
+              "displayName": "amount_uah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_type",
+              "displayName": "payment_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exp_payment_date",
+              "displayName": "exp_payment_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_invoice_date",
+              "displayName": "overdue_invoice_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_terms",
+              "displayName": "payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_payment_terms",
+              "displayName": "overdue_payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        -16
+      ],
+      "id": "5b3cd5bd-f783-4a17-842a-6b32c7b380a9",
+      "name": "Append or update row in sheet1",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.date }}",
+        "outputFieldName": "date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -16
+      ],
+      "id": "7812ecd2-f55c-4e2f-bdc0-c86dc3a71c65",
+      "name": "Date & Time3"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "overdue_payment_terms"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -16
+      ],
+      "id": "cc5e59cb-8640-4bf4-b727-25ed421da37e",
+      "name": "Sort1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1mBTI1HF53W3HXQh41TRGYzU_GixV-5O1qKEQiORvz3k",
+          "mode": "list",
+          "cachedResultName": "fin_report_recipients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBTI1HF53W3HXQh41TRGYzU_GixV-5O1qKEQiORvz3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBTI1HF53W3HXQh41TRGYzU_GixV-5O1qKEQiORvz3k/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1312,
+        192
+      ],
+      "id": "56a1b4e9-f847-4f31-b8e2-1c3091dc2018",
+      "name": "Get row(s) in sheet1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 11 * * MON-FRI"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        192
+      ],
+      "id": "e502ca62-7477-4abc-a086-e5784d448ddc",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://node.od.ua:8000/api/v1/ftp-json/?key=nodeapisecret0482&qtype=credit_bank",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -336,
+        192
+      ],
+      "id": "c85e92a7-76b3-4117-949e-cbe9568b8939",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.date }}",
+        "outputFieldName": "date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        224,
+        192
+      ],
+      "id": "29816491-fd7b-4921-bb49-6350d6c182a8",
+      "name": "Date & Time4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inItem = $input.first().json;\n\nconst credit = Array.isArray(inItem.credit) ? inItem.credit : [];\nconst out = credit.map(entry => ({ json: { ...entry } }));\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        192
+      ],
+      "id": "19d54b26-3d60-4db9-b200-ec2d16aa934c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Copy file1').item.json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 425995121,
+          "mode": "list",
+          "cachedResultName": "UAH_cred",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DRvRNMMFAHhg_7gAleyQZNB8vvlvItzwNG-aRR1Lff4/edit#gid=425995121"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.date }}",
+            "number": "={{ $json.number }}",
+            "order_number": "={{ $json.order_number }}",
+            "payer": "={{ $json.payer }}",
+            "deal": "={{ $json.deal }}",
+            "amount_uah": "={{ $json.amount_uah }}",
+            "payment_type": "={{ $json.payment_type }}",
+            "service": "={{ $json.service }}"
+          },
+          "matchingColumns": [
+            "number"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "order_number",
+              "displayName": "order_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payer",
+              "displayName": "payer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deal",
+              "displayName": "deal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_uah",
+              "displayName": "amount_uah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_type",
+              "displayName": "payment_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        192
+      ],
+      "id": "1922d76a-16b5-47b4-8588-86f092443e84",
+      "name": "Append or update row in sheet2",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "url": "https://node.od.ua:8000/api/v1/ftp-json/?key=nodeapisecret0482&qtype=debet_usd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -336,
+        400
+      ],
+      "id": "37f31580-0b8c-4741-94f9-c3e569c7288f",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "debet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        400
+      ],
+      "id": "7a397b9a-1a9b-4d6d-a497-b47e32905fd7",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $('Split Out2').item.json.exp_payment_date }}",
+        "format": "MM-dd-yyyy",
+        "outputFieldName": "=exp_payment_date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        224,
+        400
+      ],
+      "id": "3cd9501d-88d4-4e38-9f6b-23c2b7f8825d",
+      "name": "Date & Time5"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.date }}",
+        "outputFieldName": "date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        32,
+        400
+      ],
+      "id": "ff6308e2-9a7e-47ba-9afa-fa5a963a83f5",
+      "name": "Date & Time6"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "overdue_payment_terms"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        416,
+        400
+      ],
+      "id": "9ac2bb35-6f44-499f-855d-dfc85e516fc2",
+      "name": "Sort2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Copy file1').item.json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1237734483,
+          "mode": "list",
+          "cachedResultName": "USD_deb",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FPHpkgBvvI0inQy4IvWRlMp7TZWj5xf5pYk10WXbRC4/edit#gid=1237734483"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ $json.number }}",
+            "date": "={{ $json.date }}",
+            "payer": "={{ $json.payer }}",
+            "invoice_status": "={{ $json.invoice_status }}",
+            "deal": "={{ $json.deal }}",
+            "manager": "={{ $json.manager }}",
+            "amount_eur": "={{ $json.amount_eur }}",
+            "amount_usd": "={{ $json.amount_usd }}",
+            "bypass_number": "={{ $json.bypass_number }}",
+            "exp_payment_date": "={{ $json.exp_payment_date }}",
+            "overdue_invoice_date": "={{ $json.overdue_invoice_date }}",
+            "payment_terms": "={{ $json.payment_terms }}",
+            "overdue_payment_terms": "={{ $json.overdue_payment_terms }}"
+          },
+          "matchingColumns": [
+            "number"
+          ],
+          "schema": [
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payer",
+              "displayName": "payer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoice_status",
+              "displayName": "invoice_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deal",
+              "displayName": "deal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "manager",
+              "displayName": "manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_eur",
+              "displayName": "amount_eur",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_usd",
+              "displayName": "amount_usd",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bypass_number",
+              "displayName": "bypass_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exp_payment_date",
+              "displayName": "exp_payment_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_invoice_date",
+              "displayName": "overdue_invoice_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_terms",
+              "displayName": "payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_payment_terms",
+              "displayName": "overdue_payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        400
+      ],
+      "id": "87b63bc4-e4a7-4eae-8f21-54ccc605f43b",
+      "name": "Append or update row in sheet3",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c0622b8-e0b2-4f46-ad10-b3b4809df216",
+              "name": "number",
+              "value": "={{ $json.number }}",
+              "type": "string"
+            },
+            {
+              "id": "37350b5f-7b1e-4901-a5a8-c09e6f5b309e",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "cb642aa7-758a-4373-b126-59290a7ab112",
+              "name": "payer",
+              "value": "={{ $json.payer }}",
+              "type": "string"
+            },
+            {
+              "id": "668b5d19-068b-45ca-bf79-20aa3e2f8e7b",
+              "name": "invoice_status",
+              "value": "={{ $json.invoice_status }}",
+              "type": "string"
+            },
+            {
+              "id": "bac20ef5-8012-4e54-86e4-041e6eb673ee",
+              "name": "deal",
+              "value": "={{ $json.deal.slice(8, 15) }}",
+              "type": "string"
+            },
+            {
+              "id": "c196bdab-5859-4709-899b-a3f9a5253afe",
+              "name": "manager",
+              "value": "={{ $json.manager }}",
+              "type": "string"
+            },
+            {
+              "id": "93f8c7e9-40af-461c-8ccf-f37c0b08adeb",
+              "name": "amount_uah",
+              "value": "={{ $json.amount_uah }}",
+              "type": "number"
+            },
+            {
+              "id": "ba4cfcbb-34ce-40e8-adf3-5bfffc9bea8a",
+              "name": "payment_type",
+              "value": "={{ $json.payment_type }}",
+              "type": "string"
+            },
+            {
+              "id": "e6e61d49-62b6-43d7-9255-b416ceae646c",
+              "name": "exp_payment_date",
+              "value": "={{ $json.exp_payment_date }}",
+              "type": "string"
+            },
+            {
+              "id": "44b0eb46-69c4-4aa2-881d-2a570fa5ea3f",
+              "name": "overdue_invoice_date",
+              "value": "={{ $json.overdue_invoice_date }}",
+              "type": "number"
+            },
+            {
+              "id": "55b93650-8e2f-4e8c-8ea2-ec1a174dfbcb",
+              "name": "payment_terms",
+              "value": "={{ $json.payment_terms }}",
+              "type": "number"
+            },
+            {
+              "id": "4d2c2f0a-9c10-415b-aa0f-21a6f2e38f56",
+              "name": "overdue_payment_terms",
+              "value": "={{ $json.overdue_payment_terms }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        -16
+      ],
+      "id": "fc21df87-744d-4f2f-b2a8-a363e4db5af1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c0622b8-e0b2-4f46-ad10-b3b4809df216",
+              "name": "number",
+              "value": "={{ $json.number }}",
+              "type": "string"
+            },
+            {
+              "id": "37350b5f-7b1e-4901-a5a8-c09e6f5b309e",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "cb642aa7-758a-4373-b126-59290a7ab112",
+              "name": "payer",
+              "value": "={{ $json.payer }}",
+              "type": "string"
+            },
+            {
+              "id": "668b5d19-068b-45ca-bf79-20aa3e2f8e7b",
+              "name": "invoice_status",
+              "value": "={{ $json.invoice_status }}",
+              "type": "string"
+            },
+            {
+              "id": "bac20ef5-8012-4e54-86e4-041e6eb673ee",
+              "name": "deal",
+              "value": "={{ $json.deal.slice(8, 15) }}",
+              "type": "string"
+            },
+            {
+              "id": "c196bdab-5859-4709-899b-a3f9a5253afe",
+              "name": "manager",
+              "value": "={{ $json.manager }}",
+              "type": "string"
+            },
+            {
+              "id": "ccae0b25-31b6-42c7-a77e-8f4837704f01",
+              "name": "amount_eur",
+              "value": "={{ $json.amount_eur }}",
+              "type": "string"
+            },
+            {
+              "id": "920a11b8-c68b-4dfe-8f00-d0b51fa24b2e",
+              "name": "amount_usd",
+              "value": "={{ $json.amount_usd }}",
+              "type": "number"
+            },
+            {
+              "id": "ec384d4f-aae7-4e86-8eb4-6cd4c5c17f3b",
+              "name": "bypass_number",
+              "value": "={{ $json.bypass_number }}",
+              "type": "string"
+            },
+            {
+              "id": "449f1c36-4bb3-41b5-a2d4-bad1814e2066",
+              "name": "exp_payment_date",
+              "value": "={{ $json.exp_payment_date }}",
+              "type": "string"
+            },
+            {
+              "id": "d6342c5d-5d00-43f8-9651-4443b51a8f09",
+              "name": "overdue_invoice_date",
+              "value": "={{ $json.overdue_invoice_date }}",
+              "type": "number"
+            },
+            {
+              "id": "e5a95989-4091-4ee2-ad4b-a79c28fff112",
+              "name": "payment_terms",
+              "value": "={{ $json.payment_terms }}",
+              "type": "number"
+            },
+            {
+              "id": "baf3a075-45a5-4544-93d6-7c1085c5cce5",
+              "name": "overdue_payment_terms",
+              "value": "={{ $json.overdue_payment_terms }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        400
+      ],
+      "id": "a337e88f-3712-411e-87dd-8d26cd261cf8",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1104,
+        176
+      ],
+      "id": "2c7892e2-8990-450d-8765-fb511cb3aba5",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Debitors list {{ $now.format('dd-MM-yy') }}",
+        "emailType": "text",
+        "message": "=Дорога команда,  \n\nдивіться нижче посилання на файл з актуальною \nдебіторською та кредиторською заборгованістю.\n\nhttps://docs.google.com/spreadsheets/d/{{ $('Copy file1').item.json.id }}/edit?gid=0#gid=0 \n\n\nЗ повагою, ваш \nШІ‑асистент Іріс.",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Iris"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2384,
+        192
+      ],
+      "id": "df8fe8c1-95be-4474-9593-176db8f76b86",
+      "name": "Send a message",
+      "webhookId": "df2afcf5-294f-46fb-906d-d77ea36c2329"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8582d45b-5df0-41f8-b343-087ba14cb56a",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "hellmann.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "2cdb3282-21d7-4701-875e-dc04c1ffce49",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "ruslanayarova",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1520,
+        192
+      ],
+      "id": "d07a1b2d-e212-44aa-8808-82de7f108ce3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1776,
+        176
+      ],
+      "id": "261c02c8-cd0b-4055-a30c-24425d826248",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2224,
+        192
+      ],
+      "id": "a3e9a9c2-b507-43a8-a267-384b694ceed1",
+      "name": "Wait",
+      "webhookId": "ef0330b3-010e-4abd-bac7-b50bcdcc65a1"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "node_exec",
+          "mode": "list",
+          "cachedResultName": "node_exec"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "uuid": "={{ $json.uuid }}",
+            "date": "={{ $now.format('dd-MM-yyyy') }}",
+            "description": "Debitors/creditors list sending",
+            "status": "done "
+          },
+          "matchingColumns": [
+            "uuid"
+          ],
+          "schema": [
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2384,
+        48
+      ],
+      "id": "97ea070f-1f65-4df5-bbb7-74a8e6e6c560",
+      "name": "Insert or update rows in a table"
+    },
+    {
+      "parameters": {
+        "jsCode": "const { randomUUID } = require('crypto');\n\nconst uuid = randomUUID(); // e.g., 'b3a9d1b6-5d2a-4c7e-8a6a-0b1a3f2c9f8a'\n\n// Return as item data\nreturn [\n  {\n    json: { uuid },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        48
+      ],
+      "id": "1724d543-ba0a-4abe-a256-13da58eceb60",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "https://node.od.ua:8000/api/v1/ftp-json/?key=nodeapisecret0482&qtype=debet_bank",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -336,
+        -16
+      ],
+      "id": "514f38d1-c87c-4278-9497-bfcdc947fbca",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2a539536-6b2f-4396-888d-77a73aef0938",
+              "name": "number",
+              "value": "={{ $json.number }}",
+              "type": "string"
+            },
+            {
+              "id": "50a975b8-fb8f-49b4-89e2-a31d685c67d9",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "876d98ed-d2f1-4957-9528-531a49c60f79",
+              "name": "order_number",
+              "value": "={{ $json.order_number }}",
+              "type": "string"
+            },
+            {
+              "id": "60df63e8-5842-4a24-928e-cca843905f81",
+              "name": "payer",
+              "value": "={{ $json.payer }}",
+              "type": "string"
+            },
+            {
+              "id": "5426bb3c-497a-4f3b-9bc8-86b16fb53ede",
+              "name": "deal",
+              "value": "={{ $json.deal.slice(8, 15) }}",
+              "type": "string"
+            },
+            {
+              "id": "8910c394-5f0f-4089-8364-2d6227942e06",
+              "name": "amount_uah",
+              "value": "={{ $json.amount_uah }}",
+              "type": "number"
+            },
+            {
+              "id": "bb7a53e6-f00e-4dc2-a351-ea37bc7c5a76",
+              "name": "payment_type",
+              "value": "={{ $json.payment_type }}",
+              "type": "string"
+            },
+            {
+              "id": "f79032e9-8995-4592-a904-b8c42f9f5304",
+              "name": "service",
+              "value": "={{ $json.service }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        192
+      ],
+      "id": "af82aec7-c165-4583-a693-c398d74544a8",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Date & Time3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time2": {
+      "main": [
+        [
+          {
+            "node": "Sort1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time3": {
+      "main": [
+        [
+          {
+            "node": "Date & Time2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Copy file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Date & Time4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Date & Time6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time5": {
+      "main": [
+        [
+          {
+            "node": "Sort2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time6": {
+      "main": [
+        [
+          {
+            "node": "Date & Time5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "871ebc21-b1c5-4526-a561-dfc6d9cf4c02",
+  "meta": null,
+  "id": "VznO0LV4NHHxfxtT"
+}

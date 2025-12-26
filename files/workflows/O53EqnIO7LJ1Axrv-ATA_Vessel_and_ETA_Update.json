@@ -14,14 +14,14 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -624,
+        -1200,
         128
       ],
       "webhookId": "af481634-2c3b-4f96-bb6c-17157826e3f3",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
     },
@@ -49,8 +49,8 @@
       "notesInFlow": false,
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
     },
@@ -378,7 +378,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -96,
+        -112,
         128
       ],
       "id": "6d56ac28-9c9a-4c6d-885a-982cd4c0aa90",
@@ -432,8 +432,8 @@
       "alwaysOutputData": false,
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       },
       "onError": "continueRegularOutput"
@@ -461,8 +461,8 @@
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
     },
@@ -741,15 +741,15 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
-          "value": "xcVnOtiQfHS5OOia",
+          "value": "j5NbDkI54jGPEaG0",
           "mode": "list",
-          "cachedResultName": "HEE_employess",
-          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/j5NbDkI54jGPEaG0"
         },
         "filters": {
           "conditions": [
             {
-              "keyName": "ONE_C_name",
+              "keyName": "one_c_name",
               "keyValue": "={{ $json.Manager }}"
             }
           ]
@@ -766,7 +766,7 @@
     },
     {
       "parameters": {
-        "chatId": "544911412",
+        "chatId": "={{ $json.tg_account }}",
         "text": "=Букинг  {{ $('Update АТА').item.json.Booking_number }} с {{ $('Update АТА').item.json.Quantity  }} прибыл в {{ $('Update АТА').item.json.POL }} {{ $('Update АТА').item.json.ATA }}",
         "additionalFields": {
           "appendAttribution": false
@@ -783,8 +783,8 @@
       "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
     },
@@ -1418,15 +1418,15 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
-          "value": "xcVnOtiQfHS5OOia",
+          "value": "j5NbDkI54jGPEaG0",
           "mode": "list",
-          "cachedResultName": "HEE_employess",
-          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/j5NbDkI54jGPEaG0"
         },
         "filters": {
           "conditions": [
             {
-              "keyName": "ONE_C_name",
+              "keyName": "one_c_name",
               "keyValue": "={{ $('Update ETA').item.json.Manager }}"
             }
           ]
@@ -1460,8 +1460,8 @@
       "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
     },
@@ -1533,15 +1533,15 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
-          "value": "xcVnOtiQfHS5OOia",
+          "value": "j5NbDkI54jGPEaG0",
           "mode": "list",
-          "cachedResultName": "HEE_employess",
-          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/xcVnOtiQfHS5OOia"
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/j5NbDkI54jGPEaG0"
         },
         "filters": {
           "conditions": [
             {
-              "keyName": "ONE_C_name",
+              "keyName": "one_c_name",
               "keyValue": "={{ $('Get row(s)').item.json.Manager }}"
             }
           ]
@@ -1575,8 +1575,8 @@
       "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
     },
@@ -1592,10 +1592,10 @@
         },
         "sheetName": {
           "__rl": true,
-          "value": 1694299978,
+          "value": 950558363,
           "mode": "list",
-          "cachedResultName": "test",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+          "cachedResultName": "test page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=950558363"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -1881,10 +1881,10 @@
         },
         "sheetName": {
           "__rl": true,
-          "value": 1694299978,
+          "value": 950558363,
           "mode": "list",
-          "cachedResultName": "test",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+          "cachedResultName": "test page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=950558363"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -2171,10 +2171,10 @@
         },
         "sheetName": {
           "__rl": true,
-          "value": 1694299978,
+          "value": 950558363,
           "mode": "list",
-          "cachedResultName": "test",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=1694299978"
+          "cachedResultName": "test page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=950558363"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -2471,8 +2471,8 @@
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
     },
@@ -2491,7 +2491,7 @@
     },
     {
       "parameters": {
-        "chatId": "8041897638",
+        "chatId": "544911412",
         "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
@@ -2538,52 +2538,10 @@
       "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
       }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "f1b665f8-9c03-4d64-9c5f-62c0c2dbe50f",
-              "leftValue": "={{ $json.message.chat.id }}",
-              "rightValue": 8041897638,
-              "operator": {
-                "type": "number",
-                "operation": "equals"
-              }
-            },
-            {
-              "id": "0e9a4bf4-0a42-4a40-a1b1-8a8d75f7a8e7",
-              "leftValue": "={{ $json.message.text }}",
-              "rightValue": "/update_booking",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "7c9bc63e-e277-4712-be67-732b0a3037d3",
-      "name": "If start from allowed user",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -304,
-        128
-      ]
     },
     {
       "parameters": {
@@ -2632,16 +2590,6 @@
               "operator": {
                 "type": "string",
                 "operation": "empty",
-                "singleValue": true
-              }
-            },
-            {
-              "id": "ca647c1c-6954-43b0-9757-31645e13ef7a",
-              "leftValue": "={{ $json.updatedToday }}",
-              "rightValue": false,
-              "operator": {
-                "type": "boolean",
-                "operation": "false",
                 "singleValue": true
               }
             }
@@ -2862,10 +2810,11 @@
       "webhookId": "d7f75beb-8c44-4516-b129-8fc56cc53e61",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -2884,10 +2833,129 @@
       "webhookId": "2f2a832b-a14c-4cf5-9fe5-ad56ecf8a60a",
       "credentials": {
         "telegramApi": {
-          "id": "tr6sdpVZ6vPF4MC1",
-          "name": "Telegram account"
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0e9a4bf4-0a42-4a40-a1b1-8a8d75f7a8e7",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/update_booking",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "c7cbbdd3-e200-4a05-991e-6a455b0bf4ce",
+              "leftValue": "={{ $json.message.chat.id }}",
+              "rightValue": 544911412,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4243cbf6-34da-4fb3-b160-57b8cd517973",
+      "name": "If start from allowed user1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": null\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -656,
+        -704
+      ],
+      "id": "dd70f0fa-89fa-4aa1-aa9e-cb3f12929d16",
+      "name": "When Executed by Another Workflow",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].additionalFields.callback_data }}"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].additionalFields.callback_data }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        -704
+      ],
+      "id": "4b6533ad-9cc1-439d-b10c-16ebe1f33fa6",
+      "name": "Send a text message",
+      "webhookId": "3d7258e9-7793-4086-935b-8239d3ca6899",
+      "credentials": {
+        "telegramApi": {
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Input: items[0].json.thisFieldAcceptsAnyType = Array of { ok, result: { chat:{id}, text, ... } }\n// Output: many items: { chatId, text, inlineKeyboard }\n\nfunction getPayload(json) {\n  // основной кейс\n  if (Array.isArray(json?.thisFieldAcceptsAnyType)) return json.thisFieldAcceptsAnyType;\n\n  // иногда это может быть строкой JSON (если где-то включили convertFieldsToString)\n  if (typeof json?.thisFieldAcceptsAnyType === 'string') {\n    try {\n      const parsed = JSON.parse(json.thisFieldAcceptsAnyType);\n      if (Array.isArray(parsed)) return parsed;\n    } catch (e) {}\n  }\n\n  // запасные варианты, если поле называется иначе\n  if (Array.isArray(json?.data)) return json.data;\n  if (typeof json?.data === 'string') {\n    try {\n      const parsed = JSON.parse(json.data);\n      if (Array.isArray(parsed)) return parsed;\n    } catch (e) {}\n  }\n\n  return [];\n}\n\nconst root = items?.[0]?.json ?? {};\nconst arr = getPayload(root);\n\nconst inlineKeyboard = {\n  rows: [\n    {\n      row: {\n        buttons: [\n          { text: 'Accept', additionalFields: { callback_data: 'in progress' } },\n          { text: 'Cancel', additionalFields: { callback_data: 'cancel' } },\n        ],\n      },\n    },\n  ],\n};\n\nconst out = [];\n\nfor (const entry of arr) {\n  const res = entry?.result ?? {};\n  const chatId = res?.chat?.id;\n  const text = res?.text;\n\n  if (!chatId || !text) continue;\n\n  out.push({\n    json: {\n      chatId,\n      text,\n      inlineKeyboard,\n    },\n  });\n}\n\nreturn out.length ? out : [{ json: { error: 'No valid telegram results in thisFieldAcceptsAnyType' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        -704
+      ],
+      "id": "f5d756fe-1513-4a5d-b75d-2d5bb3e67d3c",
+      "name": "Code in JavaScript3"
     }
   ],
   "pinData": {},
@@ -2896,7 +2964,7 @@
       "main": [
         [
           {
-            "node": "If start from allowed user",
+            "node": "If start from allowed user1",
             "type": "main",
             "index": 0
           }
@@ -3268,24 +3336,6 @@
         ]
       ]
     },
-    "If start from allowed user": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript2",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get row(s)4": {
       "main": [
         [
@@ -3373,16 +3423,56 @@
           }
         ]
       ]
+    },
+    "If start from allowed user1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
     "timeSavedMode": "fixed"
   },
-  "versionId": "d56b3c8f-eae0-4d8e-8a6c-0cfcfd0ba884",
+  "versionId": "ef170e69-efe8-499a-8a49-60567dc0b437",
   "meta": {
     "templateCredsSetupCompleted": true
   },

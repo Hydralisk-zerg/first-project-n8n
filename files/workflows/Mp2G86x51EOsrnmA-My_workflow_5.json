@@ -1,0 +1,64 @@
+{
+  "name": "My workflow 5",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -784,
+        -112
+      ],
+      "id": "f2de90ed-4210-45c7-8411-edadef045e2e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "7juzZIgCLicZLlci",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/7juzZIgCLicZLlci"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        -112
+      ],
+      "id": "41dc4bea-1a15-4c72-8e34-8c1a74c94ec0",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d6d7b40-e31b-4f71-9ec6-a1632b85bc06",
+  "meta": null,
+  "id": "Mp2G86x51EOsrnmA"
+}

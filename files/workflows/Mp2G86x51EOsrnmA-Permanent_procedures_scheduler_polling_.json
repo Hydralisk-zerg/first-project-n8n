@@ -1,0 +1,456 @@
+{
+  "name": "Permanent procedures scheduler (polling)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1952,
+        256
+      ],
+      "id": "32014b14-0744-4139-9d51-115b044c158e",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "2KUOy48aec2s67nQ",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/2KUOy48aec2s67nQ"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "start_time",
+              "keyValue": "={{ $json.start_time }}"
+            },
+            {
+              "keyName": "enabled",
+              "condition": "isTrue"
+            },
+            {
+              "keyName": "days_of_week",
+              "condition": "like",
+              "keyValue": "={{ $json.days_of_week }}"
+            }
+          ]
+        },
+        "limit": null
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1552,
+        256
+      ],
+      "id": "b3db87e5-8a06-4b44-8b89-b71f2aa02141",
+      "name": "Get row(s)1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $('Code in JavaScript').item.json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Accept",
+                    "additionalFields": {
+                      "callback_data": "in progress"
+                    }
+                  },
+                  {
+                    "text": "Cancel",
+                    "additionalFields": {
+                      "callback_data": "cancel"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        256
+      ],
+      "id": "50d9a74e-8da5-4b6e-8d1f-24fe3e258e87",
+      "name": "Send a text message",
+      "webhookId": "6a78dc58-bf89-409e-8735-d471fbbc0749",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Input:\n// - either many items, each item.json = one row\n// - or a single item where item.json is an array of rows\n// Output:\n// - one item: { text: \"...\" } for Telegram node\n\nfunction toDateOnly(v) {\n  if (!v) return null;\n  const d = new Date(v);\n  if (Number.isNaN(d.getTime())) return null;\n  return d.toISOString().slice(0, 10); // YYYY-MM-DD\n}\n\nfunction fmtDateRange(startDate, endDate) {\n  const s = toDateOnly(startDate);\n  const e = toDateOnly(endDate);\n  if (s && e) return `${s} — ${e}`;\n  if (s && !e) return `с ${s}`;\n  if (!s && e) return `до ${e}`;\n  return `без ограничений`;\n}\n\nfunction fmtWeekdays(daysOfWeek) {\n  // Expect \"1,2,3,4,5\" where 1=Mon ... 7=Sun\n  const map = { 1: \"Пн\", 2: \"Вт\", 3: \"Ср\", 4: \"Чт\", 5: \"Пт\", 6: \"Сб\", 7: \"Вс\" };\n\n  const raw = String(daysOfWeek ?? \"\").trim();\n  if (!raw) return \"не задано\";\n\n  const nums = raw\n    .split(\",\")\n    .map(s => parseInt(s.trim(), 10))\n    .filter(n => Number.isFinite(n) && n >= 1 && n <= 7);\n\n  if (!nums.length) return \"не задано\";\n\n  // unique + sort\n  const uniq = Array.from(new Set(nums)).sort((a, b) => a - b);\n\n  // common shortcuts\n  const key = uniq.join(\",\");\n  if (key === \"1,2,3,4,5\") return \"Пн–Пт\";\n  if (key === \"6,7\") return \"Сб–Вс\";\n  if (key === \"1,2,3,4,5,6,7\") return \"каждый день\";\n\n  return uniq.map(n => map[n]).join(\", \");\n}\n\nfunction normalizeRows(items) {\n  if (!items?.length) return [];\n  const first = items[0]?.json;\n\n  // If first item.json is an array of rows\n  if (Array.isArray(first)) return first;\n\n  // If first item.json has a property that is an array (optional convenience)\n  if (first && typeof first === \"object\") {\n    for (const k of Object.keys(first)) {\n      if (Array.isArray(first[k])) return first[k];\n    }\n  }\n\n  // Otherwise treat each item as one row\n  return items.map(i => i.json ?? {}).filter(r => r && typeof r === \"object\");\n}\n\nconst rows = normalizeRows(items);\n\n// Sort by start_time, then id\nrows.sort((a, b) => {\n  const ta = String(a.start_time ?? \"\");\n  const tb = String(b.start_time ?? \"\");\n  if (ta !== tb) return ta.localeCompare(tb);\n  return Number(a.id ?? 0) - Number(b.id ?? 0);\n});\n\nconst lines = [];\nlines.push($input.first().json.description);\n\nif (!rows.length) {\n  lines.push(\"— пусто\");\n} else {\n  for (const r of rows) {\n    const enabled = r.enabled === true;\n    const status = enabled ? \"✅\" : \"⛔️\";\n\n    const title = String(r.workflow_id ?? \"(без workflow_id)\");\n    const time = String(r.start_time ?? \"--:--\");\n    const days = fmtWeekdays(r.days_of_week);\n    const range = fmtDateRange(r.start_date, r.end_date);\n    const tz = r.timezone ? String(r.timezone) : \"локальная\";\n    const last = r.last_started_at ? String(r.last_started_at) : \"никогда\";\n\n    lines.push(\n      `${status} #${r.id ?? \"?\"} — ${title}\\n` +\n      `⏰ ${time} | 📅 ${days} | 🗓 ${range}\\n` +\n      `🌍 TZ: ${tz} | ▶️ last: ${last}`\n    );\n  }\n}\n\nconst text = lines.join(\"\\n\\n\");\n\nreturn [{ json: { text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        256
+      ],
+      "id": "b93adf43-1e33-46bd-b394-52bf7a9ad303",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Input: either one item with json like { \"Hour\": \"10\", \"Minute\": \"34\", \"Day of week\": \"Thursday\" }\n// or one item with json as an array: [ { ... } ]\n// Output: { start_time: \"HH:MM\", days_of_week: \"1,2,3,4,5,6,7\" }\n\nfunction pad2(v) {\n  const n = parseInt(String(v ?? ''), 10);\n  if (!Number.isFinite(n) || n < 0) return '00';\n  return String(n).padStart(2, '0');\n}\n\nfunction mapDayOfWeekToN8n(dayName) {\n  // n8n convention we used: 1=Mon ... 7=Sun\n  const d = String(dayName ?? '').trim().toLowerCase();\n  const map = {\n    monday: '1',\n    tuesday: '2',\n    wednesday: '3',\n    thursday: '4',\n    friday: '5',\n    saturday: '6',\n    sunday: '7',\n  };\n  return map[d] || '';\n}\n\nconst firstJson = items?.[0]?.json;\nconst row = Array.isArray(firstJson) ? (firstJson[0] ?? {}) : (firstJson ?? {});\n\nconst hh = pad2(row['Hour']);\nconst mm = pad2(row['Minute']);\n\nconst dow = mapDayOfWeekToN8n(row['Day of week']);\n\n// Если день недели распознан — ставим только его (например \"4\").\n// Если нет — по умолчанию \"каждый день\", как ты просил в примере.\nconst days_of_week = dow ? dow : '1,2,3,4,5,6,7';\n\nreturn [\n  {\n    json: {\n      start_time: `${hh}:${mm}`,\n      days_of_week,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        256
+      ],
+      "id": "ec86de87-bb87-4c93-afdb-b7a75ef61cff",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "2KUOy48aec2s67nQ",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/2KUOy48aec2s67nQ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "start_time",
+              "keyValue": "={{ $('Code in JavaScript1').item.json.start_time }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_started_at": "={{ $('Schedule Trigger1').item.json[\"Readable time\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "enabled",
+              "displayName": "enabled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "workflow_id",
+              "displayName": "workflow_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "days_of_week",
+              "displayName": "days_of_week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_date",
+              "displayName": "start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "end_date",
+              "displayName": "end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_started_at",
+              "displayName": "last_started_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        256
+      ],
+      "id": "60342d0b-d17c-490b-897a-ecf6241ce17f",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input item example: { tg_id_usera: \"544911412, 8041897638\", text: \"...\", ... }\n// Output: many items: { chatId: \"544911412\", text: \"...\"} + { chatId: \"8041897638\", text: \"...\" }\n\nfunction parseChatIds(v) {\n  const raw = String(v ?? '').trim();\n  if (!raw) return [];\n\n  return raw\n    .split('|')\n    .map(s => s.trim())\n    .map(s => s.replace(/[^\\d-]/g, ''))  // на всякий случай чистим мусор\n    .filter(Boolean);\n}\n\nconst base = items?.[0]?.json ?? {};\n\n// 1) ids из таблицы\nconst idsFromTable = parseChatIds(base.tg_id_usera);\n\n// 2) если хочешь ДОБАВЛЯТЬ админа всегда — оставь эту строку,\n// если нет — сделай adminIds пустым массивом []\n\n\nconst all = [ ...idsFromTable];\n\n// uniq (без дублей)\nconst uniq = Array.from(new Set(all));\n\nreturn uniq.map(chatId => ({\n  json: {\n    ...base,\n    chatId,                 // для Telegram node\n    text: base.text ?? '',   // чтобы Telegram node брал текст отсюда\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        256
+      ],
+      "id": "a4dda3f8-5506-484a-8b6a-4624a086dd5f",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        256
+      ],
+      "id": "96650797-ec73-4c41-a7c0-03953a1d5cce",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $('Update row(s)').item.json.workflow_id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "thisFieldAcceptsAnyType": "={{ $json.data }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "aField",
+              "displayName": "aField",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "aNumber",
+              "displayName": "aNumber",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": true
+            },
+            {
+              "id": "thisFieldAcceptsAnyType",
+              "displayName": "thisFieldAcceptsAnyType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "anArray",
+              "displayName": "anArray",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        256
+      ],
+      "id": "96f0f77c-7336-429e-aca3-353ae665f5c6",
+      "name": "Call 'ATA, Vessel and ETA Update'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Call 'ATA, Vessel and ETA Update'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Kyiv",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "43b2d2ac-836d-45f0-ab29-66904a624527",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "Mp2G86x51EOsrnmA"
+}
