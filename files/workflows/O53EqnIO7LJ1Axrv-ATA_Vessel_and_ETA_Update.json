@@ -14,7 +14,7 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -1200,
+        -112,
         128
       ],
       "webhookId": "af481634-2c3b-4f96-bb6c-17157826e3f3",
@@ -42,7 +42,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        592,
+        1632,
         288
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
@@ -63,7 +63,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        128,
+        1168,
         -112
       ]
     },
@@ -333,7 +333,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1088,
+        2128,
         -80
       ]
     },
@@ -344,7 +344,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        128,
+        1168,
         320
       ],
       "id": "43c153eb-af87-4f51-8524-f8a6536794d4",
@@ -378,7 +378,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -112,
+        928,
         128
       ],
       "id": "6d56ac28-9c9a-4c6d-885a-982cd4c0aa90",
@@ -407,7 +407,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        592,
+        1632,
         -128
       ],
       "id": "69ca8695-7b9c-4bcc-9a15-42c2519bbcae",
@@ -423,7 +423,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2160,
+        3200,
         -288
       ],
       "id": "b9d24c0b-4ed9-4658-9221-8cb578ff79d7",
@@ -455,7 +455,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        592,
+        1632,
         112
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
@@ -732,7 +732,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1088,
+        2128,
         -288
       ]
     },
@@ -758,7 +758,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1360,
+        2400,
         -480
       ],
       "id": "ff8cbcca-2e6c-4bfa-ac6d-94f5861e5bd7",
@@ -775,7 +775,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1552,
+        2592,
         -480
       ],
       "id": "adff953c-e984-4480-acd7-5cc141469265",
@@ -865,7 +865,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        368,
+        1408,
         304
       ],
       "id": "839193b6-864d-4e4c-b223-378e62122824",
@@ -948,7 +948,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        800,
+        1840,
         -144
       ],
       "id": "0c33ccc6-82b9-4c5d-b71f-d1d6a90771fd",
@@ -982,7 +982,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        368,
+        1408,
         -112
       ],
       "id": "dbf61d50-f9d0-4f25-849a-da5e6c2bffbb",
@@ -1015,7 +1015,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        368,
+        1408,
         128
       ],
       "id": "90cd0f99-133b-4ffb-9e09-3fb144edc38d",
@@ -1034,7 +1034,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1552,
+        2592,
         -288
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
@@ -1059,7 +1059,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1552,
+        2592,
         -80
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
@@ -1084,7 +1084,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1552,
+        2592,
         352
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
@@ -1362,7 +1362,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1088,
+        2128,
         128
       ]
     },
@@ -1394,7 +1394,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1936,
+        2976,
         -80
       ],
       "id": "459851d7-3727-4b1d-ac50-4703dff762f5",
@@ -1407,7 +1407,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1728,
+        2768,
         -80
       ],
       "id": "fc8e1210-16ba-4027-acd3-21b451b2ab1e",
@@ -1435,7 +1435,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2160,
+        3200,
         -80
       ],
       "id": "0a408378-220c-4e27-a16f-cd5efa9de137",
@@ -1452,7 +1452,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2352,
+        3392,
         -80
       ],
       "id": "c0331262-bf69-45ea-b243-775ca8025f16",
@@ -1522,7 +1522,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1072,
+        2112,
         -656
       ],
       "id": "c88b1a47-c5b2-4807-b357-47df5fef39e5",
@@ -1550,7 +1550,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1360,
+        2400,
         128
       ],
       "id": "495fce1d-1068-4202-9152-79ef20fc8b78",
@@ -1567,7 +1567,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1552,
+        2592,
         128
       ],
       "id": "c45e7080-ab9d-4894-b938-ab02e92c18a2",
@@ -1857,7 +1857,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1360,
+        2400,
         352
       ],
       "id": "916ea5e0-dc35-4e34-a8fb-c263e5abfefc",
@@ -2145,7 +2145,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1360,
+        2400,
         -80
       ],
       "id": "838a2777-fa89-4551-889b-d30db60f23e4",
@@ -2435,7 +2435,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        1360,
+        2400,
         -288
       ],
       "id": "24726097-9c01-41a6-916a-d8344d2e657d",
@@ -2465,7 +2465,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        592,
+        1632,
         480
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
@@ -2485,8 +2485,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        128,
-        -352
+        784,
+        -496
       ]
     },
     {
@@ -2532,8 +2532,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        592,
-        -352
+        1248,
+        -496
       ],
       "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
       "credentials": {
@@ -2558,8 +2558,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        -96,
-        -352
+        560,
+        -496
       ],
       "id": "6bd58cef-730d-4c50-bdef-6d7d51491c70",
       "name": "Get row(s)4"
@@ -2601,8 +2601,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        352,
-        -352
+        1008,
+        -496
       ],
       "id": "b66987e7-44bd-4d56-955b-e1e374a3bbf4",
       "name": "If4"
@@ -2614,8 +2614,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
-        -352
+        352,
+        -496
       ],
       "id": "cabed116-99c4-445f-9482-712b8e4b0e86",
       "name": "Code in JavaScript2"
@@ -2642,7 +2642,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1936,
+        2976,
         -288
       ],
       "id": "12996d0a-c9f0-4210-b015-df107ec6af27",
@@ -2672,7 +2672,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2160,
+        3200,
         -528
       ],
       "id": "8380fc51-f1c4-4004-8b34-b903228d54f1",
@@ -2701,7 +2701,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        128,
+        1168,
         128
       ],
       "id": "37252d06-4a86-407f-9108-61a9f7221a65",
@@ -2787,8 +2787,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        784,
-        -352
+        1440,
+        -496
       ],
       "id": "ee0257c2-389b-4bc4-8e1f-ddd83a3d2f6e",
       "name": "Insert row"
@@ -2802,7 +2802,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2352,
+        3392,
         -288
       ],
       "id": "0adff97b-8fae-4ac9-8f46-7b5b62f8918a",
@@ -2825,7 +2825,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2544,
+        3584,
         -288
       ],
       "id": "03bd267f-1567-4695-bef7-cef0b732aff5",
@@ -2851,7 +2851,7 @@
           "conditions": [
             {
               "id": "0e9a4bf4-0a42-4a40-a1b1-8a8d75f7a8e7",
-              "leftValue": "={{ $json.message.text }}",
+              "leftValue": "={{ $('Telegram Callback').item.json.callback_query.data }}",
               "rightValue": "/update_booking",
               "operator": {
                 "type": "string",
@@ -2860,7 +2860,7 @@
             },
             {
               "id": "c7cbbdd3-e200-4a05-991e-6a455b0bf4ce",
-              "leftValue": "={{ $json.message.chat.id }}",
+              "leftValue": "={{ $('Telegram Callback').item.json.callback_query.message.chat.id }}",
               "rightValue": 544911412,
               "operator": {
                 "type": "number",
@@ -2877,20 +2877,20 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -320,
+        608,
         128
       ]
     },
     {
       "parameters": {
         "inputSource": "jsonExample",
-        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": null\n}"
+        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": [\n  {\n    \"ok\": true,\n    \"result\": {\n      \"message_id\": 11047,\n      \"from\": {\n        \"id\": 1842239291,\n        \"is_bot\": true,\n        \"first_name\": \"Hellmann_EEO_bot\",\n        \"username\": \"Terra_incognito_bot\"\n      },\n      \"chat\": {\n        \"id\": 544911412,\n        \"first_name\": \"Alexey\",\n        \"last_name\": \"Ilchenko\",\n        \"username\": \"Batman_ila\",\n        \"type\": \"private\"\n      },\n      \"date\": 1767001376,\n      \"text\": \"Проверить сообщения от клиентов и ответить по статусам доставок (слот 11:42)\\n\\n✅ #703 — O53EqnIO7LJ1Axrv\\n⏰ 11:42 | 📅 Пн | 🗓 без ограничений\\n🌍 TZ: Europe/Kyiv | ▶️ last: 11:42:29 am\",\n      \"reply_markup\": {\n        \"inline_keyboard\": [\n          [\n            {\n              \"text\": \"Accept\",\n              \"callback_data\": \"in progress\"\n            },\n            {\n              \"text\": \"Cancel\",\n              \"callback_data\": \"/update_booking\"\n            }\n          ]\n        ]\n      }\n    }\n  }\n]\n}"
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -656,
-        -704
+        -528,
+        -304
       ],
       "id": "dd70f0fa-89fa-4aa1-aa9e-cb3f12929d16",
       "name": "When Executed by Another Workflow",
@@ -2909,7 +2909,7 @@
                   {
                     "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].text }}",
                     "additionalFields": {
-                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].additionalFields.callback_data }}"
+                      "callback_data": "=/update_booking"
                     }
                   },
                   {
@@ -2930,8 +2930,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -208,
-        -704
+        -96,
+        -304
       ],
       "id": "4b6533ad-9cc1-439d-b10c-16ebe1f33fa6",
       "name": "Send a text message",
@@ -2951,11 +2951,587 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -448,
-        -704
+        -336,
+        -304
       ],
       "id": "f5d756fe-1513-4a5d-b75d-2d5bb3e67d3c",
       "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "5KMOZoRPuMNtm4c9",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/5KMOZoRPuMNtm4c9"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user": "={{ $json.callback_query.from.id }}",
+            "event": "Accept: Stast upgate Sea fright task",
+            "description": "=The employee with the ID: {{ $json.callback_query.from.id }} has started the process of updating the ship's calls. "
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -272
+      ],
+      "id": "2915f5cc-b4ce-4f24-b12a-1939c051497a",
+      "name": "Insert row1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "2KUOy48aec2s67nQ",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/2KUOy48aec2s67nQ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id_after_hash }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_started_at": "={{ $now }}",
+            "status": "in progress"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "enabled",
+              "displayName": "enabled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "workflow_id",
+              "displayName": "workflow_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "tg_id_usera",
+              "displayName": "tg_id_usera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "time_to_complete_the_procedure",
+              "displayName": "time_to_complete_the_procedure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "days_of_week",
+              "displayName": "days_of_week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "data_of_the_month",
+              "displayName": "data_of_the_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "month",
+              "displayName": "month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_started_at",
+              "displayName": "last_started_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "completed",
+              "displayName": "completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -272
+      ],
+      "id": "40896bfb-5411-4e8a-94d4-cabfacc6c762",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ifItem = ($items('If start from allowed user1', 0, 0) || [])[0];\nconst text = String(ifItem?.json?.callback_query?.message?.text ?? '').trim();\n\nconst m = text.match(/#\\s*(\\d+)/);\n\nreturn [\n  {\n    json: {\n      id_after_hash: m ? Number(m[1]) : null,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -272
+      ],
+      "id": "dfa4ff85-aeb1-4c4d-83d2-3e0d0bbc1efa",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fa0db0c4-8628-4f8f-b0cc-48603d176486"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "14728d84-d1af-4596-b0eb-86bf2297cb26",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "=/update_booking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        128,
+        128
+      ],
+      "id": "737d378d-7908-4255-99aa-9e8477108ce3",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "5KMOZoRPuMNtm4c9",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/5KMOZoRPuMNtm4c9"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user": "={{ $('Telegram Callback').item.json.callback_query.message.chat.id }}",
+            "event": "Accept: Stast upgate Sea fright task",
+            "description": "=The employee with the ID: {{ $json.callback_query.message.chat.id }} refused to perform the procedure for updating vessel calls. "
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        160,
+        400
+      ],
+      "id": "f85aed03-b049-4394-a8f4-396b577d8234",
+      "name": "Insert row2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "2KUOy48aec2s67nQ",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/2KUOy48aec2s67nQ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id_after_hash }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_started_at": "={{ $now }}",
+            "status": "cancelled"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "enabled",
+              "displayName": "enabled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "workflow_id",
+              "displayName": "workflow_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "tg_id_usera",
+              "displayName": "tg_id_usera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "time_to_complete_the_procedure",
+              "displayName": "time_to_complete_the_procedure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "days_of_week",
+              "displayName": "days_of_week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "data_of_the_month",
+              "displayName": "data_of_the_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "month",
+              "displayName": "month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_started_at",
+              "displayName": "last_started_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "completed",
+              "displayName": "completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        608,
+        400
+      ],
+      "id": "bf93e4c9-829c-4092-b8fc-ea8662ec465c",
+      "name": "Update row(s)1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ifItem = ($items('Switch2', 0, 0) || [])[0];\nconst text = String(ifItem?.json?.callback_query?.message?.text ?? '').trim();\n\nconst m = text.match(/#\\s*(\\d+)/);\n\nreturn [\n  {\n    json: {\n      id_after_hash: m ? Number(m[1]) : null,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        400
+      ],
+      "id": "4310e412-5d30-49f8-8922-9afe6d7dbd8c",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Callback').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Callback').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        400
+      ],
+      "id": "4b5f348a-759f-43bd-9e83-be44c18c4903",
+      "name": "Delete a chat message3",
+      "webhookId": "5e779f40-4188-4387-9d3a-69af1d098880",
+      "credentials": {
+        "telegramApi": {
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -2964,7 +3540,7 @@
       "main": [
         [
           {
-            "node": "If start from allowed user1",
+            "node": "Switch2",
             "type": "main",
             "index": 0
           }
@@ -3431,6 +4007,11 @@
             "node": "Code in JavaScript2",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Insert row1",
+            "type": "main",
+            "index": 0
           }
         ],
         [
@@ -3463,16 +4044,94 @@
           }
         ]
       ]
+    },
+    "Insert row1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Insert row2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If start from allowed user1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
     "timeSavedMode": "fixed"
   },
-  "versionId": "ef170e69-efe8-499a-8a49-60567dc0b437",
+  "versionId": "c834acff-2516-44ec-b958-b0d477c2b55f",
   "meta": {
     "templateCredsSetupCompleted": true
   },

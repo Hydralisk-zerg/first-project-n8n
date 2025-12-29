@@ -46,6 +46,15 @@
               "keyName": "days_of_week",
               "condition": "like",
               "keyValue": "={{ $json.days_of_week }}"
+            },
+            {
+              "keyName": "data_of_the_month",
+              "keyValue": "={{ $json.day_of_month }}"
+            },
+            {
+              "keyName": "month",
+              "condition": "like",
+              "keyValue": "={{ $json.month_num }}"
             }
           ]
         },
@@ -74,7 +83,7 @@
                   {
                     "text": "Accept",
                     "additionalFields": {
-                      "callback_data": "in progress"
+                      "callback_data": "accept"
                     }
                   },
                   {
@@ -123,7 +132,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// n8n Code node (JavaScript)\n// Input: either one item with json like { \"Hour\": \"10\", \"Minute\": \"34\", \"Day of week\": \"Thursday\" }\n// or one item with json as an array: [ { ... } ]\n// Output: { start_time: \"HH:MM\", days_of_week: \"1,2,3,4,5,6,7\" }\n\nfunction pad2(v) {\n  const n = parseInt(String(v ?? ''), 10);\n  if (!Number.isFinite(n) || n < 0) return '00';\n  return String(n).padStart(2, '0');\n}\n\nfunction mapDayOfWeekToN8n(dayName) {\n  // n8n convention we used: 1=Mon ... 7=Sun\n  const d = String(dayName ?? '').trim().toLowerCase();\n  const map = {\n    monday: '1',\n    tuesday: '2',\n    wednesday: '3',\n    thursday: '4',\n    friday: '5',\n    saturday: '6',\n    sunday: '7',\n  };\n  return map[d] || '';\n}\n\nconst firstJson = items?.[0]?.json;\nconst row = Array.isArray(firstJson) ? (firstJson[0] ?? {}) : (firstJson ?? {});\n\nconst hh = pad2(row['Hour']);\nconst mm = pad2(row['Minute']);\n\nconst dow = mapDayOfWeekToN8n(row['Day of week']);\n\n// Если день недели распознан — ставим только его (например \"4\").\n// Если нет — по умолчанию \"каждый день\", как ты просил в примере.\nconst days_of_week = dow ? dow : '1,2,3,4,5,6,7';\n\nreturn [\n  {\n    json: {\n      start_time: `${hh}:${mm}`,\n      days_of_week,\n    },\n  },\n];"
+        "jsCode": "// n8n Code node (JavaScript)\n// Input: one item.json = { \"Hour\":\"13\",\"Minute\":\"42\",\"Day of week\":\"Monday\",\"Day of month\":\"29\",\"Month\":\"December\",\"Year\":\"2025\", ... }\n// or item.json as an array: [ { ... } ]\n// Output: { start_time:\"HH:MM\", days_of_week:\"...\", day_of_month: 29, month: \"December\", year: 2025, date_yyyy_mm_dd:\"2025-12-29\" }\n\nfunction pad2(v) {\n  const n = parseInt(String(v ?? ''), 10);\n  if (!Number.isFinite(n) || n < 0) return '00';\n  return String(n).padStart(2, '0');\n}\n\nfunction toIntOrNull(v) {\n  const n = parseInt(String(v ?? ''), 10);\n  return Number.isFinite(n) ? n : null;\n}\n\nfunction mapDayOfWeekToN8n(dayName) {\n  // 1=Mon ... 7=Sun\n  const d = String(dayName ?? '').trim().toLowerCase();\n  const map = {\n    monday: '1',\n    tuesday: '2',\n    wednesday: '3',\n    thursday: '4',\n    friday: '5',\n    saturday: '6',\n    sunday: '7',\n  };\n  return map[d] || '';\n}\n\nfunction monthNameToNumber(monthName) {\n  const m = String(monthName ?? '').trim().toLowerCase();\n  const map = {\n    january: 1,\n    february: 2,\n    march: 3,\n    april: 4,\n    may: 5,\n    june: 6,\n    july: 7,\n    august: 8,\n    september: 9,\n    october: 10,\n    november: 11,\n    december: 12,\n  };\n  return map[m] ?? null;\n}\n\nconst firstJson = items?.[0]?.json;\nconst row = Array.isArray(firstJson) ? (firstJson[0] ?? {}) : (firstJson ?? {});\n\n// time\nconst hh = pad2(row['Hour']);\nconst mm = pad2(row['Minute']);\nconst start_time = `${hh}:${mm}`;\n\n// dow\nconst dow = mapDayOfWeekToN8n(row['Day of week']);\nconst days_of_week = dow ? dow : '1,2,3,4,5,6,7';\n\n// date parts\nconst year = toIntOrNull(row['Year']);\nconst day_of_month = String(toIntOrNull(row['Day of month']));\nconst month_name = String(row['Month'] ?? '').trim();\nconst month_num = String(monthNameToNumber(month_name));\n\n// build YYYY-MM-DD if possible\nlet date_yyyy_mm_dd = null;\nif (year && month_num && day_of_month) {\n  date_yyyy_mm_dd = `${String(year).padStart(4, '0')}-${String(month_num).padStart(2, '0')}-${String(day_of_month).padStart(2, '0')}`;\n}\n\nreturn [\n  {\n    json: {\n      start_time,\n      days_of_week,\n      day_of_month,\n      month_num,          // <-- как у дня недели: число (1..12)\n      month: month_name || null, // можно убрать, если не нужно\n      year,\n      date_yyyy_mm_dd,\n    },\n  },\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -346,7 +355,8 @@
         256
       ],
       "id": "96f0f77c-7336-429e-aca3-353ae665f5c6",
-      "name": "Call 'ATA, Vessel and ETA Update'"
+      "name": "Call 'ATA, Vessel and ETA Update'",
+      "onError": "continueRegularOutput"
     }
   ],
   "pinData": {},
@@ -440,7 +450,7 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "timeSavedMode": "fixed",
@@ -448,7 +458,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "43b2d2ac-836d-45f0-ab29-66904a624527",
+  "versionId": "2c9088eb-5a8a-4eb2-abf5-f012977f6845",
   "meta": {
     "templateCredsSetupCompleted": true
   },
