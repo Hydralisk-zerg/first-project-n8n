@@ -14,7 +14,7 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -112,
+        224,
         128
       ],
       "webhookId": "af481634-2c3b-4f96-bb6c-17157826e3f3",
@@ -42,8 +42,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1632,
-        288
+        1760,
+        304
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "notesInFlow": false,
@@ -56,15 +56,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const text = $json.message.reply_to_message?.text || '';\nconst input = $json.message.text || '';\n\n// букинг из текста вопроса\nconst mBooking = text.match(/букинга\\s+([^\\s)]+)/i);\nconst booking = mBooking ? mBooking[1] : '';\n\n// тип обновления по вопросу\nlet updateType = /ата/i.test(text) ? 'ATA' : (/ета/i.test(text) ? 'ETA' : '');\n\n// Vessel-запрос: \"Добавте новое название судна для букинга ...\"\nconst vesselMatch = text.match(/название\\s+судна.*букинга\\s+([^\\s)]+)/i);\nif (vesselMatch) {\n  updateType = 'Vessel';\n}\n\n// row_number из callback_data\nconst row = $json.message.reply_to_message?.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data\n  ?.split('|')?.[2] || '';\n\n// валидация даты для ATA/ETA\nconst dateRegex = /^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;\nconst isDateValid = dateRegex.test(input);\nlet valid_date = false;\n\nif (updateType === 'Vessel') {\n  // для Vessel пропускаем без проверки даты\n  valid_date = true;\n} else if (updateType === 'ATA' || updateType === 'ETA') {\n  valid_date = isDateValid;\n}\n\nreturn [{\n  json: {\n    chat_id: $json.message.chat.id,\n    date: input,          // дата или текст (для Vessel – новое название судна)\n    booking,\n    row_number: row,\n    update_type: updateType,\n    valid_date\n  }\n}];"
+        "jsCode": "const text = $json.message.reply_to_message?.text || '';\nconst input = ($json.message.text || '').trim();\n\n// букинг из текста вопроса\nconst mBooking = text.match(/букинга\\s+([^\\s)]+)/i);\nconst booking = mBooking ? mBooking[1] : '';\n\n// тип обновления по вопросу\nlet updateType = /ата/i.test(text) ? 'ATA' : (/ета/i.test(text) ? 'ETA' : '');\n\n// Vessel-запрос: \"Добавте новое название судна для букинга ...\"\nconst vesselMatch = text.match(/название\\s+судна.*букинга\\s+([^\\s)]+)/i);\nif (vesselMatch) {\n  updateType = 'Vessel';\n}\n\n// row_number из callback_data\nconst row = $json.message.reply_to_message?.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data\n  ?.split('|')?.[2] || '';\n\n// валидация даты для ATA/ETA: формат + дата >= сегодня\nconst dateRegex = /^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;\n\nfunction dateOnlyUTC(d) {\n  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));\n}\n\nfunction parseYYYYMMDDtoUTC(s) {\n  // s must match regex\n  const [y, m, d] = s.split('-').map(n => parseInt(n, 10));\n  return new Date(Date.UTC(y, m - 1, d));\n}\n\nlet valid_date = false;\n\nif (updateType === 'Vessel') {\n  valid_date = true; // для Vessel пропускаем без проверки даты\n} else if (updateType === 'ATA' || updateType === 'ETA') {\n  const isFormatValid = dateRegex.test(input);\n\n  if (isFormatValid) {\n    const inputDate = parseYYYYMMDDtoUTC(input);\n    const today = dateOnlyUTC(new Date());\n\n    // на всякий: проверка что дата реально существует (29 Feb и т.п.)\n    const y = inputDate.getUTCFullYear();\n    const m = inputDate.getUTCMonth() + 1;\n    const d = inputDate.getUTCDate();\n    const reconstructed = `${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;\n    const isRealDate = reconstructed === input;\n\n    valid_date = isRealDate && (inputDate.getTime() >= today.getTime());\n  } else {\n    valid_date = false;\n  }\n}\n\nreturn [{\n  json: {\n    chat_id: $json.message.chat.id,\n    date: input,          // дата или текст (для Vessel – новое название судна)\n    booking,\n    row_number: row,\n    update_type: updateType,\n    valid_date\n  }\n}];"
       },
       "id": "33140945-8eae-47d5-b2c5-645a31f46176",
       "name": "Extract ETA & booking",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1168,
-        -112
+        1296,
+        -96
       ]
     },
     {
@@ -333,7 +333,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2128,
+        2240,
         -80
       ]
     },
@@ -344,8 +344,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1168,
-        320
+        1296,
+        336
       ],
       "id": "43c153eb-af87-4f51-8524-f8a6536794d4",
       "name": "Code in JavaScript"
@@ -378,8 +378,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        928,
-        128
+        976,
+        144
       ],
       "id": "6d56ac28-9c9a-4c6d-885a-982cd4c0aa90",
       "name": "If"
@@ -407,8 +407,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1632,
-        -128
+        1760,
+        -112
       ],
       "id": "69ca8695-7b9c-4bcc-9a15-42c2519bbcae",
       "name": "Get row(s)",
@@ -423,7 +423,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        3200,
+        3312,
         -288
       ],
       "id": "b9d24c0b-4ed9-4658-9221-8cb578ff79d7",
@@ -455,8 +455,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1632,
-        112
+        1760,
+        128
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "credentials": {
@@ -732,7 +732,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2128,
+        2240,
         -288
       ]
     },
@@ -758,7 +758,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2400,
+        2512,
         -480
       ],
       "id": "ff8cbcca-2e6c-4bfa-ac6d-94f5861e5bd7",
@@ -775,7 +775,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2592,
+        2704,
         -480
       ],
       "id": "adff953c-e984-4480-acd7-5cc141469265",
@@ -786,7 +786,8 @@
           "id": "u4DjOQWxcRgXtX9k",
           "name": "Hellmann_EEO_bot"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -865,8 +866,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        1408,
-        304
+        1536,
+        320
       ],
       "id": "839193b6-864d-4e4c-b223-378e62122824",
       "name": "Switch"
@@ -948,8 +949,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        1840,
-        -144
+        1968,
+        -128
       ],
       "id": "0c33ccc6-82b9-4c5d-b71f-d1d6a90771fd",
       "name": "Switch1"
@@ -967,7 +968,7 @@
             {
               "id": "610db5b6-948e-45da-bb7e-a929c1b482a8",
               "leftValue": "={{ $json.valid_date }}",
-              "rightValue": "ETA",
+              "rightValue": "={{ $now.format('yyyy-MM-dd') }}",
               "operator": {
                 "type": "boolean",
                 "operation": "true",
@@ -982,11 +983,12 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1408,
-        -112
+        1536,
+        -96
       ],
       "id": "dbf61d50-f9d0-4f25-849a-da5e6c2bffbb",
-      "name": "If1"
+      "name": "If1",
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -1015,8 +1017,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1408,
-        128
+        1536,
+        144
       ],
       "id": "90cd0f99-133b-4ffb-9e09-3fb144edc38d",
       "name": "If2"
@@ -1034,7 +1036,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2592,
+        2704,
         -288
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
@@ -1059,7 +1061,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2592,
+        2704,
         -80
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
@@ -1084,7 +1086,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2592,
+        2704,
         352
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
@@ -1362,7 +1364,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2128,
+        2240,
         128
       ]
     },
@@ -1394,7 +1396,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2976,
+        3088,
         -80
       ],
       "id": "459851d7-3727-4b1d-ac50-4703dff762f5",
@@ -1407,7 +1409,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2768,
+        2880,
         -80
       ],
       "id": "fc8e1210-16ba-4027-acd3-21b451b2ab1e",
@@ -1435,7 +1437,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        3200,
+        3312,
         -80
       ],
       "id": "0a408378-220c-4e27-a16f-cd5efa9de137",
@@ -1452,7 +1454,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        3392,
+        3504,
         -80
       ],
       "id": "c0331262-bf69-45ea-b243-775ca8025f16",
@@ -1522,7 +1524,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2112,
+        2224,
         -656
       ],
       "id": "c88b1a47-c5b2-4807-b357-47df5fef39e5",
@@ -1550,7 +1552,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2400,
+        2512,
         128
       ],
       "id": "495fce1d-1068-4202-9152-79ef20fc8b78",
@@ -1567,7 +1569,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2592,
+        2704,
         128
       ],
       "id": "c45e7080-ab9d-4894-b938-ab02e92c18a2",
@@ -1578,7 +1580,8 @@
           "id": "u4DjOQWxcRgXtX9k",
           "name": "Hellmann_EEO_bot"
         }
-      }
+      },
+      "disabled": true
     },
     {
       "parameters": {
@@ -1857,7 +1860,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2400,
+        2512,
         352
       ],
       "id": "916ea5e0-dc35-4e34-a8fb-c263e5abfefc",
@@ -2145,7 +2148,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2400,
+        2512,
         -80
       ],
       "id": "838a2777-fa89-4551-889b-d30db60f23e4",
@@ -2435,7 +2438,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2400,
+        2512,
         -288
       ],
       "id": "24726097-9c01-41a6-916a-d8344d2e657d",
@@ -2465,8 +2468,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1632,
-        480
+        1760,
+        512
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "credentials": {
@@ -2475,150 +2478,6 @@
           "name": "Hellmann_EEO_bot"
         }
       }
-    },
-    {
-      "parameters": {
-        "jsCode": "const tz='Europe/Kyiv';const today=new Date().toLocaleDateString('en-CA',{timeZone:tz});return items.map(item=>{const src=item.json.updatedAt||item.json.createdAt;const local=src?new Date(src).toLocaleDateString('en-CA',{timeZone:tz}):'';return{json:{...item.json,updatedToday:local===today}};});"
-      },
-      "id": "bc3b42a6-1805-4d85-8ba5-2f4133d0838f",
-      "name": "Mark updatedToday",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        784,
-        -496
-      ]
-    },
-    {
-      "parameters": {
-        "chatId": "544911412",
-        "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
-        "replyMarkup": "inlineKeyboard",
-        "inlineKeyboard": {
-          "rows": [
-            {
-              "row": {
-                "buttons": [
-                  {
-                    "text": "=ETA",
-                    "additionalFields": {
-                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ETA"
-                    }
-                  },
-                  {
-                    "text": "=ATA",
-                    "additionalFields": {
-                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ATA"
-                    }
-                  },
-                  {
-                    "text": "Vessel",
-                    "additionalFields": {
-                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|Vessel"
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "additionalFields": {
-          "appendAttribution": false,
-          "message_thread_id": 0
-        }
-      },
-      "id": "120b0794-630e-4657-8fa0-15613e23a017",
-      "name": "Send button",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        1248,
-        -496
-      ],
-      "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
-      "credentials": {
-        "telegramApi": {
-          "id": "u4DjOQWxcRgXtX9k",
-          "name": "Hellmann_EEO_bot"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "get",
-        "dataTableId": {
-          "__rl": true,
-          "value": "AxASL6xXtaKV3P1T",
-          "mode": "list",
-          "cachedResultName": "sea fright",
-          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
-        },
-        "returnAll": true
-      },
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1,
-      "position": [
-        560,
-        -496
-      ],
-      "id": "6bd58cef-730d-4c50-bdef-6d7d51491c70",
-      "name": "Get row(s)4"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "6fff90a6-079f-493b-8eea-8dc4584df6bc",
-              "leftValue": "={{ $json.On_board }}",
-              "rightValue": "+",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            },
-            {
-              "id": "cdf428d6-847e-48b6-a65a-9d2ed66f13f3",
-              "leftValue": "={{ $json.ATA }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "empty",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        1008,
-        -496
-      ],
-      "id": "b66987e7-44bd-4d56-955b-e1e374a3bbf4",
-      "name": "If4"
-    },
-    {
-      "parameters": {
-        "jsCode": "const day = new Date().getDay(); // 0=вс, 6=сб\nif (day === 0 || day === 6) return []; // прекращаем выполнение\nreturn items;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        352,
-        -496
-      ],
-      "id": "cabed116-99c4-445f-9482-712b8e4b0e86",
-      "name": "Code in JavaScript2"
     },
     {
       "parameters": {
@@ -2642,7 +2501,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        2976,
+        3088,
         -288
       ],
       "id": "12996d0a-c9f0-4210-b015-df107ec6af27",
@@ -2672,7 +2531,7 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        3200,
+        3312,
         -528
       ],
       "id": "8380fc51-f1c4-4004-8b34-b903228d54f1",
@@ -2701,97 +2560,12 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        1168,
-        128
+        1296,
+        144
       ],
       "id": "37252d06-4a86-407f-9108-61a9f7221a65",
       "name": "Get row(s)6",
       "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "dataTableId": {
-          "__rl": true,
-          "value": "zK3q573Om8t7SqyU",
-          "mode": "list",
-          "cachedResultName": "intermediate table",
-          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "message_id": "={{ $json.result.message_id }}",
-            "chat_id": "={{ $json.result.chat.id }}",
-            "line": "={{ $('Mark updatedToday').item.json.Shipping_line }}",
-            "booking": "={{ $('Mark updatedToday').item.json.Booking_number }}",
-            "quantity": "={{ $('Mark updatedToday').item.json.Quantity }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "message_id",
-              "displayName": "message_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "chat_id",
-              "displayName": "chat_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "number",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "booking",
-              "displayName": "booking",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "quantity",
-              "displayName": "quantity",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "line",
-              "displayName": "line",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.dataTable",
-      "typeVersion": 1,
-      "position": [
-        1440,
-        -496
-      ],
-      "id": "ee0257c2-389b-4bc4-8e1f-ddd83a3d2f6e",
-      "name": "Insert row"
     },
     {
       "parameters": {
@@ -2802,7 +2576,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        3392,
+        3504,
         -288
       ],
       "id": "0adff97b-8fae-4ac9-8f46-7b5b62f8918a",
@@ -2825,7 +2599,7 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        3584,
+        3696,
         -288
       ],
       "id": "03bd267f-1567-4695-bef7-cef0b732aff5",
@@ -2877,20 +2651,20 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        608,
+        784,
         128
       ]
     },
     {
       "parameters": {
         "inputSource": "jsonExample",
-        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": [\n  {\n    \"ok\": true,\n    \"result\": {\n      \"message_id\": 11047,\n      \"from\": {\n        \"id\": 1842239291,\n        \"is_bot\": true,\n        \"first_name\": \"Hellmann_EEO_bot\",\n        \"username\": \"Terra_incognito_bot\"\n      },\n      \"chat\": {\n        \"id\": 544911412,\n        \"first_name\": \"Alexey\",\n        \"last_name\": \"Ilchenko\",\n        \"username\": \"Batman_ila\",\n        \"type\": \"private\"\n      },\n      \"date\": 1767001376,\n      \"text\": \"Проверить сообщения от клиентов и ответить по статусам доставок (слот 11:42)\\n\\n✅ #703 — O53EqnIO7LJ1Axrv\\n⏰ 11:42 | 📅 Пн | 🗓 без ограничений\\n🌍 TZ: Europe/Kyiv | ▶️ last: 11:42:29 am\",\n      \"reply_markup\": {\n        \"inline_keyboard\": [\n          [\n            {\n              \"text\": \"Accept\",\n              \"callback_data\": \"in progress\"\n            },\n            {\n              \"text\": \"Cancel\",\n              \"callback_data\": \"/update_booking\"\n            }\n          ]\n        ]\n      }\n    }\n  }\n]\n}"
+        "jsonExample": "[\n  {\n    \"data\": [\n      {\n        \"enabled\": true,\n        \"description\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\",\n        \"workflow_id\": \"O53EqnIO7LJ1Axrv\",\n        \"tg_id_usera\": \"544911412|8041897638\",\n        \"timezone\": \"Europe/Kyiv\",\n        \"time_to_complete_the_procedure\": \"\",\n        \"start_time\": \"17:11\",\n        \"days_of_week\": \"1|2|3|4|5|6|7\",\n        \"data_of_the_month\": null,\n        \"month\": null,\n        \"last_started_at\": \"5:11:14 pm\",\n        \"status\": \"\",\n        \"completed\": \"\",\n        \"id\": 1032,\n        \"createdAt\": \"2025-12-25T10:56:41.143Z\",\n        \"updatedAt\": \"2025-12-29T15:11:14.449Z\",\n        \"chatId\": \"544911412\",\n        \"text\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\\n\\n✅ #1032 — O53EqnIO7LJ1Axrv\\n⏰ 17:11 | 📅 каждый день | 🗓 без ограничений\\n🌍 TZ: Europe/Kyiv | ▶️ last: 5:11:20 pm\",\n        \"reply_markup\": {\n          \"inline_keyboard\": [\n            [\n              {\n                \"text\": \"Accept\",\n                \"callback_data\": \"accept\"\n              },\n              {\n                \"text\": \"Cancel\",\n                \"callback_data\": \"cancel\"\n              }\n            ]\n          ]\n        }\n      },\n      {\n        \"enabled\": true,\n        \"description\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\",\n        \"workflow_id\": \"O53EqnIO7LJ1Axrv\",\n        \"tg_id_usera\": \"544911412|8041897638\",\n        \"timezone\": \"Europe/Kyiv\",\n        \"time_to_complete_the_procedure\": \"\",\n        \"start_time\": \"17:11\",\n        \"days_of_week\": \"1|2|3|4|5|6|7\",\n        \"data_of_the_month\": null,\n        \"month\": null,\n        \"last_started_at\": \"5:11:14 pm\",\n        \"status\": \"\",\n        \"completed\": \"\",\n        \"id\": 1032,\n        \"createdAt\": \"2025-12-25T10:56:41.143Z\",\n        \"updatedAt\": \"2025-12-29T15:11:14.449Z\",\n        \"chatId\": \"8041897638\",\n        \"text\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\\n\\n✅ #1032 — O53EqnIO7LJ1Axrv\\n⏰ 17:11 | 📅 каждый день | 🗓 без ограничений\\n🌍 TZ: Europe/Kyiv | ▶️ last: 5:11:20 pm\",\n        \"reply_markup\": {\n          \"inline_keyboard\": [\n            [\n              {\n                \"text\": \"Accept\",\n                \"callback_data\": \"accept\"\n              },\n              {\n                \"text\": \"Cancel\",\n                \"callback_data\": \"cancel\"\n              }\n            ]\n          ]\n        }\n      }\n    ]\n  }\n]"
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -528,
-        -304
+        -80,
+        -288
       ],
       "id": "dd70f0fa-89fa-4aa1-aa9e-cb3f12929d16",
       "name": "When Executed by Another Workflow",
@@ -2930,8 +2704,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        -96,
-        -304
+        416,
+        -288
       ],
       "id": "4b6533ad-9cc1-439d-b10c-16ebe1f33fa6",
       "name": "Send a text message",
@@ -2946,13 +2720,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// n8n Code node (JavaScript)\n// Input: items[0].json.thisFieldAcceptsAnyType = Array of { ok, result: { chat:{id}, text, ... } }\n// Output: many items: { chatId, text, inlineKeyboard }\n\nfunction getPayload(json) {\n  // основной кейс\n  if (Array.isArray(json?.thisFieldAcceptsAnyType)) return json.thisFieldAcceptsAnyType;\n\n  // иногда это может быть строкой JSON (если где-то включили convertFieldsToString)\n  if (typeof json?.thisFieldAcceptsAnyType === 'string') {\n    try {\n      const parsed = JSON.parse(json.thisFieldAcceptsAnyType);\n      if (Array.isArray(parsed)) return parsed;\n    } catch (e) {}\n  }\n\n  // запасные варианты, если поле называется иначе\n  if (Array.isArray(json?.data)) return json.data;\n  if (typeof json?.data === 'string') {\n    try {\n      const parsed = JSON.parse(json.data);\n      if (Array.isArray(parsed)) return parsed;\n    } catch (e) {}\n  }\n\n  return [];\n}\n\nconst root = items?.[0]?.json ?? {};\nconst arr = getPayload(root);\n\nconst inlineKeyboard = {\n  rows: [\n    {\n      row: {\n        buttons: [\n          { text: 'Accept', additionalFields: { callback_data: 'in progress' } },\n          { text: 'Cancel', additionalFields: { callback_data: 'cancel' } },\n        ],\n      },\n    },\n  ],\n};\n\nconst out = [];\n\nfor (const entry of arr) {\n  const res = entry?.result ?? {};\n  const chatId = res?.chat?.id;\n  const text = res?.text;\n\n  if (!chatId || !text) continue;\n\n  out.push({\n    json: {\n      chatId,\n      text,\n      inlineKeyboard,\n    },\n  });\n}\n\nreturn out.length ? out : [{ json: { error: 'No valid telegram results in thisFieldAcceptsAnyType' } }];"
+        "jsCode": "// n8n Code node (JavaScript)\n// Supports inputs:\n// 1) items[0].json.data = [ { chatId, text, reply_markup: { inline_keyboard: [...] }, ... }, ... ]\n// 2) items[0].json.thisFieldAcceptsAnyType = [ { ok:true, result:{ chat:{id}, text, reply_markup } }, ... ]\n// Output: many items: { chatId, text, inlineKeyboard }\n\nfunction tryParseJson(s) {\n  if (typeof s !== 'string') return null;\n  try { return JSON.parse(s); } catch { return null; }\n}\n\nfunction getPayload(json) {\n  // NEW: data array\n  if (Array.isArray(json?.data)) return json.data;\n  const parsedData = tryParseJson(json?.data);\n  if (Array.isArray(parsedData)) return parsedData;\n\n  // OLD: thisFieldAcceptsAnyType array\n  if (Array.isArray(json?.thisFieldAcceptsAnyType)) return json.thisFieldAcceptsAnyType;\n  const parsedAny = tryParseJson(json?.thisFieldAcceptsAnyType);\n  if (Array.isArray(parsedAny)) return parsedAny;\n\n  // fallback: if workflow passed multiple items directly\n  if (Array.isArray(items) && items.length > 1) return items.map(i => i.json);\n\n  return [];\n}\n\nfunction normalizeChatId(v) {\n  const s = String(v ?? '').trim();\n  if (!s) return null;\n  // Telegram chat id обычно число, но можно оставить строкой\n  return s;\n}\n\nfunction telegramMarkupToN8nInlineKeyboard(replyMarkup) {\n  const ik = replyMarkup?.inline_keyboard;\n  if (!Array.isArray(ik) || !ik.length) return null;\n\n  return {\n    rows: ik.map(rowArr => ({\n      row: {\n        buttons: (Array.isArray(rowArr) ? rowArr : []).map(btn => ({\n          text: String(btn?.text ?? ''),\n          additionalFields: {\n            callback_data: String(btn?.callback_data ?? ''),\n          },\n        })).filter(b => b.text),\n      },\n    })),\n  };\n}\n\nconst root = items?.[0]?.json ?? {};\nconst arr = getPayload(root);\n\n// default keyboard (если вдруг reply_markup нет)\nconst defaultInlineKeyboard = {\n  rows: [\n    {\n      row: {\n        buttons: [\n          { text: 'Accept', additionalFields: { callback_data: 'accept' } },\n          { text: 'Cancel', additionalFields: { callback_data: 'cancel' } },\n        ],\n      },\n    },\n  ],\n};\n\nconst out = [];\n\nfor (const entry of arr) {\n  // поддержка старого формата { ok, result: {...} }\n  const src = entry?.result ? entry.result : entry;\n\n  const chatId = normalizeChatId(src?.chat?.id ?? src?.chatId);\n  const text = String(src?.text ?? '').trim();\n\n  if (!chatId || !text) continue;\n\n  const inlineKeyboard =\n    telegramMarkupToN8nInlineKeyboard(src?.reply_markup) || defaultInlineKeyboard;\n\n  out.push({\n    json: {\n      chatId,\n      text,\n      inlineKeyboard,\n    },\n  });\n}\n\nreturn out.length\n  ? out\n  : [{ json: { error: 'No valid items in input (need chatId + text)' } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -336,
-        -304
+        160,
+        -288
       ],
       "id": "f5d756fe-1513-4a5d-b75d-2d5bb3e67d3c",
       "name": "Code in JavaScript3"
@@ -3014,8 +2788,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        400,
-        -272
+        800,
+        -368
       ],
       "id": "2915f5cc-b4ce-4f24-b12a-1939c051497a",
       "name": "Insert row1"
@@ -3184,8 +2958,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        848,
-        -272
+        1264,
+        -368
       ],
       "id": "40896bfb-5411-4e8a-94d4-cabfacc6c762",
       "name": "Update row(s)"
@@ -3197,73 +2971,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        624,
-        -272
+        1024,
+        -368
       ],
       "id": "dfa4ff85-aeb1-4c4d-83d2-3e0d0bbc1efa",
       "name": "Code in JavaScript4"
-    },
-    {
-      "parameters": {
-        "rules": {
-          "values": [
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.callback_query.data }}",
-                    "rightValue": "cancel",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    },
-                    "id": "fa0db0c4-8628-4f8f-b0cc-48603d176486"
-                  }
-                ],
-                "combinator": "and"
-              }
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict",
-                  "version": 3
-                },
-                "conditions": [
-                  {
-                    "id": "14728d84-d1af-4596-b0eb-86bf2297cb26",
-                    "leftValue": "={{ $json.callback_query.data }}",
-                    "rightValue": "=/update_booking",
-                    "operator": {
-                      "type": "string",
-                      "operation": "notEmpty",
-                      "singleValue": true
-                    }
-                  }
-                ],
-                "combinator": "and"
-              }
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3.4,
-      "position": [
-        128,
-        128
-      ],
-      "id": "737d378d-7908-4255-99aa-9e8477108ce3",
-      "name": "Switch2"
     },
     {
       "parameters": {
@@ -3322,8 +3034,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        160,
-        400
+        448,
+        544
       ],
       "id": "f85aed03-b049-4394-a8f4-396b577d8234",
       "name": "Insert row2"
@@ -3492,21 +3204,21 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
-        608,
-        400
+        928,
+        544
       ],
       "id": "bf93e4c9-829c-4092-b8fc-ea8662ec465c",
       "name": "Update row(s)1"
     },
     {
       "parameters": {
-        "jsCode": "const ifItem = ($items('Switch2', 0, 0) || [])[0];\nconst text = String(ifItem?.json?.callback_query?.message?.text ?? '').trim();\n\nconst m = text.match(/#\\s*(\\d+)/);\n\nreturn [\n  {\n    json: {\n      id_after_hash: m ? Number(m[1]) : null,\n    },\n  },\n];"
+        "jsCode": "const ifItem = ($items('Telegram Callback', 0, 0) || [])[0];\nconst text = String(ifItem?.json?.callback_query?.message?.text ?? '').trim();\n\nconst m = text.match(/#\\s*(\\d+)/);\n\nreturn [\n  {\n    json: {\n      id_after_hash: m ? Number(m[1]) : null,\n    },\n  },\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        384,
-        400
+        688,
+        544
       ],
       "id": "4310e412-5d30-49f8-8922-9afe6d7dbd8c",
       "name": "Code in JavaScript5"
@@ -3520,8 +3232,8 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        816,
-        400
+        1168,
+        544
       ],
       "id": "4b5f348a-759f-43bd-9e83-be44c18c4903",
       "name": "Delete a chat message3",
@@ -3532,6 +3244,337 @@
           "name": "Hellmann_EEO_bot"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "76e71d9a-e172-450d-b79b-d69c5404327e",
+              "leftValue": "={{ $json.callback_query.data }}",
+              "rightValue": "cancel",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        128
+      ],
+      "id": "f6ee9346-341a-4623-801b-7bb021f8c957",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tz='Europe/Kyiv';const today=new Date().toLocaleDateString('en-CA',{timeZone:tz});return items.map(item=>{const src=item.json.updatedAt||item.json.createdAt;const local=src?new Date(src).toLocaleDateString('en-CA',{timeZone:tz}):'';return{json:{...item.json,updatedToday:local===today}};});"
+      },
+      "id": "95cfa002-7217-4d18-9b01-cdc78367e9a6",
+      "name": "Mark updatedToday",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=ETA",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ETA"
+                    }
+                  },
+                  {
+                    "text": "=ATA",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|ATA"
+                    }
+                  },
+                  {
+                    "text": "Vessel",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.row_number }}|{{ $json.Booking_number }}|{{ $json.ETA }}|{{ $json.Shipping_line }}|{{ $json.Quantity }}|Vessel"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "message_thread_id": 0
+        }
+      },
+      "id": "45ab4894-12d0-478e-831a-e4e846c4dc24",
+      "name": "Send button",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1888,
+        -816
+      ],
+      "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
+      "credentials": {
+        "telegramApi": {
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "AxASL6xXtaKV3P1T",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/AxASL6xXtaKV3P1T"
+        },
+        "matchType": "allConditions",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        -608
+      ],
+      "id": "d85d81a4-24a5-4762-b594-46abe8aae357",
+      "name": "Get row(s)4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6fff90a6-079f-493b-8eea-8dc4584df6bc",
+              "leftValue": "={{ $json.On_board }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cdf428d6-847e-48b6-a65a-9d2ed66f13f3",
+              "leftValue": "={{ $json.ATA }}",
+              "rightValue": {},
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1888,
+        -608
+      ],
+      "id": "85154b81-90c8-40a5-9495-cba394889c23",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const day = new Date().getDay(); // 0=вс, 6=сб\nif (day === 0 || day === 6) return []; // прекращаем выполнение\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -608
+      ],
+      "id": "592712b7-fc3e-42ab-ad28-e9749e6e1aaa",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "zK3q573Om8t7SqyU",
+          "mode": "list",
+          "cachedResultName": "intermediate table",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message_id": "={{ $json.result.message_id }}",
+            "chat_id": "={{ $json.result.chat.id }}",
+            "booking": "={{ $('Mark updatedToday').item.json.Booking_number }}",
+            "quantity": "={{ $('Mark updatedToday').item.json.Quantity }}",
+            "line": "={{ $('Mark updatedToday').item.json.Shipping_line }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "message_id",
+              "displayName": "message_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "booking",
+              "displayName": "booking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "quantity",
+              "displayName": "quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "line",
+              "displayName": "line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        -1008
+      ],
+      "id": "1eb92067-022f-4c2d-83dd-7a69fdae6c80",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "zK3q573Om8t7SqyU",
+          "mode": "list",
+          "cachedResultName": "intermediate table",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -608
+      ],
+      "id": "b52c6929-d3e3-411a-9932-8777eb0fdfd9",
+      "name": "Delete row(s)2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -608
+      ],
+      "id": "1b69c53f-1fdc-4f52-a45f-167b424c7ac9",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Callback').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Callback').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2096,
+        -1008
+      ],
+      "id": "297a451c-2466-494e-9134-96da7576c518",
+      "name": "Delete a chat message4",
+      "webhookId": "df1d4eca-9b14-474e-9ee7-90873915843d",
+      "credentials": {
+        "telegramApi": {
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+        }
+      },
+      "onError": "continueErrorOutput"
     }
   ],
   "pinData": {},
@@ -3540,7 +3583,7 @@
       "main": [
         [
           {
-            "node": "Switch2",
+            "node": "If5",
             "type": "main",
             "index": 0
           }
@@ -3901,61 +3944,6 @@
         []
       ]
     },
-    "Mark updatedToday": {
-      "main": [
-        [
-          {
-            "node": "If4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get row(s)4": {
-      "main": [
-        [
-          {
-            "node": "Mark updatedToday",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If4": {
-      "main": [
-        [
-          {
-            "node": "Send button",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript2": {
-      "main": [
-        [
-          {
-            "node": "Get row(s)4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Send button": {
-      "main": [
-        [
-          {
-            "node": "Insert row",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get row(s)5": {
       "main": [
         [
@@ -4004,12 +3992,12 @@
       "main": [
         [
           {
-            "node": "Code in JavaScript2",
+            "node": "Insert row1",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Insert row1",
+            "node": "Delete row(s)2",
             "type": "main",
             "index": 0
           }
@@ -4072,24 +4060,6 @@
         ]
       ]
     },
-    "Switch2": {
-      "main": [
-        [
-          {
-            "node": "Insert row2",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "If start from allowed user1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Code in JavaScript5": {
       "main": [
         [
@@ -4122,16 +4092,122 @@
           }
         ]
       ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Insert row2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If start from allowed user1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark updatedToday": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send button": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)4": {
+      "main": [
+        [
+          {
+            "node": "Mark updatedToday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Send button",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete row(s)2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false,
     "timeSavedMode": "fixed"
   },
-  "versionId": "c834acff-2516-44ec-b958-b0d477c2b55f",
+  "versionId": "25c881d2-cbe1-4652-a7bf-008b463f61fe",
   "meta": {
     "templateCredsSetupCompleted": true
   },

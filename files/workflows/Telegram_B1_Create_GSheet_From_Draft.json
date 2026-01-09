@@ -1,0 +1,282 @@
+{
+  "name": "Telegram B-1: create sheet from draft",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -820,
+        120
+      ],
+      "id": "b21b2c1c-1f87-4f2a-8af8-b5b9f531e5a4",
+      "name": "Telegram Trigger",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "text",
+              "value": "={{ $json.message?.text || '' }}"
+            },
+            {
+              "name": "employeeName",
+              "value": "={{ $json.message?.from?.username || [$json.message?.from?.first_name, $json.message?.from?.last_name].filter(Boolean).join(' ') || 'employee' }}"
+            },
+            {
+              "name": "dateStr",
+              "value": "={{ $now.setZone('Europe/Kyiv').toFormat('yyyy-LL-dd') }}"
+            },
+            {
+              "name": "newFileName",
+              "value": "={{ 'B-1 ' + $json.employeeName + ' ' + $json.dateStr }}"
+            },
+            {
+              "name": "draftFileId",
+              "value": "PUT_DRAFT_FILE_ID_HERE"
+            }
+          ],
+          "number": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.message?.chat?.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        120
+      ],
+      "id": "6b3147c2-f06f-4420-9c14-3aa19e195a13",
+      "name": "Prepare vars"
+    },
+    {
+      "parameters": {
+        "value1": "={{ $json.text }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": "forma B-1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        120
+      ],
+      "id": "1b7a0e64-3d74-4bd2-9b1f-9723e678c6a8",
+      "name": "Is B-1 button?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "тычни кнопку",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "forma B-1",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -140,
+        260
+      ],
+      "id": "9f1d407a-caf4-4c2f-8bb0-186db1f3c4fd",
+      "name": "Send menu keyboard",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": "={{ $json.draftFileId }}",
+        "options": {
+          "name": "={{ $json.newFileName }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        60
+      ],
+      "id": "a093fd71-c0b6-4810-9b35-33ae9fb0bb96",
+      "name": "Google Drive: Copy draft",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "sheetUrl",
+              "value": "={{ 'https://docs.google.com/spreadsheets/d/' + ($json.id || $json.fileId) + '/edit' }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "chatId",
+              "value": "={{ $node['Prepare vars'].json.chatId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        80,
+        60
+      ],
+      "id": "ff7fd5c3-6e9c-4db2-9d98-4cc66e9b0128",
+      "name": "Build sheet URL"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ 'Вот ваша таблица: ' + $json.sheetUrl }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        300,
+        60
+      ],
+      "id": "f0b67a06-47a3-4abf-bb55-47a80c10d1f4",
+      "name": "Send sheet link",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare vars",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare vars": {
+      "main": [
+        [
+          {
+            "node": "Is B-1 button?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is B-1 button?": {
+      "main": [
+        [
+          {
+            "node": "Google Drive: Copy draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send menu keyboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive: Copy draft": {
+      "main": [
+        [
+          {
+            "node": "Build sheet URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build sheet URL": {
+      "main": [
+        [
+          {
+            "node": "Send sheet link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

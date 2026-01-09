@@ -1,0 +1,322 @@
+{
+  "name": "Telegram B-1 (Variant A): create sheet + send Submit button",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -820,
+        120
+      ],
+      "id": "9c4e44d2-b30b-4052-9b0c-56f8709849df",
+      "name": "Telegram Trigger",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "text",
+              "value": "={{ $json.message?.text || '' }}"
+            },
+            {
+              "name": "employeeName",
+              "value": "={{ $json.message?.from?.username || [$json.message?.from?.first_name, $json.message?.from?.last_name].filter(Boolean).join(' ') || 'employee' }}"
+            },
+            {
+              "name": "dateStr",
+              "value": "={{ $now.setZone('Europe/Kyiv').toFormat('yyyy-LL-dd') }}"
+            },
+            {
+              "name": "newFileName",
+              "value": "={{ 'B-1 ' + $json.employeeName + ' ' + $json.dateStr }}"
+            },
+            {
+              "name": "draftFileId",
+              "value": "PUT_DRAFT_FILE_ID_HERE"
+            },
+            {
+              "name": "tempFolderId",
+              "value": "PUT_TEMP_FOLDER_ID_HERE"
+            }
+          ],
+          "number": [
+            {
+              "name": "chatId",
+              "value": "={{ $json.message?.chat?.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        120
+      ],
+      "id": "e8c13cb6-75f3-4d4e-a2fe-e0ad2c0d2a68",
+      "name": "Prepare vars"
+    },
+    {
+      "parameters": {
+        "value1": "={{ $json.text }}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "equal",
+              "value2": "forma B-1"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        -380,
+        120
+      ],
+      "id": "c3af2d1b-bc46-47e5-b91f-96e3d0725f5f",
+      "name": "Is B-1 button?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "Нажмите кнопку: форма B-1",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "forma B-1",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -140,
+        260
+      ],
+      "id": "57d9de75-8cb2-4a90-8f0e-21a01c7f6d67",
+      "name": "Send menu keyboard",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.draftFileId }}",
+          "mode": "id"
+        },
+        "name": "={{ $json.newFileName }}",
+        "sameFolder": false,
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json.tempFolderId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -140,
+        60
+      ],
+      "id": "7a0a7b4c-5f70-463c-bdb4-101f0be14b3c",
+      "name": "Google Drive: Copy draft",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "spreadsheetId",
+              "value": "={{ $json.id || $json.fileId }}"
+            },
+            {
+              "name": "sheetUrl",
+              "value": "={{ 'https://docs.google.com/spreadsheets/d/' + ($json.id || $json.fileId) + '/edit' }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "chatId",
+              "value": "={{ $node['Prepare vars'].json.chatId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        80,
+        60
+      ],
+      "id": "5db6c95d-c8bf-42fd-9f11-b437c97c03e8",
+      "name": "Build sheet URL"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ 'Вот ваша таблица: ' + $json.sheetUrl }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Submit B-1",
+                    "additionalFields": {
+                      "callback_data": "={{ 'B1_SUBMIT:' + $json.spreadsheetId }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        300,
+        60
+      ],
+      "id": "745d68ff-62b0-4ba9-86c8-1bbcb5b08d37",
+      "name": "Send sheet link + Submit button",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare vars",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare vars": {
+      "main": [
+        [
+          {
+            "node": "Is B-1 button?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is B-1 button?": {
+      "main": [
+        [
+          {
+            "node": "Google Drive: Copy draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send menu keyboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive: Copy draft": {
+      "main": [
+        [
+          {
+            "node": "Build sheet URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build sheet URL": {
+      "main": [
+        [
+          {
+            "node": "Send sheet link + Submit button",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "REPLACE_ME",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
