@@ -1,0 +1,284 @@
+{
+  "name": "Error_handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e09d737e-741d-42ef-be30-7130af01a4fe",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ICTiVylif3WZi_-Zq-c42BuPyjRBwoMQ7Nkg-GHct1g",
+          "mode": "list",
+          "cachedResultName": "n8n_error_log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ICTiVylif3WZi_-Zq-c42BuPyjRBwoMQ7Nkg-GHct1g/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ICTiVylif3WZi_-Zq-c42BuPyjRBwoMQ7Nkg-GHct1g/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "workflow": "={{ $json.workflow.name }}",
+            "time": "={{ $now.format('dd-MM-yyyy TT') }}",
+            "url": "={{ $json.execution.url }}",
+            "node": "={{ $json.execution.error.node.name }}",
+            "error": "={{ $json.execution.error.message }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "node",
+              "displayName": "node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recomendations",
+              "displayName": "recomendations",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "5837f6d0-f3d9-4868-987e-95a54496b223",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fK8ysVbwd2AzFdPe",
+          "name": "Google Sheets account ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "498cc162-f7c1-4f2d-be0a-18bd302e2042",
+              "name": "message",
+              "value": "=-----\n{{ $json.time }}\nДружище, у нас проблемка с workflow  {{ $json.workflow }}. нода {{ $json.node }} покинула чат. Глянь, будь другом. Целую в рот, твоя Ирис. ссылочка {{ $json.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        0
+      ],
+      "id": "22dcea5c-fec2-4981-8fdd-847d7e322c2e",
+      "name": "message"
+    },
+    {
+      "parameters": {
+        "chatId": "156644104",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "9a2690c5-054f-424c-a771-1f2a9b27b78a",
+      "name": "Send a text message",
+      "webhookId": "812b0300-d05d-484f-8e66-bed5c08f1c4a",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Error Trigger": [
+      {
+        "json": {
+          "execution": {
+            "id": "2141",
+            "url": "https://oleksiiryzhov.app.n8n.cloud/workflow/Fb2RuYem5KYHVWUi/executions/2141",
+            "error": {
+              "level": "warning",
+              "tags": {},
+              "timestamp": 1760377488664,
+              "context": {
+                "itemIndex": 0,
+                "request": {
+                  "headers": {
+                    "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7"
+                  },
+                  "method": "GET",
+                  "uri": "https://node.o",
+                  "gzip": true,
+                  "rejectUnauthorized": true,
+                  "followRedirect": true,
+                  "resolveWithFullResponse": true,
+                  "followAllRedirects": true,
+                  "timeout": 300000,
+                  "encoding": null,
+                  "json": false,
+                  "useStream": true
+                }
+              },
+              "functionality": "regular",
+              "name": "NodeApiError",
+              "node": {
+                "parameters": {
+                  "curlImport": "",
+                  "method": "GET",
+                  "url": "https://node.o",
+                  "authentication": "none",
+                  "provideSslCertificates": false,
+                  "sendQuery": false,
+                  "sendHeaders": false,
+                  "sendBody": false,
+                  "options": {},
+                  "infoMessage": ""
+                },
+                "type": "n8n-nodes-base.httpRequest",
+                "typeVersion": 4.2,
+                "position": [
+                  -928,
+                  -1024
+                ],
+                "id": "07e5ee8f-7361-4e3c-822e-bdb896b5a897",
+                "name": "HTTP Request1"
+              },
+              "messages": [
+                "getaddrinfo ENOTFOUND node.o",
+                "getaddrinfo ENOTFOUND node.o"
+              ],
+              "httpCode": "ENOTFOUND",
+              "message": "The connection cannot be established, this usually occurs due to an incorrect host (domain) value",
+              "stack": "NodeApiError: The connection cannot be established, this usually occurs due to an incorrect host (domain) value\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_1af219c3f47f2a1223ec4ccec249a974/node_modules/n8n-nodes-base/nodes/HttpRequest/V3/HttpRequestV3.node.ts:780:15)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_0c275070fd0434c00ffd62213b2bcae4/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1212:9)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_0c275070fd0434c00ffd62213b2bcae4/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1582:27\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_0c275070fd0434c00ffd62213b2bcae4/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2158:11"
+            },
+            "lastNodeExecuted": "HTTP Request1",
+            "mode": "webhook"
+          },
+          "workflow": {
+            "id": "Fb2RuYem5KYHVWUi",
+            "name": "HWL_debt!"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4e741938-7eb5-42c9-9268-2631db118032",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "0RGlvrib1pUh86ZP"
+}

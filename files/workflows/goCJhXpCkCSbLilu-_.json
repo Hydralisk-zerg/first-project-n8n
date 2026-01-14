@@ -1,0 +1,111 @@
+{
+  "name": "Тест воркфлоу",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        16
+      ],
+      "id": "e1eb95ab-f4d4-4777-9472-f62df33a3a75",
+      "name": "When Executed by Another Workflow",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].text }}",
+                    "additionalFields": {
+                      "callback_data": "=/update_booking"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].additionalFields.callback_data }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        16
+      ],
+      "id": "6a3fee2f-9f9d-42f4-a6be-d89ab5c3640b",
+      "name": "Send a text message",
+      "webhookId": "3d7258e9-7793-4086-935b-8239d3ca6899",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Supports inputs:\n// 1) items[0].json.data = [ { chatId, text, reply_markup: { inline_keyboard: [...] }, ... }, ... ]\n// 2) items[0].json.thisFieldAcceptsAnyType = [ { ok:true, result:{ chat:{id}, text, reply_markup } }, ... ]\n// Output: many items: { chatId, text, inlineKeyboard }\n\nfunction tryParseJson(s) {\n  if (typeof s !== 'string') return null;\n  try { return JSON.parse(s); } catch { return null; }\n}\n\nfunction getPayload(json) {\n  // NEW: data array\n  if (Array.isArray(json?.data)) return json.data;\n  const parsedData = tryParseJson(json?.data);\n  if (Array.isArray(parsedData)) return parsedData;\n\n  // OLD: thisFieldAcceptsAnyType array\n  if (Array.isArray(json?.thisFieldAcceptsAnyType)) return json.thisFieldAcceptsAnyType;\n  const parsedAny = tryParseJson(json?.thisFieldAcceptsAnyType);\n  if (Array.isArray(parsedAny)) return parsedAny;\n\n  // fallback: if workflow passed multiple items directly\n  if (Array.isArray(items) && items.length > 1) return items.map(i => i.json);\n\n  return [];\n}\n\nfunction normalizeChatId(v) {\n  const s = String(v ?? '').trim();\n  if (!s) return null;\n  // Telegram chat id обычно число, но можно оставить строкой\n  return s;\n}\n\nfunction telegramMarkupToN8nInlineKeyboard(replyMarkup) {\n  const ik = replyMarkup?.inline_keyboard;\n  if (!Array.isArray(ik) || !ik.length) return null;\n\n  return {\n    rows: ik.map(rowArr => ({\n      row: {\n        buttons: (Array.isArray(rowArr) ? rowArr : []).map(btn => ({\n          text: String(btn?.text ?? ''),\n          additionalFields: {\n            callback_data: String(btn?.callback_data ?? ''),\n          },\n        })).filter(b => b.text),\n      },\n    })),\n  };\n}\n\nconst root = items?.[0]?.json ?? {};\nconst arr = getPayload(root);\n\n// default keyboard (если вдруг reply_markup нет)\nconst defaultInlineKeyboard = {\n  rows: [\n    {\n      row: {\n        buttons: [\n          { text: 'Accept', additionalFields: { callback_data: 'accept' } },\n          { text: 'Cancel', additionalFields: { callback_data: 'cancel' } },\n        ],\n      },\n    },\n  ],\n};\n\nconst out = [];\n\nfor (const entry of arr) {\n  // поддержка старого формата { ok, result: {...} }\n  const src = entry?.result ? entry.result : entry;\n\n  const chatId = normalizeChatId(src?.chat?.id ?? src?.chatId);\n  const text = String(src?.text ?? '').trim();\n\n  if (!chatId || !text) continue;\n\n  const inlineKeyboard =\n    telegramMarkupToN8nInlineKeyboard(src?.reply_markup) || defaultInlineKeyboard;\n\n  out.push({\n    json: {\n      chatId,\n      text,\n      inlineKeyboard,\n    },\n  });\n}\n\nreturn out.length\n  ? out\n  : [{ json: { error: 'No valid items in input (need chatId + text)' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        16
+      ],
+      "id": "f57bacbc-73a2-4c40-a6c0-897d952a102e",
+      "name": "Code in JavaScript3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2f8f3a83-587f-4e19-9fed-0a0a956ab2ef",
+  "id": "goCJhXpCkCSbLilu"
+}

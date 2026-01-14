@@ -24,8 +24,8 @@
       - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
       - N8N_PORT=5678
-      - N8N_PROTOCOL=https
-      - N8N_HOST=n8n.node.od.ua
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - N8N_HOST=${N8N_HOST}
       - TZ=${TZ}
       - N8N_METRICS=false
       - N8N_LOG_LEVEL=debug
@@ -35,8 +35,8 @@
       - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
       - WEBHOOK_URL=${WEBHOOK_URL}
       - N8N_TRUSTED_PROXIES=${N8N_TRUSTED_PROXIES}
-      - N8N_SECURE_COOKIE=true
-      - N8N_SAMESITE_COOKIE=none
+      - N8N_SECURE_COOKIE=false
+      - N8N_SAMESITE_COOKIE=lax
       - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
       - N8N_RUNNERS_ENABLED=true
@@ -49,6 +49,8 @@
     volumes:
       - ./data/n8n:/home/node/.n8n
       - ./files:/files
+    ports:
+      - "5678:5678"
     restart: unless-stopped
 
   gotenberg:

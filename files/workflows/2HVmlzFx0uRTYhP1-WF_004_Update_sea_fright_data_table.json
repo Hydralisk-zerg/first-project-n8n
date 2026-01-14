@@ -1,5 +1,5 @@
 {
-  "name": "Update sea fright data table",
+  "name": "WF_004_Update sea fright data table",
   "nodes": [
     {
       "parameters": {
@@ -36,26 +36,6 @@
     },
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "triggerAtHour": 23,
-              "triggerAtMinute": 30
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -960,
-        -32
-      ],
-      "id": "2ff1adf2-4799-438e-8fe3-dbd4b6e2f20d",
-      "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
         "operation": "deleteRows",
         "dataTableId": {
           "__rl": true,
@@ -84,8 +64,7 @@
       "name": "Clear sea fright",
       "alwaysOutputData": true,
       "notesInFlow": false,
-      "executeOnce": false,
-      "onError": "continueRegularOutput"
+      "executeOnce": false
     },
     {
       "parameters": {
@@ -121,7 +100,8 @@
             "Telex_release": "={{ $json.Telex_release }}",
             "DTHC": "={{ $json.DTHC }}",
             "ATA": "={{ $json.ATA }}",
-            "POL": "={{ $json.POL }}"
+            "POL": "={{ $json.POL }}",
+            "vessel_position": "={{ $json.vessel_position }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -354,6 +334,16 @@
               "type": "string",
               "readOnly": false,
               "removed": false
+            },
+            {
+              "id": "vessel_position",
+              "displayName": "vessel_position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -474,6 +464,20 @@
       ],
       "id": "60b0a8f8-db2e-43fb-8bff-0c9ab833f35c",
       "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": null\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -960,
+        -32
+      ],
+      "id": "cf74902a-50e4-4499-b288-f280f4a6890e",
+      "name": "When Executed by Another Workflow"
     }
   ],
   "pinData": {},
@@ -483,17 +487,6 @@
         [
           {
             "node": "Upsert sea fright",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Schedule Trigger": {
-      "main": [
-        [
-          {
-            "node": "Clear sea fright",
             "type": "main",
             "index": 0
           }
@@ -548,13 +541,28 @@
           }
         ]
       ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Clear sea fright",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Kyiv",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "c8764450-86e0-4349-8b50-3672112b8828",
+  "versionId": "b12378f4-3186-44b9-8ff3-a1a8d8eb29ba",
   "meta": null,
   "id": "2HVmlzFx0uRTYhP1"
 }

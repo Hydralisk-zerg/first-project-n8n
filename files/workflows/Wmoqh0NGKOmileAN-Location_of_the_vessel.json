@@ -1,0 +1,2200 @@
+{
+  "name": "Location of the vessel",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": null\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        -32
+      ],
+      "id": "21baa2fd-698e-44cd-874e-3e6f3dec279d",
+      "name": "When Executed by Another Workflow",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].text }}",
+                    "additionalFields": {
+                      "callback_data": "=/update_vessel"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].additionalFields.callback_data }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -32
+      ],
+      "id": "4ee4a1e0-8791-496c-8e63-9c2bbcd3027b",
+      "name": "Send a text message",
+      "webhookId": "3d7258e9-7793-4086-935b-8239d3ca6899",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Supports inputs:\n// 1) items[0].json.data = [ { chatId, text, reply_markup: { inline_keyboard: [...] }, ... }, ... ]\n// 2) items[0].json.thisFieldAcceptsAnyType = [ { ok:true, result:{ chat:{id}, text, reply_markup } }, ... ]\n// Output: many items: { chatId, text, inlineKeyboard }\n\nfunction tryParseJson(s) {\n  if (typeof s !== 'string') return null;\n  try { return JSON.parse(s); } catch { return null; }\n}\n\nfunction getPayload(json) {\n  // NEW: data array\n  if (Array.isArray(json?.data)) return json.data;\n  const parsedData = tryParseJson(json?.data);\n  if (Array.isArray(parsedData)) return parsedData;\n\n  // OLD: thisFieldAcceptsAnyType array\n  if (Array.isArray(json?.thisFieldAcceptsAnyType)) return json.thisFieldAcceptsAnyType;\n  const parsedAny = tryParseJson(json?.thisFieldAcceptsAnyType);\n  if (Array.isArray(parsedAny)) return parsedAny;\n\n  // fallback: if workflow passed multiple items directly\n  if (Array.isArray(items) && items.length > 1) return items.map(i => i.json);\n\n  return [];\n}\n\nfunction normalizeChatId(v) {\n  const s = String(v ?? '').trim();\n  if (!s) return null;\n  // Telegram chat id обычно число, но можно оставить строкой\n  return s;\n}\n\nfunction telegramMarkupToN8nInlineKeyboard(replyMarkup) {\n  const ik = replyMarkup?.inline_keyboard;\n  if (!Array.isArray(ik) || !ik.length) return null;\n\n  return {\n    rows: ik.map(rowArr => ({\n      row: {\n        buttons: (Array.isArray(rowArr) ? rowArr : []).map(btn => ({\n          text: String(btn?.text ?? ''),\n          additionalFields: {\n            callback_data: String(btn?.callback_data ?? ''),\n          },\n        })).filter(b => b.text),\n      },\n    })),\n  };\n}\n\nconst root = items?.[0]?.json ?? {};\nconst arr = getPayload(root);\n\n// default keyboard (если вдруг reply_markup нет)\nconst defaultInlineKeyboard = {\n  rows: [\n    {\n      row: {\n        buttons: [\n          { text: 'Accept', additionalFields: { callback_data: 'accept' } },\n          { text: 'Cancel', additionalFields: { callback_data: 'cancel' } },\n        ],\n      },\n    },\n  ],\n};\n\nconst out = [];\n\nfor (const entry of arr) {\n  // поддержка старого формата { ok, result: {...} }\n  const src = entry?.result ? entry.result : entry;\n\n  const chatId = normalizeChatId(src?.chat?.id ?? src?.chatId);\n  const text = String(src?.text ?? '').trim();\n\n  if (!chatId || !text) continue;\n\n  const inlineKeyboard =\n    telegramMarkupToN8nInlineKeyboard(src?.reply_markup) || defaultInlineKeyboard;\n\n  out.push({\n    json: {\n      chatId,\n      text,\n      inlineKeyboard,\n    },\n  });\n}\n\nreturn out.length\n  ? out\n  : [{ json: { error: 'No valid items in input (need chatId + text)' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -32
+      ],
+      "id": "0fdaa279-6310-4815-8584-28ad07f80033",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "WXvMlwb6IO3hXORM",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/WXvMlwb6IO3hXORM"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user": "={{ $json.callback_query.message.chat.id }}",
+            "event": "Cancel",
+            "description": "=The employee with the ID: {{ $json.callback_query.message.chat.id }} refused to perform the procedure - {{ $json.callback_query.message.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        768,
+        528
+      ],
+      "id": "93e4688a-a740-4b6c-8218-8ef1f1441658",
+      "name": "Insert row2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "68GlEI8ygwenPt66",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/68GlEI8ygwenPt66"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id_after_hash }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_started_at": "={{ $now }}",
+            "status": "cancelled"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "enabled",
+              "displayName": "enabled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "workflow_id",
+              "displayName": "workflow_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "tg_id_usera",
+              "displayName": "tg_id_usera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "time_to_complete_the_procedure",
+              "displayName": "time_to_complete_the_procedure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "days_of_week",
+              "displayName": "days_of_week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "data_of_the_month",
+              "displayName": "data_of_the_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "month",
+              "displayName": "month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_started_at",
+              "displayName": "last_started_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "completed",
+              "displayName": "completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        528
+      ],
+      "id": "25ada7ec-fc61-4060-b156-d7b2a258d413",
+      "name": "Update row(s)1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ifItem = ($items('Telegram Trigger', 0, 0) || [])[0];\nconst text = String(ifItem?.json?.callback_query?.message?.text ?? '').trim();\n\nconst m = text.match(/#\\s*(\\d+)/);\n\nreturn [\n  {\n    json: {\n      id_after_hash: m ? Number(m[1]) : null,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        528
+      ],
+      "id": "bdb07458-da91-4917-a752-e771c8ca327d",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2288,
+        528
+      ],
+      "id": "0a8167dd-c296-4af5-86ac-bb6bfdd46561",
+      "name": "Delete a chat message3",
+      "webhookId": "5e779f40-4188-4387-9d3a-69af1d098880",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.from.id }}",
+        "text": "Отказался принимать задачу в финансовом боте",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2064,
+        528
+      ],
+      "id": "fbdd516c-c4e2-4c3e-886d-a5c90d2033d3",
+      "name": "Send a text message2",
+      "webhookId": "45dbc8ff-0214-4a1e-af7d-2907fbbb3aa8",
+      "credentials": {
+        "telegramApi": {
+          "id": "xD3HGL0soBI3karm",
+          "name": "Big brother is ...."
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.result.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger').first().json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        160
+      ],
+      "id": "0ded36e7-a680-4142-bb51-5770634ec0f2",
+      "name": "Delete a chat message",
+      "webhookId": "824f3aa0-e185-45fe-9715-d5dceea7b64b",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "callback_query",
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        416
+      ],
+      "id": "ef6ce028-083a-4856-98d5-fdf310d5ba9b",
+      "name": "Telegram Trigger",
+      "webhookId": "12976df4-447d-4e99-bc91-83eef1e8e90a",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Etz1zzjjSo70AMmQ",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/Etz1zzjjSo70AMmQ"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "On_board",
+              "keyValue": "yes"
+            },
+            {
+              "keyName": "ATA"
+            }
+          ]
+        },
+        "limit": 150
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        784,
+        160
+      ],
+      "id": "04f9a9f9-8adc-46b7-ab92-340b7a2777d1",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Берём все входящие строки (items)\nconst rows = $input.all().map(i => i.json);\n\n// 1) Собираем уникальные названия судов\nconst byKey = new Map();\n\nfor (const r of rows) {\n  const raw = (r.Vessel ?? '').toString().trim();\n  if (!raw) continue;\n\n  // нормализуем для уникальности\n  const key = raw.toLowerCase().replace(/\\s+/g, ' ').trim();\n\n  if (!byKey.has(key)) byKey.set(key, raw);\n}\n\nconst vessels = Array.from(byKey.values()).sort((a, b) => a.localeCompare(b, 'ru'));\n\n// 2) Формируем items для отправки в Telegram\nreturn vessels.map(vessel => ({\n  json: {\n    vessel,\n    messageText: `Оновіть місцезнаходження судна: ${vessel}`,\n    inlineKeyboard: {\n      rows: [\n        {\n          row: {\n            buttons: [\n              {\n                text: 'Ввести нові координати',\n                additionalFields: {\n                  // сюда кладём “payload”, чтобы потом понять по какому судну вводят координаты\n                  callback_data: `coords|${vessel}`,\n                },\n              },\n            ],\n          },\n        },\n      ],\n    },\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        160
+      ],
+      "id": "a2a9a5e5-1922-4980-b6b3-02f3223c0d55",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Switch').first().json.callback_query.message.chat.id }}",
+        "text": "={{ $json.messageText }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].additionalFields.callback_data }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1184,
+        160
+      ],
+      "id": "b92134b7-6f5e-4efc-87cf-7f6273d88a13",
+      "name": "Send a text message3",
+      "webhookId": "684b3f32-8368-4963-8366-d59417ec0ae2",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ac588635-e662-4887-a383-9e16ecf8e5dc",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "/update_vessel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update_vessel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "coords|",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "01e33cdc-d74a-4ae6-b17d-9bee4a644eea"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "coords"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a5c328f8-8dcd-4e06-a0c7-3b0b10858935",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cancel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d07f28d4-f742-4ef6-9b31-a290f03ca1c4",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        384
+      ],
+      "id": "5c201e23-0c28-4d7d-9b6c-e36be16e1afe",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ \"Enter the vessel's location \" + $json.vessel + \".\\n\\nhttps://www.marinetraffic.com\" }}",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true,
+          "selective": true
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "reply_to_message_id": "={{ $('Telegram Trigger').item.json.callback_query.message.message_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        960,
+        336
+      ],
+      "id": "dafaa519-f418-47b6-8dc2-04112ff06e2d",
+      "name": "Send a text message1",
+      "webhookId": "96b18f2a-0667-40c5-bd5f-f24bb27dc132",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Etz1zzjjSo70AMmQ",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/Etz1zzjjSo70AMmQ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Vessel",
+              "keyValue": "={{ (($json.message.reply_to_message.text || '').match(/Enter the vessel's location\\s+(.+?)\\s*\\//i) || [,''])[1].trim() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "vessel_position": "={{ $json.message.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "vessel_position",
+              "displayName": "vessel_position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        976,
+        720
+      ],
+      "id": "e6da1769-9630-40aa-a089-08663eb0f527",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.callback_query?.data || '';\nconst vessel = data.split('|').slice(1).join('|').trim(); // безопасно, если в названии вдруг будет \"|\"\n\nreturn [{\n  json: {\n    vessel,\n    chatId: $json.callback_query.message.chat.id,\n    callbackData: data+'|'+$input.first().json.callback_query.message.message_id,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        336
+      ],
+      "id": "8c8a7983-92c4-4e60-a571-5a1810d2c247",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        720
+      ],
+      "id": "c800b608-1d60-41cc-bc6e-083d510a9054",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc",
+          "mode": "list",
+          "cachedResultName": "Current shipments",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sea",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Vessel": "={{ $json.Vessel }}",
+            "vessel_position": "={{ $json.vessel_position }}",
+            "Deals": "={{ $json.Deals }}"
+          },
+          "matchingColumns": [
+            "Deals"
+          ],
+          "schema": [
+            {
+              "id": "Deals",
+              "displayName": "Deals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Manager",
+              "displayName": "Manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Imp_exp",
+              "displayName": "Imp_exp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Shipping_line",
+              "displayName": "Shipping_line",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Agent",
+              "displayName": "Agent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Booking_number",
+              "displayName": "Booking_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "POL",
+              "displayName": "POL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Customer",
+              "displayName": "Customer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "POD",
+              "displayName": "POD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Container_type",
+              "displayName": "Container_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Quantity",
+              "displayName": "Quantity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Cargo",
+              "displayName": "Cargo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Vessel",
+              "displayName": "Vessel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ETD",
+              "displayName": "ETD",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ETA",
+              "displayName": "ETA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "On_board",
+              "displayName": "On_board",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "HBL",
+              "displayName": "HBL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Invoice",
+              "displayName": "Invoice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Profit_Share",
+              "displayName": "Profit_Share",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Telex_release",
+              "displayName": "Telex_release",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "DTHC",
+              "displayName": "DTHC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ATA",
+              "displayName": "ATA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updateAt",
+              "displayName": "updateAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "vessel_position",
+              "displayName": "vessel_position",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        720
+      ],
+      "id": "5eca00fa-9926-4e00-a084-6cd84bb522ee",
+      "name": "Update row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fK8ysVbwd2AzFdPe",
+          "name": "Google Sheets account ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Switch').item.json.message.chat.id }}",
+        "messageId": "={{ $('Switch').item.json.message.reply_to_message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        720
+      ],
+      "id": "1d9602b2-6dc5-4978-a48c-b4e83da49f4b",
+      "name": "Delete a chat message1",
+      "webhookId": "0e1a41cf-17ac-4c3e-a341-1d460bff978c",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.reply_to_message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger').item.json.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1824,
+        720
+      ],
+      "id": "7c7c431b-b006-4d9f-afec-c79c8ba78113",
+      "name": "Delete a chat message2",
+      "webhookId": "48a3a5a0-ff3a-49ef-8c8d-8e5089580329",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "WF_name": "={{ $('Update row(s)1').item.json.name_workflow }}",
+            "task_owner": "System",
+            "task_type": "Regular",
+            "task_group": "System",
+            "task_description": "Start of updating the position of ships",
+            "status": "cancel",
+            "date_time_assigned": "={{ $now }}",
+            "date_time_declined": "={{ $now }}",
+            "date_time_accepted": "={{ $now }}",
+            "UUID": "={{ $json.uuid }}",
+            "date_time_done": "={{ $now }}",
+            "task_assignee": "Office manager"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "WF_name",
+              "displayName": "WF_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        528
+      ],
+      "id": "1be99f56-dec4-4e17-8129-88f250d214a6",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $json.tg_id_usera }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        528
+      ],
+      "id": "0d4a1028-bbfc-4a01-afd5-6f1b47d1653a",
+      "name": "Get row(s)1",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "function pseudoUuidV4() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {\n    const r = (Math.random() * 16) | 0;\n    const v = c === 'x' ? r : ((r & 0x3) | 0x8);\n    return v.toString(16);\n  });\n}\n\nreturn $input.all().map((item) => ({\n  json: {\n    ...item.json,\n    uuid: item.json.uid ?? pseudoUuidV4(), // не перетирать, если уже есть\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        528
+      ],
+      "id": "c3a3b253-ef31-489a-afaf-b5a63d9fbf25",
+      "name": "Create UUID"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "WF_name": "Wmoqh0NGKOmileAN",
+            "task_owner": "System",
+            "task_type": "Regular",
+            "task_group": "System",
+            "task_description": "Start of updating the position of ships",
+            "status": "assigned",
+            "date_time_assigned": "={{ $now }}",
+            "date_time_declined": "={{ $now }}",
+            "date_time_accepted": "={{ $now }}",
+            "UUID": "={{ $json.uuid }}",
+            "date_time_done": "={{ $now }}",
+            "task_assignee": "Office manager"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "WF_name",
+              "displayName": "WF_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2048,
+        160
+      ],
+      "id": "9e531de4-1af0-4a5d-890d-5890c8d6532b",
+      "name": "Insert row1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('Send a text message3').item.json.result.chat.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1616,
+        160
+      ],
+      "id": "9be1827a-f0ad-422b-996e-5aebfab0028a",
+      "name": "Get row(s)2",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "function pseudoUuidV4() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {\n    const r = (Math.random() * 16) | 0;\n    const v = c === 'x' ? r : ((r & 0x3) | 0x8);\n    return v.toString(16);\n  });\n}\n\nreturn $input.all().map((item) => ({\n  json: {\n    ...item.json,\n    uuid: item.json.uid ?? pseudoUuidV4(), // не перетирать, если уже есть\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        160
+      ],
+      "id": "2c95c122-33d4-4076-bbbb-61a68f5953be",
+      "name": "Create UUID1"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "messageId": "={{ $('Get row(s)3').item.json.value }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2064,
+        720
+      ],
+      "id": "280590be-bd70-454d-8de8-8bab6abad58a",
+      "name": "Delete a chat message4",
+      "webhookId": "9731dcee-dd4c-417f-808c-3ec255dde5d0",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "message_id",
+            "value": "={{ $json.result.reply_to_message.message_id }}",
+            "name_workflow": "Wmoqh0NGKOmileAN/b7cb2f",
+            "options": "={{ $('Code in JavaScript1').item.json.vessel }}",
+            "description": "={{ $json.result.chat.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        336
+      ],
+      "id": "b7cb2f81-a815-498f-9935-ce133c99825e",
+      "name": "Insert row3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "description",
+              "keyValue": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1616,
+        720
+      ],
+      "id": "ac05c659-36c1-4fe0-85ed-432099592da7",
+      "name": "Get row(s)3"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $('Get row(s)3').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        720
+      ],
+      "id": "57ee74a0-bdc6-41cf-9c5b-08a7ea182945",
+      "name": "Delete row(s)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message2": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message3": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Insert row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Create UUID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create UUID": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)2": {
+      "main": [
+        [
+          {
+            "node": "Create UUID1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create UUID1": {
+      "main": [
+        [
+          {
+            "node": "Insert row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message2": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)3": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message4": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Kyiv",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "5df38151-1bfe-4125-a513-7e2d71ea2393",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "Wmoqh0NGKOmileAN"
+}

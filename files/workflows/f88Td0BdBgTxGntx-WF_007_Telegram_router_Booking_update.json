@@ -1,0 +1,426 @@
+{
+  "name": "WF_007_Telegram router Booking update",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -368,
+        128
+      ],
+      "id": "20333157-6134-457e-96af-78be3faa0d29",
+      "name": "Telegram Trigger",
+      "webhookId": "014ce107-bd5e-48e5-bce9-8c5ec5869f68",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": null\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        -288
+      ],
+      "id": "e58b9990-06bf-4b75-9875-d8ea90e93ab2",
+      "name": "When Executed by Another Workflow",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].additionalFields.callback_data }}"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].additionalFields.callback_data }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        -288
+      ],
+      "id": "eae5d8b5-1ad5-45ef-924a-bcc415be2c1c",
+      "name": "Send a text message",
+      "webhookId": "3d7258e9-7793-4086-935b-8239d3ca6899",
+      "credentials": {
+        "telegramApi": {
+          "id": "dSLl4ZLfj7JILfK6",
+          "name": "Iris Tracking bot  ILA"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "function tryParseJson(s) {\n  if (typeof s !== 'string') return null;\n  const t = s.trim();\n  if (!t) return null;\n  try { return JSON.parse(t); } catch { return null; }\n}\n\nfunction getPayload(root, allItems) {\n  if (Array.isArray(root)) return root;\n\n  if (Array.isArray(root?.data)) return root.data;\n  const parsedData = tryParseJson(root?.data);\n  if (Array.isArray(parsedData)) return parsedData;\n\n  if (Array.isArray(root?.thisFieldAcceptsAnyType)) return root.thisFieldAcceptsAnyType;\n  const parsedAny = tryParseJson(root?.thisFieldAcceptsAnyType);\n  if (Array.isArray(parsedAny)) return parsedAny;\n\n  if (Array.isArray(allItems) && allItems.length > 1) return allItems.map(i => i.json);\n\n  return [];\n}\n\nfunction normalizeChatId(v) {\n  const s = String(v ?? '').trim();\n  return s ? s : null;\n}\n\nfunction firstNonEmpty(...vals) {\n  for (const v of vals) {\n    const s = String(v ?? '').trim();\n    if (s) return s;\n  }\n  return '';\n}\n\n// hash чтобы не вылезти за лимит callback_data (64)\nfunction fnv1aHex(str) {\n  let h = 0x811c9dc5;\n  for (let i = 0; i < str.length; i++) {\n    h ^= str.charCodeAt(i);\n    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;\n  }\n  return h.toString(16).padStart(8, '0');\n}\n\nfunction makeCallbackData(prefix, action, key) {\n  const base = `${prefix}|${action}`;\n  const k = String(key ?? '').trim();\n  if (!k) return base;\n\n  const candidate = `${base}|${k}`;\n  if (candidate.length <= 64) return candidate;\n\n  return `${base}|h:${fnv1aHex(k)}`;\n}\n\nfunction makeAcceptCancelKeyboard(prefix, key) {\n  return {\n    rows: [{\n      row: {\n        buttons: [\n          { text: 'Accept', additionalFields: { callback_data: makeCallbackData(prefix, 'accept', key) } },\n          { text: 'Cancel', additionalFields: { callback_data: makeCallbackData(prefix, 'cancel', key) } },\n        ],\n      },\n    }],\n  };\n}\n\nfunction parseTaskMeta(text) {\n  const t = String(text ?? '');\n\n  // ✅ #1447\n  const mId = t.match(/✅\\s*(#\\d+)/) || t.match(/(#\\d+)/);\n  const taskTag = mId ? `✅ ${mId[1]}` : '✅';\n\n  // ⏰ 13:08\n  const mTime = t.match(/⏰\\s*([0-2]?\\d:\\d{2})/);\n  const timePart = mTime ? `⏰ ${mTime[1]}` : '⏰ ??:??';\n\n  // 📅 каждый день\n  const mFreq = t.match(/📅\\s*([^\\n|]+)/);\n  const freqPart = mFreq ? `📅 ${mFreq[1].trim()}` : '📅';\n\n  // key лучше короткий: 1447\n  const mNum = mId ? String(mId[1]).replace('#', '') : '';\n  return { taskTag, timePart, freqPart, taskNum: mNum };\n}\n\nfunction buildTitle(meta, actionText) {\n  return `Задача ${meta.taskTag} ${meta.timePart} | ${meta.freqPart} | ${actionText}`;\n}\n\nconst root = items?.[0]?.json ?? {};\nconst arr = getPayload(root, items);\n\nconst out = [];\n\nfor (const entry of arr) {\n  const src = entry?.result ? entry.result : entry;\n\n  const chatId = normalizeChatId(src?.chat?.id ?? src?.chatId);\n  if (!chatId) continue;\n\n  const meta = parseTaskMeta(src?.text);\n\n  // key для callback_data (сначала taskNum из текста, потом любые твои поля)\n  const key = firstNonEmpty(\n    meta.taskNum,\n    src?.row_number, src?.rowNumber,\n    src?.booking_number, src?.Booking_number, src?.booking, src?.bookingNumber,\n    src?.id, src?.uid,\n    src?.message_id\n  );\n\n  // 1) ETA/ATA (booking|)\n  out.push({\n    json: {\n      chatId,\n      key,\n      text: buildTitle(meta, '\\n\\n'+'Oбновить ЕТА и АТА'),\n      inlineKeyboard: makeAcceptCancelKeyboard('booking', key),\n    },\n  });\n\n  // 2) coords (coords|)\n  out.push({\n    json: {\n      chatId,\n      key,\n      text: buildTitle(meta, '\\n\\n' + 'Oбновить координаты судов'),\n      inlineKeyboard: makeAcceptCancelKeyboard('coords', key),\n    },\n  });\n}\n\nreturn out.length\n  ? out\n  : [{ json: { error: 'No valid items in input (need chatId)' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -288
+      ],
+      "id": "f854c464-a55d-4bad-bb1b-1bfb90a04c1c",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "coords",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "275fe842-ce44-4607-94de-c10784fa1ef7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "coords"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "42f62516-c831-455f-8985-598672ae7996",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "booking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "booking"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "eeb58338-3c07-41d9-b479-1919c060defb",
+                    "leftValue": "message.reply_to_message",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "other"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        112
+      ],
+      "id": "0ae744ab-9ff8-450b-a9c3-02e5f529fb27",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Wmoqh0NGKOmileAN",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Wmoqh0NGKOmileAN",
+          "cachedResultName": "WF_006_Location of the vessel"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "anArray": "={{ $json.data }}"
+          },
+          "matchingColumns": [
+            "thisFieldAcceptsAnyType"
+          ],
+          "schema": [
+            {
+              "id": "anArray",
+              "displayName": "anArray",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        864,
+        -160
+      ],
+      "id": "86d2d500-7071-4515-ab3b-f39b22876cb2",
+      "name": "Vessel coords handler"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "O53EqnIO7LJ1Axrv",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/O53EqnIO7LJ1Axrv",
+          "cachedResultName": "WF_005_ATA, Vessel and ETA Update"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "anArray": "={{ $json.data }}"
+          },
+          "matchingColumns": [
+            "thisFieldAcceptsAnyType"
+          ],
+          "schema": [
+            {
+              "id": "anArray",
+              "displayName": "anArray",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "array",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        128
+      ],
+      "id": "f27b06ee-e881-4e21-85b4-587e1636a80d",
+      "name": "Booking handler"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        560,
+        128
+      ],
+      "id": "0f683a63-7941-49c4-a04a-77de9bd275cd",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cb = $json.callback_query;\nconst msg = $json.message;\n\nconst d = String(cb?.data ?? '');\n\n// replyText бывает только у обычного сообщения-ответа (forceReply)\nconst replyText = String(\n  msg?.reply_to_message?.text ??\n  cb?.message?.reply_to_message?.text ?? // на всякий случай\n  ''\n).trim();\n\nconst up = replyText.toUpperCase();\n\nconst isEtaAtaReply =\n  up.includes('ЕТА') || up.includes('АТА') || up.includes('ETA') || up.includes('ATA');\n\nconst isEtaAtaCallback = /\\|(ETA|ATA)$/.test(d);\n\n// coords: либо callback_data начинается с coords|, либо это ответ на вопрос про локацию судна\n// coords: либо callback_data начинается с coords|, либо это ответ на вопрос про локацию/название судна\nconst replyLower = replyText.toLowerCase();\n\nconst isCoordsReply =\n  replyLower.startsWith(\"enter the vessel's location\") ||\n  replyLower.startsWith(\"enter the vessel name\");\n\nconst isCoordsCallback = d.startsWith('coords|');\n\nreturn [{\n  json: {\n    ...$json,\n    route:\n      (isCoordsCallback || isCoordsReply) ? 'coords' :\n      (\n        d.startsWith('booking|') ||\n        isEtaAtaCallback ||   // для \"52|...|ETA\"\n        isEtaAtaReply\n      ) ? 'booking' :\n      'other'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        128
+      ],
+      "id": "0e0a1343-55de-4a12-974b-bea2d3add1d9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -160
+      ],
+      "id": "af3c4d2d-507e-4395-b41d-ad48192f1c15",
+      "name": "Aggregate1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Booking handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Vessel coords handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vessel coords handler": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Kyiv",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "9d03d9d7-5531-45f2-8cbc-82922a74616e",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "f88Td0BdBgTxGntx"
+}

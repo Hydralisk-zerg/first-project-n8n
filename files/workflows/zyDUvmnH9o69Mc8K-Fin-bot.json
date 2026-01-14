@@ -1,0 +1,608 @@
+{
+  "name": "Fin-bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1424,
+        176
+      ],
+      "id": "d0daf5e7-9ccb-4635-90d7-bc0553170b97",
+      "name": "Telegram Trigger",
+      "webhookId": "e1dcd54b-5ad4-40e0-b110-a3044acea56d",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const u = $json;\n\nconst chatId =\n  u.message?.chat?.id ??\n  u.callback_query?.message?.chat?.id ??\n  u.message?.from?.id;\n\nconst text = (u.message?.text ?? '').toString().trim();\nconst cb = (u.callback_query?.data ?? '').toString().trim();\n\nreturn [{\n  json: {\n    chatId,\n    text,\n    cb,\n    // кнопка меню (пока одна)\n    buttonB1: 'Заявка форма Б-1',\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1216,
+        176
+      ],
+      "id": "121e3d1b-ac86-498b-b7dc-ea9b75c649fe",
+      "name": "Normalize update"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        176
+      ],
+      "id": "303b86ee-4708-4baf-ae07-76ecf759ddab",
+      "name": "DT: Get B1 state"
+    },
+    {
+      "parameters": {
+        "jsCode": "const n = $('Normalize update').item.json;\nconst chatId = n.chatId;\nconst text = (n.text ?? '').trim();\n\n// rows from DataTable GetAll come as items\nconst stateRow = $input.first()?.json ?? null;\nconst rawState = stateRow?.value ?? null;\n\nlet state = null;\ntry {\n  state = rawState ? JSON.parse(rawState) : null;\n} catch {\n  state = null;\n}\n\nconst BUTTON_B1 = n.buttonB1; // 'Заявка форма Б-1'\nconst stateKey = `tg|b1|state|${chatId}`;\n\n// если пользователь в процессе формы — любое сообщение считаем ответом\nconst inForm = !!(state && state.step);\n\n// если не в форме и это не старт — показываем меню на любое сообщение\nif (!inForm && text !== BUTTON_B1) {\n  return [{\n    json: {\n      chatId,\n      action: 'menu',\n      menuText: 'Выберите действие:',\n      buttonB1: BUTTON_B1,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\n// старт формы\nif (!inForm && text === BUTTON_B1) {\n  const nextState = { step: 1 };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '1/4 Введите номер сделки (Deals):',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\n// продолжаем форму\nif (state.step === 1) {\n  const nextState = { step: 2, deal: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '2/4 Введите услугу:',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\nif (state.step === 2) {\n  const nextState = { ...state, step: 3, service: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '3/4 Введите сумму:',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\nif (state.step === 3) {\n  const nextState = { ...state, step: 4, amount: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '4/4 Введите валюту (USD/EUR/UAH):',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\nif (state.step === 4) {\n  const finalState = { ...state, currency: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1_done',\n      replyText: `Готово.\\nDeals=${finalState.deal}\\nУслуга=${finalState.service}\\nСумма=${finalState.amount}\\nВалюта=${finalState.currency}`,\n      nextState: null,\n      stateKey,\n      done: true,\n      deal: finalState.deal,\n      service: finalState.service,\n      amount: finalState.amount,\n      currency: finalState.currency,\n      resultKey: `tg|b1|result|${chatId}|${Date.now()}`\n    }\n  }];\n}\n\n// fallback\nreturn [{\n  json: {\n    chatId,\n    action: 'menu',\n    menuText: 'Выберите действие:',\n    buttonB1: BUTTON_B1,\n    stateKey,\n    done: false\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        176
+      ],
+      "id": "9fc60cf9-dcae-4f7b-a0f7-a6dd2dc6a90c",
+      "name": "Router (menu / B1)"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "menu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e6d31050-8f37-4444-8b71-a903c401ffed"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "b1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "57528dc3-0768-4d5b-8b51-22a985ae0f17"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "b1"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "b1_done",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ac884542-7e03-48c1-8046-0297419730c3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "b1_done"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -560,
+        160
+      ],
+      "id": "aba4595d-ca14-44d4-a30c-4faa8ee37037",
+      "name": "Switch by action"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.menuText }}",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.buttonB1 }}",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true,
+          "one_time_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        -32
+      ],
+      "id": "d99f370c-d547-409d-88e1-eb917a5e2dfe",
+      "name": "TG: Send menu",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.replyText }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        176
+      ],
+      "id": "85672f89-5e96-4c96-b1cc-a2ea3836322f",
+      "name": "TG: Send question",
+      "webhookId": "cf6dd1c2-ca5a-4752-8ed1-6050e7168fe3",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $('Router (menu / B1)').item.json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $('Router (menu / B1)').item.json.stateKey }}",
+            "value": "={{ JSON.stringify($('Router (menu / B1)').item.json.nextState) }}",
+            "name_workflow": "={{ $workflow.id }}",
+            "options": "b1"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        176
+      ],
+      "id": "04305867-b6e8-4dd8-a6f9-3dfede178344",
+      "name": "DT: Upsert B1 state"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.replyText }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        416
+      ],
+      "id": "03fdf948-25f2-4c50-bfd8-b21da0bdcd54",
+      "name": "TG: Send done",
+      "webhookId": "144e3e34-5c9d-43f7-ad9b-08a993e200dd",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name_workflow",
+              "keyValue": "={{ $workflow.id}}"
+            },
+            {
+              "keyName": "options",
+              "keyValue": "b1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        144,
+        416
+      ],
+      "id": "41631013-f031-475e-a2ea-640e3eb7fa6d",
+      "name": "DT: Delete B1 state",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    deal: $json.deal,\n    service: $json.service,\n    amount: $json.amount,\n    currency: $json.currency,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        416
+      ],
+      "id": "abd6bd99-e9e2-49eb-961c-01ed5756ce52",
+      "name": "FINAL: Output JSON"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $('Switch by action').item.json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "value": "={{ JSON.stringify({ deal: $json.deal, service: $json.service, amount: $json.amount, currency: $json.currency }) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        416
+      ],
+      "id": "57a20e61-8ec7-454b-ba27-1cf45eca4ce2",
+      "name": "Upsert row(s)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize update": {
+      "main": [
+        [
+          {
+            "node": "DT: Get B1 state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DT: Get B1 state": {
+      "main": [
+        [
+          {
+            "node": "Router (menu / B1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router (menu / B1)": {
+      "main": [
+        [
+          {
+            "node": "Switch by action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch by action": {
+      "main": [
+        [
+          {
+            "node": "TG: Send menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TG: Send question",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TG: Send done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send question": {
+      "main": [
+        [
+          {
+            "node": "DT: Upsert B1 state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send done": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DT: Delete B1 state": {
+      "main": [
+        [
+          {
+            "node": "FINAL: Output JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert row(s)": {
+      "main": [
+        [
+          {
+            "node": "DT: Delete B1 state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7806f67e-92ed-475b-9b83-5798d27d6027",
+  "id": "zyDUvmnH9o69Mc8K"
+}

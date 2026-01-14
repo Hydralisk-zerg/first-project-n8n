@@ -1,0 +1,2212 @@
+{
+  "name": "Iris_general",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f577f4e7-f717-443c-8727-dcf711f35cd1",
+              "leftValue": "={{ $json.Iris_general }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1504,
+        928
+      ],
+      "id": "fd47aa9e-4ea6-4d52-966b-9188f03fc3bb",
+      "name": "term - initial or return to main menu"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $json.message.chat.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        928
+      ],
+      "id": "6caf5fcd-2328-4d9e-a939-6f93e3394588",
+      "name": "manager identification"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "550ac5c2-a24a-47c6-9e79-24ecdd16409a",
+              "leftValue": "={{ $json.callback_query.message.reply_markup.inline_keyboard[0][0].callback_data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1744,
+        656
+      ],
+      "id": "a681b2ea-0485-4d39-bf2d-a1ebcbf2e613",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "AI tools",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5b5dd23b-dcce-41fd-85a0-f688516a7526"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI tools sub-menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b360df87-7037-4d71-958f-e086cc1fd7d5",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "AI assistant",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AI assistant"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0d76746c-a277-4a9f-b603-34a3427ffe8d",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "Translate to ENG",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Translate to ENG"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "622581fb-33e6-46a8-b30a-7d7084ce81b8",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "Tracing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Statute Docs"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1706a347-af3c-4a6a-9dd0-28128a3e5300",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "Cust Agreements",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cust Agreements"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1dfa030c-c025-4386-aca9-21cc1159b54c",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "Return",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Return / Cancel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "053a1993-7b3a-408c-934d-c7bafb3206da",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1504,
+        1168
+      ],
+      "id": "2051ec53-ebdb-454c-a59f-e0c24ab31a34",
+      "name": "обработка кнопок"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('manager identification').item.json.Iris_task_state }}",
+                    "rightValue": "Executed task log",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d4a9c481-8bfd-49e8-a4ce-4324a6666657"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Executed task log"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cbaee7c4-c652-4077-ada4-ccc4f17fd8f6",
+                    "leftValue": "={{ $('manager identification').item.json.Iris_task_state }}",
+                    "rightValue": "New task",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "New task"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -832,
+        736
+      ],
+      "id": "4ce0d161-e635-442a-82c8-3956caa79369",
+      "name": "обработка текста"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw =  $input.first().json.callback_query.data;\nconst [uuid,status,message_id] = raw.split('|');\n\nreturn [{\n  json: {\n    uuid, \n  status,\n  message_id}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1520,
+        640
+      ],
+      "id": "104998b9-4e05-41f9-abe0-ca0b822b1ff1",
+      "name": "обработка колбеков"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "=Welcome to Iris assistant! Please choose options ;)",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "AI tools",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "Translate to ENG",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Statute Docs",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "Cust Agreements",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Return",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1232,
+        912
+      ],
+      "id": "2bcdae8f-dfbd-493d-8c09-455293cfef86",
+      "name": "TG: Send_initial_menu",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_general": "menu"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_general",
+              "displayName": "Iris_general",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        912
+      ],
+      "id": "cbcba3e6-1146-4348-99aa-f9bf9221f4fd",
+      "name": "Update row(s)3"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "=Welcome back! Please choose options ;)",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "AI tools",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "Translate to ENG",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Statute Docs",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "Cust Agreements",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Return / Cancel",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        1440
+      ],
+      "id": "60561e35-d350-4566-a994-c09fe18a5c9b",
+      "name": "TG: Send_initial_menu1",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_general": "menu"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_general",
+              "displayName": "Iris_general",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        1440
+      ],
+      "id": "b0c563fa-85a3-4e9d-af9f-aa122da59be6",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_general": "Chat GPT 5.2"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_general",
+              "displayName": "Iris_general",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        1184
+      ],
+      "id": "bc4f97c4-c1ba-4ed1-8d67-4bde408f2670",
+      "name": "Update row(s)4"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "=Що підказати, середенько?",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        1184
+      ],
+      "id": "5ba2aec1-7810-43dc-a355-3a93d4a75322",
+      "name": "LLM start",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b13387a4-a6ec-459b-8c3c-e81669436a15",
+                    "leftValue": "={{ $json.Iris_general }}",
+                    "rightValue": "Chat GPT 5.2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Chat GPT 5.2"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d94dc223-b316-4990-91b1-2917cca82e46",
+                    "leftValue": "={{ $json.Iris_general }}",
+                    "rightValue": "Translate to ENG",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Translate to ENG"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b72faf93-7503-4f2a-a8de-75b018d6be96",
+                    "leftValue": "={{ $json.Iris_general }}",
+                    "rightValue": "Statute Docs",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Statute Docs"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7b7ac12a-1a8b-4da3-a994-ef78587231d8",
+                    "leftValue": "={{ $json.Iris_general }}",
+                    "rightValue": "Cust Agreements",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cust Agreements"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1488,
+        1760
+      ],
+      "id": "ff14c6ed-908c-44ed-a592-c20ef4781900",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        1760
+      ],
+      "id": "7f879961-0ad9-4b59-b221-be123d2d3686",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger1').item.json.message.text }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant. ответь на вопрос пользователя, лимит ответа 4095 символов"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1136,
+        1744
+      ],
+      "id": "043c1d85-af0d-4473-b250-44e476b93822",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2-2025-12-11",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2-2025-12-11"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        1904
+      ],
+      "id": "97d48a8d-8ecb-4972-90a4-c6b15d4ef0c7",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "DATqFrWITE7gF4TX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "vpnJPs7PmowLc8qA",
+          "mode": "list",
+          "cachedResultName": "Iris_general_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/vpnJPs7PmowLc8qA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "owner_tg_id": "={{ $json.tg_account }}",
+            "owner_name": "={{ $json.one_c_name }}",
+            "owner_request": "Chat GPT 5.2 requested",
+            "service": "Chat GPT 5.2"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_request",
+              "displayName": "owner_request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_response",
+              "displayName": "owner_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        1184
+      ],
+      "id": "71ac37e4-c234-4d18-8eed-408555373229",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('manager identification').item.json.tg_account }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        1744
+      ],
+      "id": "2205e60c-3212-4dc8-a1d9-f96cffa085b8",
+      "name": "Send a text message",
+      "webhookId": "c764330b-5424-4713-91ba-9ddbd35b90a4",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "vpnJPs7PmowLc8qA",
+          "mode": "list",
+          "cachedResultName": "Iris_general_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/vpnJPs7PmowLc8qA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "owner_name": "={{ $('Get row(s)').item.json.one_c_name }}",
+            "owner_tg_id": "={{ $('Get row(s)').item.json.tg_account }}",
+            "owner_request": "={{ $('Telegram Trigger1').item.json.message.text }}",
+            "owner_response": "={{ $json.output }}",
+            "service": "Chat GPT 5.2"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_request",
+              "displayName": "owner_request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_response",
+              "displayName": "owner_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        1744
+      ],
+      "id": "39514a58-7208-452f-971e-d3e5e27828c6",
+      "name": "Insert row1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_general": "Translate to ENG"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_general",
+              "displayName": "Iris_general",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1216
+      ],
+      "id": "9ac2fcb5-ec17-4fe0-ad04-a43e4189a67f",
+      "name": "Update row(s)5"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "=Не треба скіглити. Треба перекадати на англійську. Пиши, що перекасти\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        1216
+      ],
+      "id": "65a4ce2b-e2b4-46c3-bbad-d25e56c9fb21",
+      "name": "LLM start1",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "vpnJPs7PmowLc8qA",
+          "mode": "list",
+          "cachedResultName": "Iris_general_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/vpnJPs7PmowLc8qA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "owner_tg_id": "={{ $json.tg_account }}",
+            "owner_name": "={{ $json.one_c_name }}",
+            "owner_request": "Chat GPT 5.2 requested",
+            "service": "Translate to ENG"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_request",
+              "displayName": "owner_request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_response",
+              "displayName": "owner_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        1216
+      ],
+      "id": "cdbddb92-9670-4843-9164-84a693c35094",
+      "name": "Insert row2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger1').item.json.message.text }}",
+        "options": {
+          "systemMessage": "Ты опытный переводчик на английский язык. Работаешь в транспортно - экспедиторской компании. Твоя задаца перевести текст пользователя на деловой английский язык\n\nЕсли пользователь пишет на английском - верни проверенный / исправленный на грамматику текст с описанием типовых ошибок на русском языке \n\nСтилистические рекомендации выдай отдельно\n\nлимит ответа 4095 символов"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1136,
+        2064
+      ],
+      "id": "d127f602-1301-42a9-8b09-29aefe99174b",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2-2025-12-11",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2-2025-12-11"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1136,
+        2256
+      ],
+      "id": "b3ad96a1-2ebe-4a0d-beea-9b0e3337b58b",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "DATqFrWITE7gF4TX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('manager identification').item.json.tg_account }}",
+        "text": "={{ $('AI Agent1').item.json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -544,
+        2144
+      ],
+      "id": "21629bda-871e-4451-be2a-0c9bd3968d6c",
+      "name": "Send a text message1",
+      "webhookId": "c764330b-5424-4713-91ba-9ddbd35b90a4",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "vpnJPs7PmowLc8qA",
+          "mode": "list",
+          "cachedResultName": "Iris_general_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/vpnJPs7PmowLc8qA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "owner_name": "={{ $('Get row(s)').item.json.one_c_name }}",
+            "owner_tg_id": "={{ $('Get row(s)').item.json.tg_account }}",
+            "owner_request": "={{ $('Telegram Trigger1').item.json.message.text }}",
+            "owner_response": "={{ $json.output }}",
+            "service": "Translate to ENG"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_request",
+              "displayName": "owner_request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_response",
+              "displayName": "owner_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        2144
+      ],
+      "id": "2c6532da-7232-4e08-b825-c4ee50d46269",
+      "name": "Insert row3"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1936,
+        656
+      ],
+      "id": "159b465d-3551-4dd1-aa08-0a996eff20ac",
+      "name": "Telegram Trigger1",
+      "webhookId": "fe622727-018d-4fe0-a306-4eb0e2749e5f",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Switch').item.json.tg_account }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1040,
+        1904
+      ],
+      "id": "21d100f2-f039-4bb4-8eee-72738f83cc18",
+      "name": "SM1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Switch').item.json.tg_account }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1040,
+        2256
+      ],
+      "id": "c6a50638-404b-4990-b379-71ef59e0914f",
+      "name": "SM2"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1728,
+        1248
+      ],
+      "id": "c43ac252-92b2-4dec-aa13-3ae864f41815",
+      "name": "typing...",
+      "webhookId": "832df39b-1aa6-45b6-94f2-0f8e82309af4",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "=Welcome to AI assistant! Please choose options ;)",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "AI assistant ",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "Translate to ENG",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Return",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1184,
+        1152
+      ],
+      "id": "f49fc6a5-7764-4ef6-9038-adf63253d531",
+      "name": "AI Tools sub-menu",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "pwwdVgUYOctUicMz",
+          "name": "Iris_log_bot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "term - initial or return to main menu": {
+      "main": [
+        [
+          {
+            "node": "TG: Send_initial_menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "typing...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "manager identification": {
+      "main": [
+        [
+          {
+            "node": "term - initial or return to main menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "обработка колбеков",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "manager identification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "обработка кнопок": {
+      "main": [
+        [
+          {
+            "node": "AI Tools sub-menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LLM start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LLM start1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "node": "TG: Send_initial_menu1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send_initial_menu": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send_initial_menu1": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM start": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Update row(s)4": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Insert row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)5": {
+      "main": [
+        [
+          {
+            "node": "Insert row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM start1": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Insert row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SM1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SM2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "typing...": {
+      "main": [
+        [
+          {
+            "node": "обработка кнопок",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "0RGlvrib1pUh86ZP"
+  },
+  "versionId": "fbcb4f16-af9b-474b-ab27-77b70cafc92b",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "i5JFNqBULqtDTmAE"
+}

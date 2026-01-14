@@ -1,0 +1,64 @@
+{
+  "name": "Sending notifications to managers about booking statuses",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"anArray\": []\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f63e02ee-844b-424b-8b3c-b2f4029d180a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "kyky",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "66791a9a-d33d-47ae-b22b-b61465a04e58",
+      "name": "Send a text message",
+      "webhookId": "ee46d2f3-87fd-4a35-b1c7-8e0a10b956d4",
+      "credentials": {
+        "telegramApi": {
+          "id": "xD3HGL0soBI3karm",
+          "name": "Big brother is ...."
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2ddd70c6-40d4-4339-bb11-436c1573ab87",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "WdBFt8lPIBefS4eK"
+}

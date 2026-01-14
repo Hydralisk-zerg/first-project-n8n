@@ -1,0 +1,1892 @@
+{
+  "name": "WF",
+  "nodes": [
+    {
+      "parameters": {
+        "fieldToSplitOut": "debet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "df69b998-3b11-4e8e-9e7f-26f511701a44",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.exp_payment_date }}",
+        "format": "MM-dd-yyyy",
+        "outputFieldName": "=exp_payment_date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "cced0193-f00a-433e-b500-4a1c8309d119",
+      "name": "Date & Time2"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1ER_GMT9REt9Znx6nSAqMJ9w9QQJ83Mxpusz-2IvQVgU",
+          "mode": "list",
+          "cachedResultName": "Debitors_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ER_GMT9REt9Znx6nSAqMJ9w9QQJ83Mxpusz-2IvQVgU/edit?usp=drivesdk"
+        },
+        "name": "={{ $now.format('yyyy-MM-dd') }}_UAH_debts",
+        "sameFolder": false,
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1QYsCX2cXzVsj7b07P6pPvjyPFXu7FtS5",
+          "mode": "list",
+          "cachedResultName": "HEE_ODS",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1QYsCX2cXzVsj7b07P6pPvjyPFXu7FtS5"
+        },
+        "options": {
+          "description": ""
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -224,
+        208
+      ],
+      "id": "e191ad4b-04c9-403a-8d0a-38299b473894",
+      "name": "Copy file1",
+      "executeOnce": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "K4x2x7zJzhrckcBy",
+          "name": "AR Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Copy file1').item.json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "UAH_deb",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DRvRNMMFAHhg_7gAleyQZNB8vvlvItzwNG-aRR1Lff4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ $json.number }}",
+            "date": "={{ $json.date }}",
+            "payer": "={{ $json.payer }}",
+            "invoice_status": "={{ $json.invoice_status }}",
+            "deal": "={{ $json.deal }}",
+            "manager": "={{ $json.manager }}",
+            "amount_uah": "={{ $json.amount_uah }}",
+            "payment_type": "={{ $json.payment_type }}",
+            "exp_payment_date": "={{ $json.exp_payment_date }}",
+            "overdue_invoice_date": "={{ $json.overdue_invoice_date }}",
+            "payment_terms": "={{ $json.payment_terms }}",
+            "overdue_payment_terms": "={{ $json.overdue_payment_terms }}"
+          },
+          "matchingColumns": [
+            "number"
+          ],
+          "schema": [
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payer",
+              "displayName": "payer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoice_status",
+              "displayName": "invoice_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deal",
+              "displayName": "deal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "manager",
+              "displayName": "manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_uah",
+              "displayName": "amount_uah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_type",
+              "displayName": "payment_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exp_payment_date",
+              "displayName": "exp_payment_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_invoice_date",
+              "displayName": "overdue_invoice_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_terms",
+              "displayName": "payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_payment_terms",
+              "displayName": "overdue_payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        0
+      ],
+      "id": "b6e045eb-977c-44b5-8c5f-0eae3bc4aa21",
+      "name": "Append or update row in sheet1",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.date }}",
+        "outputFieldName": "date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        368,
+        0
+      ],
+      "id": "f60d95a3-d886-40cf-b0de-d772809a56ef",
+      "name": "Date & Time3"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "overdue_payment_terms"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        736,
+        0
+      ],
+      "id": "665fab44-5356-4a0f-a16c-6aa24b2ec3f8",
+      "name": "Sort1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1mBTI1HF53W3HXQh41TRGYzU_GixV-5O1qKEQiORvz3k",
+          "mode": "list",
+          "cachedResultName": "fin_report_recipients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBTI1HF53W3HXQh41TRGYzU_GixV-5O1qKEQiORvz3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mBTI1HF53W3HXQh41TRGYzU_GixV-5O1qKEQiORvz3k/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1648,
+        208
+      ],
+      "id": "e86de450-bee4-4b65-8bac-8ea61150fec8",
+      "name": "Get row(s) in sheet1",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 11 * * MON-FRI"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        208
+      ],
+      "id": "f5a81bbc-5338-4d97-8033-15183bd70ab1",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://node.od.ua:8000/api/v1/ftp-json/?key=nodeapisecret0482&qtype=credit_bank",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        208
+      ],
+      "id": "11557f51-b626-4be5-bb58-f37345cc969d",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.date }}",
+        "outputFieldName": "date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        560,
+        208
+      ],
+      "id": "21a6ab37-7935-4cd2-ae96-1129b5d7ab39",
+      "name": "Date & Time4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inItem = $input.first().json;\n\nconst credit = Array.isArray(inItem.credit) ? inItem.credit : [];\nconst out = credit.map(entry => ({ json: { ...entry } }));\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        208
+      ],
+      "id": "86c0f61f-9b01-40f9-b5e9-196e8b949315",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Copy file1').item.json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 425995121,
+          "mode": "list",
+          "cachedResultName": "UAH_cred",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DRvRNMMFAHhg_7gAleyQZNB8vvlvItzwNG-aRR1Lff4/edit#gid=425995121"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.date }}",
+            "number": "={{ $json.number }}",
+            "order_number": "={{ $json.order_number }}",
+            "payer": "={{ $json.payer }}",
+            "deal": "={{ $json.deal }}",
+            "amount_uah": "={{ $json.amount_uah }}",
+            "payment_type": "={{ $json.payment_type }}",
+            "service": "={{ $json.service }}"
+          },
+          "matchingColumns": [
+            "number"
+          ],
+          "schema": [
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "order_number",
+              "displayName": "order_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payer",
+              "displayName": "payer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deal",
+              "displayName": "deal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_uah",
+              "displayName": "amount_uah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_type",
+              "displayName": "payment_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "service",
+              "displayName": "service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        208
+      ],
+      "id": "119e7dfc-0325-42a6-a0eb-0c03a9d50932",
+      "name": "Append or update row in sheet2",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://node.od.ua:8000/api/v1/ftp-json/?key=nodeapisecret0482&qtype=debet_usd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        416
+      ],
+      "id": "d9a355a1-cf48-4b29-9c17-9f120182ec12",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "debet",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        192,
+        416
+      ],
+      "id": "54c074a4-cb00-4a67-846f-7c482104c1f4",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $('Split Out2').item.json.exp_payment_date }}",
+        "format": "MM-dd-yyyy",
+        "outputFieldName": "=exp_payment_date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        560,
+        416
+      ],
+      "id": "652c1ff0-106a-4629-8ca5-9ceb19558003",
+      "name": "Date & Time5"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.date }}",
+        "outputFieldName": "date",
+        "options": {
+          "includeInputFields": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        368,
+        416
+      ],
+      "id": "6e2d2ceb-b0df-42b3-88fa-718fe29ee06b",
+      "name": "Date & Time6"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "overdue_payment_terms"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        752,
+        416
+      ],
+      "id": "4c63c987-3199-4790-a895-87d4ead01d42",
+      "name": "Sort2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Copy file1').item.json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1237734483,
+          "mode": "list",
+          "cachedResultName": "USD_deb",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FPHpkgBvvI0inQy4IvWRlMp7TZWj5xf5pYk10WXbRC4/edit#gid=1237734483"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "number": "={{ $json.number }}",
+            "date": "={{ $json.date }}",
+            "payer": "={{ $json.payer }}",
+            "invoice_status": "={{ $json.invoice_status }}",
+            "deal": "={{ $json.deal }}",
+            "manager": "={{ $json.manager }}",
+            "amount_eur": "={{ $json.amount_eur }}",
+            "amount_usd": "={{ $json.amount_usd }}",
+            "bypass_number": "={{ $json.bypass_number }}",
+            "exp_payment_date": "={{ $json.exp_payment_date }}",
+            "overdue_invoice_date": "={{ $json.overdue_invoice_date }}",
+            "payment_terms": "={{ $json.payment_terms }}",
+            "overdue_payment_terms": "={{ $json.overdue_payment_terms }}"
+          },
+          "matchingColumns": [
+            "number"
+          ],
+          "schema": [
+            {
+              "id": "number",
+              "displayName": "number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payer",
+              "displayName": "payer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoice_status",
+              "displayName": "invoice_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deal",
+              "displayName": "deal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "manager",
+              "displayName": "manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_eur",
+              "displayName": "amount_eur",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "amount_usd",
+              "displayName": "amount_usd",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bypass_number",
+              "displayName": "bypass_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exp_payment_date",
+              "displayName": "exp_payment_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_invoice_date",
+              "displayName": "overdue_invoice_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payment_terms",
+              "displayName": "payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overdue_payment_terms",
+              "displayName": "overdue_payment_terms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        416
+      ],
+      "id": "0ce826a5-25e8-4ce9-a0ad-f3671a1817c9",
+      "name": "Append or update row in sheet3",
+      "executeOnce": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c0622b8-e0b2-4f46-ad10-b3b4809df216",
+              "name": "number",
+              "value": "={{ $json.number }}",
+              "type": "string"
+            },
+            {
+              "id": "37350b5f-7b1e-4901-a5a8-c09e6f5b309e",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "cb642aa7-758a-4373-b126-59290a7ab112",
+              "name": "payer",
+              "value": "={{ $json.payer }}",
+              "type": "string"
+            },
+            {
+              "id": "668b5d19-068b-45ca-bf79-20aa3e2f8e7b",
+              "name": "invoice_status",
+              "value": "={{ $json.invoice_status }}",
+              "type": "string"
+            },
+            {
+              "id": "bac20ef5-8012-4e54-86e4-041e6eb673ee",
+              "name": "deal",
+              "value": "={{ $json.deal.slice(8, 15) }}",
+              "type": "string"
+            },
+            {
+              "id": "c196bdab-5859-4709-899b-a3f9a5253afe",
+              "name": "manager",
+              "value": "={{ $json.manager }}",
+              "type": "string"
+            },
+            {
+              "id": "93f8c7e9-40af-461c-8ccf-f37c0b08adeb",
+              "name": "amount_uah",
+              "value": "={{ $json.amount_uah }}",
+              "type": "number"
+            },
+            {
+              "id": "ba4cfcbb-34ce-40e8-adf3-5bfffc9bea8a",
+              "name": "payment_type",
+              "value": "={{ $json.payment_type }}",
+              "type": "string"
+            },
+            {
+              "id": "e6e61d49-62b6-43d7-9255-b416ceae646c",
+              "name": "exp_payment_date",
+              "value": "={{ $json.exp_payment_date }}",
+              "type": "string"
+            },
+            {
+              "id": "44b0eb46-69c4-4aa2-881d-2a570fa5ea3f",
+              "name": "overdue_invoice_date",
+              "value": "={{ $json.overdue_invoice_date }}",
+              "type": "number"
+            },
+            {
+              "id": "55b93650-8e2f-4e8c-8ea2-ec1a174dfbcb",
+              "name": "payment_terms",
+              "value": "={{ $json.payment_terms }}",
+              "type": "number"
+            },
+            {
+              "id": "4d2c2f0a-9c10-415b-aa0f-21a6f2e38f56",
+              "name": "overdue_payment_terms",
+              "value": "={{ $json.overdue_payment_terms }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        0
+      ],
+      "id": "54e5448b-bfa4-447b-9fe6-1391eb49ad0d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c0622b8-e0b2-4f46-ad10-b3b4809df216",
+              "name": "number",
+              "value": "={{ $json.number }}",
+              "type": "string"
+            },
+            {
+              "id": "37350b5f-7b1e-4901-a5a8-c09e6f5b309e",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "cb642aa7-758a-4373-b126-59290a7ab112",
+              "name": "payer",
+              "value": "={{ $json.payer }}",
+              "type": "string"
+            },
+            {
+              "id": "668b5d19-068b-45ca-bf79-20aa3e2f8e7b",
+              "name": "invoice_status",
+              "value": "={{ $json.invoice_status }}",
+              "type": "string"
+            },
+            {
+              "id": "bac20ef5-8012-4e54-86e4-041e6eb673ee",
+              "name": "deal",
+              "value": "={{ $json.deal.slice(8, 15) }}",
+              "type": "string"
+            },
+            {
+              "id": "c196bdab-5859-4709-899b-a3f9a5253afe",
+              "name": "manager",
+              "value": "={{ $json.manager }}",
+              "type": "string"
+            },
+            {
+              "id": "ccae0b25-31b6-42c7-a77e-8f4837704f01",
+              "name": "amount_eur",
+              "value": "={{ $json.amount_eur }}",
+              "type": "string"
+            },
+            {
+              "id": "920a11b8-c68b-4dfe-8f00-d0b51fa24b2e",
+              "name": "amount_usd",
+              "value": "={{ $json.amount_usd }}",
+              "type": "number"
+            },
+            {
+              "id": "ec384d4f-aae7-4e86-8eb4-6cd4c5c17f3b",
+              "name": "bypass_number",
+              "value": "={{ $json.bypass_number }}",
+              "type": "string"
+            },
+            {
+              "id": "449f1c36-4bb3-41b5-a2d4-bad1814e2066",
+              "name": "exp_payment_date",
+              "value": "={{ $json.exp_payment_date }}",
+              "type": "string"
+            },
+            {
+              "id": "d6342c5d-5d00-43f8-9651-4443b51a8f09",
+              "name": "overdue_invoice_date",
+              "value": "={{ $json.overdue_invoice_date }}",
+              "type": "number"
+            },
+            {
+              "id": "e5a95989-4091-4ee2-ad4b-a79c28fff112",
+              "name": "payment_terms",
+              "value": "={{ $json.payment_terms }}",
+              "type": "number"
+            },
+            {
+              "id": "baf3a075-45a5-4544-93d6-7c1085c5cce5",
+              "name": "overdue_payment_terms",
+              "value": "={{ $json.overdue_payment_terms }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        416
+      ],
+      "id": "bb1e25b1-356e-4b61-88f5-11ec75ddead2",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1440,
+        192
+      ],
+      "id": "112703c2-f719-4708-8d78-827abc855c29",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "=Debitors list {{ $now.format('dd-MM-yy') }}",
+        "emailType": "text",
+        "message": "=Дорога команда,  \n\nдивіться нижче посилання на файл з актуальною \nдебіторською та кредиторською заборгованістю.\n\nhttps://docs.google.com/spreadsheets/d/{{ $('Copy file1').item.json.id }}/edit?gid=0#gid=0 \n\n\nЗ повагою, ваш \nШІ‑асистент Іріс.",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Iris"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2544,
+        208
+      ],
+      "id": "0c95758c-2e56-45d9-add3-881ab09eebf1",
+      "name": "Send a message",
+      "webhookId": "df2afcf5-294f-46fb-906d-d77ea36c2329",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oPnH5wCJ3WGgQxCA",
+          "name": "AR Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8582d45b-5df0-41f8-b343-087ba14cb56a",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "hellmann.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "2cdb3282-21d7-4701-875e-dc04c1ffce49",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "ruslanayarova",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1856,
+        208
+      ],
+      "id": "b8c41b28-8212-4a74-9afc-e7f325ca9e1e",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2112,
+        192
+      ],
+      "id": "68089e0a-234f-453e-af09-dcdc5a4ca54c",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2384,
+        208
+      ],
+      "id": "37abd84e-5816-4b62-bdc6-98938a84124a",
+      "name": "Wait",
+      "webhookId": "ef0330b3-010e-4abd-bac7-b50bcdcc65a1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate UUID without crypto module using timestamp and random numbers\nfunction generateUUID() {\n  const timestamp = Date.now().toString(16);\n  const random1 = Math.random().toString(16).substring(2, 10);\n  const random2 = Math.random().toString(16).substring(2, 10);\n  const random3 = Math.random().toString(16).substring(2, 10);\n  \n  return `${timestamp.substring(0, 8)}-${random1.substring(0, 4)}-${random1.substring(4, 8)}-${random2.substring(0, 4)}-${random2.substring(4, 8)}${random3.substring(0, 4)}`;\n}\n\nconst uuid = generateUUID();\n\n// Return as item data\nreturn [\n  {\n    json: { uuid },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        208
+      ],
+      "id": "214cb840-0e19-4f39-baab-e5912ee7dfab",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "url": "https://node.od.ua:8000/api/v1/ftp-json/?key=nodeapisecret0482&qtype=debet_bank",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0744fba2-39fa-4db0-abfd-acff62ed8ac7",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2a539536-6b2f-4396-888d-77a73aef0938",
+              "name": "number",
+              "value": "={{ $json.number }}",
+              "type": "string"
+            },
+            {
+              "id": "50a975b8-fb8f-49b4-89e2-a31d685c67d9",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "876d98ed-d2f1-4957-9528-531a49c60f79",
+              "name": "order_number",
+              "value": "={{ $json.order_number }}",
+              "type": "string"
+            },
+            {
+              "id": "60df63e8-5842-4a24-928e-cca843905f81",
+              "name": "payer",
+              "value": "={{ $json.payer }}",
+              "type": "string"
+            },
+            {
+              "id": "5426bb3c-497a-4f3b-9bc8-86b16fb53ede",
+              "name": "deal",
+              "value": "={{ $json.deal.slice(8, 15) }}",
+              "type": "string"
+            },
+            {
+              "id": "8910c394-5f0f-4089-8364-2d6227942e06",
+              "name": "amount_uah",
+              "value": "={{ $json.amount_uah }}",
+              "type": "number"
+            },
+            {
+              "id": "bb7a53e6-f00e-4dc2-a351-ea37bc7c5a76",
+              "name": "payment_type",
+              "value": "={{ $json.payment_type }}",
+              "type": "string"
+            },
+            {
+              "id": "f79032e9-8995-4592-a904-b8c42f9f5304",
+              "name": "service",
+              "value": "={{ $json.service }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        208
+      ],
+      "id": "fdaf61c0-c7d4-4818-9e86-65152fc03cba",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc97a208-3dc5-4d81-9bf7-8a4a53eda1ee",
+              "name": "UUID",
+              "value": "={{ $json.uuid }}",
+              "type": "string"
+            },
+            {
+              "id": "12a1490d-5591-4130-a9ee-ca0801732af4",
+              "name": "task_owner",
+              "value": "System",
+              "type": "string"
+            },
+            {
+              "id": "53f05d57-07f2-4c25-aa08-f3f9e2335560",
+              "name": "task_assignee ",
+              "value": "System",
+              "type": "string"
+            },
+            {
+              "id": "14839b40-3e88-4887-955d-292649af3e88",
+              "name": "task_type ",
+              "value": "Regular",
+              "type": "string"
+            },
+            {
+              "id": "1ad11c53-0071-4fe0-8ca6-38cf44dd97db",
+              "name": "task_group",
+              "value": "Finance",
+              "type": "string"
+            },
+            {
+              "id": "628289f0-a22b-4566-850d-72febc52b97d",
+              "name": "task_description",
+              "value": "Отправка гривневой и валютной дебеторки",
+              "type": "string"
+            },
+            {
+              "id": "0e1cf9e4-5dfe-414e-bab0-553cab1b3905",
+              "name": "status",
+              "value": "In_progress",
+              "type": "string"
+            },
+            {
+              "id": "033c5c35-c26b-44a1-a55c-5f3135dd51b9",
+              "name": "date_time_assigned",
+              "value": "={{ $now.plus(25200000).format('yyyy-MM-dd/HH:mm')}} ",
+              "type": "string"
+            },
+            {
+              "id": "bff6959f-93f4-46b0-946a-be44b34c7ba6",
+              "name": "date_time_declined",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c3ef5e6a-8766-4159-ab39-5992fe2c7311",
+              "name": "date_time_accepted",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "34168e57-abbd-4a65-a1ab-8a9c81370ab3",
+              "name": "date_time_done",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "4b355d54-452b-4589-aa5f-f3050b87a1b0",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UUID": "={{ $json.UUID }}",
+            "task_owner": "={{ $json.task_owner }}",
+            "task_assignee": "={{ $json['task_assignee '] }}",
+            "task_type": "={{ $json['task_type '] }}",
+            "task_group": "={{ $json.task_group }}",
+            "task_description": "={{ $json.task_description }}",
+            "status": "In_progress",
+            "date_time_assigned": "={{ $json.date_time_assigned }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "928db467-21df-404b-ada2-a901960d8d13",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "UUID",
+              "keyValue": "={{ $('Code1').item.json.uuid }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "=Done",
+            "date_time_done": "={{ $now.plus(25200000).format('yyyy-MM-dd/HH:mm')}} "
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        48
+      ],
+      "id": "1c839bfc-e866-4174-aa64-f1a964f99b14",
+      "name": "Update row(s)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Date & Time3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time2": {
+      "main": [
+        [
+          {
+            "node": "Sort1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time3": {
+      "main": [
+        [
+          {
+            "node": "Date & Time2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Date & Time4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Date & Time6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time5": {
+      "main": [
+        [
+          {
+            "node": "Sort2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time6": {
+      "main": [
+        [
+          {
+            "node": "Date & Time5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Copy file1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7c76c3a3-5be6-4480-a0ab-ee8ff2456876",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "Oxgxe6n3kjhGTGWE"
+}

@@ -1,0 +1,677 @@
+{
+  "name": "WF_003_scheduler launcher",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        -16
+      ],
+      "id": "e583c675-c306-4e00-a69c-ecd83b809902",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "68GlEI8ygwenPt66",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/68GlEI8ygwenPt66"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "start_time",
+              "keyValue": "={{ $json.start_time }}"
+            },
+            {
+              "keyName": "enabled",
+              "condition": "isTrue"
+            }
+          ]
+        },
+        "limit": null
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        272,
+        -16
+      ],
+      "id": "21cd5013-298a-4228-96bf-bb5f21eefc1f",
+      "name": "Get row(s)1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Accept",
+                    "additionalFields": {
+                      "callback_data": "accept"
+                    }
+                  },
+                  {
+                    "text": "Cancel",
+                    "additionalFields": {
+                      "callback_data": "cancel"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        -16
+      ],
+      "id": "bbe70313-1ff0-468e-a557-f9418ae65abc",
+      "name": "Send a text message",
+      "webhookId": "6a78dc58-bf89-409e-8735-d471fbbc0749",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "68GlEI8ygwenPt66",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/68GlEI8ygwenPt66"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "start_time",
+              "keyValue": "={{ $('search for temporary and active workflows').item.json.start_time }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_started_at": "={{ $('Schedule Trigger1').item.json[\"Readable time\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "enabled",
+              "displayName": "enabled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "workflow_id",
+              "displayName": "workflow_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "tg_id_usera",
+              "displayName": "tg_id_usera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "days_of_week",
+              "displayName": "days_of_week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "data_of_the_month",
+              "displayName": "data_of_the_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_date",
+              "displayName": "start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "end_date",
+              "displayName": "end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_started_at",
+              "displayName": "last_started_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "time_to_complete_the_procedure",
+              "displayName": "time_to_complete_the_procedure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "completed",
+              "displayName": "completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        688,
+        -16
+      ],
+      "id": "f2061cd7-f1c1-4d51-aecf-3ab09cd7f291",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code in JavaScript2\n\nfunction parseChatIds(v) {\n  const raw = String(v ?? '').trim();\n  if (!raw) return [];\n  return raw\n    .split('|')\n    .map(s => s.trim())\n    .map(s => s.replace(/[^\\d-]/g, ''))\n    .filter(Boolean);\n}\n\nconst inputRow = items?.[0]?.json ?? {};\nconst msgText = (($items('post-filter', 0, 0) || [])[0]?.json?.text) ?? '';\n\n// 1) ids из таблицы\nlet ids = parseChatIds(inputRow.tg_id_usera);\n\n// 2) fallback, если tg_id_usera пустой\nconst adminChatId = '544911412'; // <-- замени на свой\nif (!ids.length) ids = [adminChatId];\n\nconst uniq = Array.from(new Set(ids));\n\nconst reply_markup = {\n  inline_keyboard: [[\n    { text: 'Accept', callback_data: 'accept' },\n    { text: 'Cancel', callback_data: 'cancel' },\n  ]],\n};\n\nreturn uniq.map(chatId => ({\n  json: {\n    ...inputRow,\n    chatId,\n    text: msgText,\n    reply_markup,\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -16
+      ],
+      "id": "8b6d70e5-a3bd-4140-b7ac-97daf1557498",
+      "name": "Code in JavaScript2",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.data[0].workflow_id }}",
+          "cachedResultName": "={{ $json.data[0].workflow_id }}"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "thisFieldAcceptsAnyType": "={{ $json.data }}"
+          },
+          "matchingColumns": [
+            "anArray"
+          ],
+          "schema": [
+            {
+              "id": "thisFieldAcceptsAnyType",
+              "displayName": "thisFieldAcceptsAnyType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1488,
+        -16
+      ],
+      "id": "7c6965fa-cd25-43e2-905c-99f33b639105",
+      "name": "Call 'ATA, Vessel and ETA Update'"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript) — combined: filter due rows + build telegram text per row\n// Input: items = rows from Data Table Get row(s)\n// Output: items only for due rows, each: { ...rowFields, text }\n\nconst TZ = 'Europe/Kyiv';\n\nfunction asString(v) {\n  return v === null || v === undefined ? '' : String(v).trim();\n}\n\nfunction isTrue(v) {\n  if (v === true) return true;\n  const s = asString(v).toLowerCase();\n  return s === 'true' || s === '1' || s === 'yes';\n}\n\nfunction parseListToNums(v) {\n  const raw = asString(v);\n  if (!raw) return [];\n  return raw\n    .split(/[|,;\\s]+/g) // поддержка \"1|2|3\" и \"1,2,3\"\n    .map(x => parseInt(x, 10))\n    .filter(n => Number.isFinite(n));\n}\n\nfunction parseDateOnly(v) {\n  const s = asString(v);\n  if (!s) return null;\n\n  const datePart = s.includes('T') ? s.split('T')[0] : s; // YYYY-MM-DD\n  const d = new Date(datePart);\n  if (Number.isNaN(d.getTime())) return null;\n\n  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));\n}\n\nfunction inDateRange(today, startDate, endDate) {\n  if (startDate && today < startDate) return false;\n  if (endDate && today > endDate) return false;\n  return true;\n}\n\nfunction nowPartsInTz(date) {\n  // Делает текущие части времени/даты в нужном TZ без внешних нод\n  const parts = new Intl.DateTimeFormat('en-GB', {\n    timeZone: TZ,\n    hourCycle: 'h23',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n    hour: '2-digit',\n    minute: '2-digit',\n    weekday: 'long',\n  }).formatToParts(date);\n\n  const m = {};\n  for (const p of parts) m[p.type] = p.value;\n  return m; // {year,month,day,hour,minute,weekday}\n}\n\nfunction weekdayToN8n(weekdayEn) {\n  const wd = String(weekdayEn || '').toLowerCase();\n  const map = {\n    monday: 1, tuesday: 2, wednesday: 3, thursday: 4,\n    friday: 5, saturday: 6, sunday: 7,\n  };\n  return map[wd] || null;\n}\n\nfunction fmtWeekdays(daysOfWeek) {\n  const map = { 1: \"Пн\", 2: \"Вт\", 3: \"Ср\", 4: \"Чт\", 5: \"Пт\", 6: \"Сб\", 7: \"Вс\" };\n  const nums = parseListToNums(daysOfWeek).filter(n => n >= 1 && n <= 7);\n\n  if (!nums.length) return \"не задано\";\n\n  const uniq = Array.from(new Set(nums)).sort((a, b) => a - b);\n  const key = uniq.join(\",\");\n\n  if (key === \"1,2,3,4,5\") return \"Пн–Пт\";\n  if (key === \"6,7\") return \"Сб–Вс\";\n  if (key === \"1,2,3,4,5,6,7\") return \"каждый день\";\n\n  return uniq.map(n => map[n]).join(\", \");\n}\n\nfunction toDateOnlyISO(v) {\n  const d = parseDateOnly(v);\n  if (!d) return null;\n  return d.toISOString().slice(0, 10);\n}\n\nfunction fmtDateRange(startDate, endDate) {\n  const s = toDateOnlyISO(startDate);\n  const e = toDateOnlyISO(endDate);\n  if (s && e) return `${s} — ${e}`;\n  if (s && !e) return `с ${s}`;\n  if (!s && e) return `до ${e}`;\n  return `без ограничений`;\n}\n\n// --- NOW ---\nconst schedule = ($items('Schedule Trigger1', 0, 0) || [])[0]?.json ?? {};\nconst now = schedule.timestamp ? new Date(schedule.timestamp) : new Date();\nconst p = nowPartsInTz(now);\n\nconst nowHHMM = `${p.hour}:${p.minute}`;\nconst nowDow = weekdayToN8n(p.weekday);\nconst nowDom = parseInt(p.day, 10);\nconst nowMonth = parseInt(p.month, 10);\nconst today = new Date(Date.UTC(parseInt(p.year, 10), nowMonth - 1, nowDom));\nconst todayStr = `${p.year}-${p.month}-${p.day}`;\n\n// --- FILTER + BUILD ---\nconst out = [];\n\nfor (const item of items) {\n  const r = item.json ?? {};\n\n  // enabled\n  if (Object.prototype.hasOwnProperty.call(r, 'enabled') && !isTrue(r.enabled)) continue;\n\n  // start_time must match HH:MM\n  const rowTime = asString(r.start_time);\n  if (!rowTime || rowTime !== nowHHMM) continue;\n\n  // exact run_date (optional)\n  const runDate = parseDateOnly(r.run_date);\n  if (runDate && today.getTime() !== runDate.getTime()) continue;\n\n  // start_date/end_date window (optional)\n  const startDate = parseDateOnly(r.start_date);\n  const endDate = parseDateOnly(r.end_date);\n  if (!inDateRange(today, startDate, endDate)) continue;\n\n  // days_of_week list (optional; empty => wildcard)\n  const rowDays = parseListToNums(r.days_of_week);\n  if (rowDays.length && nowDow && !rowDays.includes(nowDow)) continue;\n\n  // day-of-month (optional)\n  const domRaw = asString(r.data_of_the_month || r.day_of_month);\n  const dom = domRaw ? parseInt(domRaw, 10) : null;\n  if (dom && nowDom && dom !== nowDom) continue;\n\n  // month (optional)\n  const rowMonths = parseListToNums(r.month);\n  if (rowMonths.length && nowMonth && !rowMonths.includes(nowMonth)) continue;\n\n  // --- BUILD TEXT for Telegram ---\n  const desc = asString(r.description) || '(без описания)';\n  const title = asString(r.workflow_id) || '(без workflow_id)';\n  const time = asString(r.start_time) || '--:--';\n  const days = fmtWeekdays(r.days_of_week);\n  const range = fmtDateRange(r.start_date, r.end_date);\n  const tz = asString(r.timezone) || TZ;\n  const last = asString(r.last_started_at) || 'никогда';\n\n  // если у строки есть id (Data Table часто даёт id) — красиво покажем\n  const rowId = asString(r.id);\n  const idPart = rowId ? `#${rowId} — ` : '';\n\n  const text =\n    `${desc}\\n\\n` +\n    `✅ ${idPart}${title}\\n` +\n    `⏰ ${time} | 📅 ${days} | 🗓 ${range}\\n` +\n    `🌍 TZ: ${tz} | ▶️ last: ${last}`;\n\n  out.push({\n    json: {\n      ...r,\n      text,\n      _now: {\n        start_time: nowHHMM,\n        day_of_week: nowDow,\n        day_of_month: nowDom,\n        month_num: nowMonth,\n        date_yyyy_mm_dd: todayStr,\n      },\n    },\n  });\n}\n\nreturn out; // если пусто — дальше Telegram нода не запустится"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -16
+      ],
+      "id": "182224b3-3bba-4e7d-af16-f16c929f8938",
+      "name": "post-filter",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code in JavaScript1 (замена)\n// Делает start_time + day_of_week(1..7) + day_of_month + month_num(1..12) из Schedule Trigger timestamp\nconst tz = 'Europe/Kyiv';\n\nfunction partMap(date) {\n  const parts = new Intl.DateTimeFormat('en-GB', {\n    timeZone: tz,\n    hourCycle: 'h23',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n    hour: '2-digit',\n    minute: '2-digit',\n    weekday: 'long',\n  }).formatToParts(date);\n\n  const m = {};\n  for (const p of parts) m[p.type] = p.value;\n  return m;\n}\n\nconst now = $json?.timestamp ? new Date($json.timestamp) : new Date();\nconst p = partMap(now);\n\nconst start_time = `${p.hour}:${p.minute}`;\n\n// weekday in English -> 1..7\nconst wd = String(p.weekday || '').toLowerCase();\nconst dowMap = { monday:'1', tuesday:'2', wednesday:'3', thursday:'4', friday:'5', saturday:'6', sunday:'7' };\nconst days_of_week = dowMap[wd] || '1,2,3,4,5,6,7';\n\nreturn [{\n  json: {\n    start_time,\n    days_of_week,                 // текущий день недели числом\n    day_of_month: String(parseInt(p.day, 10)),   // \"29\"\n    month_num: String(parseInt(p.month, 10)),    // \"12\"\n    year: String(parseInt(p.year, 10)),\n    date_yyyy_mm_dd: `${p.year}-${p.month}-${p.day}`,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -16
+      ],
+      "id": "ff6a3b2f-cce0-4c9b-bde9-633a33e638a0",
+      "name": "search for temporary and active workflows"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -16
+      ],
+      "id": "50213fcd-9b55-480a-b3f0-1be528ce4099",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "content": "Что делает этот workflow:\n\nSchedule Trigger1\nЗапускает workflow каждую минуту.\n\nsearch for temporary and active workflows (Code)\nБерёт текущее время из timestamp триггера и вычисляет “сейчас” для Europe/Kyiv:\nstart_time в формате HH:MM\ndays_of_week (1–7)\nday_of_month (1–31)\nmonth_num (1–12)\ndate_yyyy_mm_dd (YYYY-MM-DD)\nЭти поля используются дальше, чтобы понять какие строки таблицы “пора запускать”.\n\nGet row(s)1 (Data Table → get)\nЧитает из Data Table Start of permanent procedures только строки, где:\nstart_time == (текущему HH:MM)\nenabled == true\nТо есть это первичный “быстрый” отбор — по времени и включённости.\n\npost-filter (Code)\nДелает “умный” отбор уже в коде (на основе полей строки таблицы). Поддерживает ограничения (если колонка заполнена):\ndays_of_week (список через |/,),\ndata_of_the_month / day_of_month,\nmonth,\nrun_date,\nstart_date / end_date (диапазон дат).\nПлюс собирает text (читаемое сообщение) из полей строки (description, workflow_id, время, TZ, last_started_at и т.д.).\n\nUpdate row(s) (Data Table → update)\nОбновляет в таблице last_started_at для найденных задач. Фильтр обновления идёт по start_time (равно “текущему” из search for temporary and active workflows).\n(Логика: как только задача “сработала”, записать время запуска.)\n\nCode in JavaScript2 (Code)\nГотовит данные для рассылки:\nБерёт tg_id_usera и делает из него список chatId (разделитель |)\nДелает fallback на adminChatId, если tg_id_usera пустой\nПодкладывает text из post-filter\nДобавляет reply_markup с 2 inline-кнопками (Accept/Cancel)\nSend a text message (Telegram) — у тебя disabled: true\nДолжна отправлять сообщение в Telegram каждому chatId.\nВ текущем виде нода отключена, поэтому отправки не будет (и всё, что ниже по цепочке, скорее всего, тоже не выполнится как задумано).\n\nAggregate\nСобирает все результаты в один объект (data), чтобы передать их дальше одним пакетом.\n\nCall 'ATA, Vessel and ETA Update' (Execute Workflow)\nВызывает другой workflow, беря workflowId из ={{ $json.data[0].workflow_id }} и передаёт туда thisFieldAcceptsAnyType = {{ $json.data }} (массив результатов/данных).",
+        "height": 1120,
+        "width": 1968
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -976
+      ],
+      "id": "e8f153f5-f87e-4faa-8cb6-8c3e28a0c63f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UUID": "={{ $json.uuid }}",
+            "task_description": "Start workflow"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        144,
+        240
+      ],
+      "id": "43cdeed0-152b-4d20-abf3-7ac34bf229bb",
+      "name": "Insert row",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n\nfunction generateUUID() {\n  const triggerItem = ($items('Schedule Trigger1', 0, 0) || [])[0];\n  const ts = String(triggerItem?.json?.timestamp ?? new Date().toISOString());\n\n  const random1 = Math.random().toString(16).substring(2, 10);\n  const random2 = Math.random().toString(16).substring(2, 10);\n  const random3 = Math.random().toString(16).substring(2, 10);\n\n  // YYYY-MM-DD -> возьмём первые 8 символов без дефисов как префикс\n  const prefix = ts.replace(/[^0-9]/g, '').substring(0, 8).padEnd(8, '0');\n\n  return `${prefix}-${random1.substring(0, 4)}-${random1.substring(4, 8)}-${random2.substring(0, 4)}-${random2.substring(4, 8)}${random3.substring(0, 4)}`;\n}\n\nconst uuid = generateUUID();\n\nreturn [{ json: { uuid } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        240
+      ],
+      "id": "df949a98-b981-45cc-bc3f-752729602363",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "search for temporary and active workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "post-filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "post-filter": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search for temporary and active workflows": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Call 'ATA, Vessel and ETA Update'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'ATA, Vessel and ETA Update'": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2d6b15f6-b941-45ef-9126-9ab574d9602e",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "SCvohplJorDwSfo3"
+}

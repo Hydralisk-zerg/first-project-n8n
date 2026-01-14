@@ -1,0 +1,28 @@
+{
+  "name": "Regular Workflow launcher",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Этот модуль запускает регулярные workflow \n\n1",
+        "height": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -256
+      ],
+      "id": "60f396f1-02d1-401e-ba31-713499a817bd",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "00f319c3-1789-4b00-8adf-d39a7ca1dec0",
+  "meta": null,
+  "id": "3FgAyBkE27OC2phj"
+}

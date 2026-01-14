@@ -1,0 +1,1288 @@
+{
+  "name": "Finance Bot - B1 form (3 steps, Data Table state)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1984,
+        544
+      ],
+      "id": "7c4d0353-a89a-4f10-a5f5-49616018868e",
+      "name": "Telegram Trigger",
+      "webhookId": "e1dcd54b-5ad4-40e0-b110-a3044acea56d",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const u = $json;\n\nconst chatId =\n  u.message?.chat?.id ??\n  u.callback_query?.message?.chat?.id ??\n  u.message?.from?.id;\n\nconst text = (u.message?.text ?? '').toString().trim();\nconst cb = (u.callback_query?.data ?? '').toString().trim();\n\nreturn [{\n  json: {\n    chatId,\n    text,\n    cb,\n    // кнопка меню (пока одна)\n    buttonB1: 'Заявка форма Б-1',\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -832,
+        912
+      ],
+      "id": "1f30e224-e9b5-4ee5-9766-e6b389d929b6",
+      "name": "Normalize update"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name_workflow",
+              "keyValue": "={{ $workflow.id }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        912
+      ],
+      "id": "97c05407-fcf7-4dcb-abb3-7e819ba41498",
+      "name": "DT: Get B1 state",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const n = $('Normalize update').item.json;\nconst chatId = n.chatId;\nconst text = (n.text ?? '').trim();\n\n// --- Универсально читаем state из Data Table ---\n// Data Table может вернуть:\n// A) каждый row отдельным item: [{key, value, ...}, ...]\n// B) один item с обёрткой: [{ data: [{key, value, ...}, ...] }]\nconst inputJson = $input.all().map(i => i.json);\n\nlet rows = [];\nif (inputJson.length === 1 && Array.isArray(inputJson[0]?.data)) {\n  rows = inputJson[0].data;\n} else {\n  rows = inputJson;\n}\n\nconst rawState = rows[0]?.value ?? null;\n\nlet state = null;\ntry {\n  state = rawState ? JSON.parse(rawState) : null;\n} catch {\n  state = null;\n}\n\nconst BUTTON_B1 = n.buttonB1; // 'Заявка форма Б-1'\nconst stateKey = `tg|b1|state|${chatId}`;\n\n// если пользователь в процессе формы — любое сообщение считаем ответом\nconst inForm = !!(state && state.step);\n\n// если не в форме и это не старт — показываем меню на любое сообщение\nif (!inForm && text !== BUTTON_B1) {\n  return [{\n    json: {\n      chatId,\n      action: 'menu',\n      menuText: 'Выберите действие:',\n      buttonB1: BUTTON_B1,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\n// старт формы\nif (!inForm && text === BUTTON_B1) {\n  const nextState = { step: 1 };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '1/4 Введите номер сделки (Deals):',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\n// продолжаем форму\nif (state?.step === 1) {\n  const nextState = { step: 2, deal: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '2/4 Введите услугу:',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\nif (state?.step === 2) {\n  const nextState = { ...state, step: 3, service: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '3/4 Введите сумму:',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\nif (state?.step === 3) {\n  const nextState = { ...state, step: 4, amount: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1',\n      replyText: '4/4 Введите валюту (USD/EUR/UAH):',\n      nextState,\n      stateKey,\n      done: false\n    }\n  }];\n}\n\nif (state?.step === 4) {\n  const finalState = { ...state, currency: text };\n  return [{\n    json: {\n      chatId,\n      action: 'b1_done',\n      replyText: `Готово.\\nDeals=${finalState.deal}\\nУслуга=${finalState.service}\\nСумма=${finalState.amount}\\nВалюта=${finalState.currency}`,\n      nextState: null,\n      stateKey,\n      done: true,\n      deal: finalState.deal,\n      service: finalState.service,\n      amount: finalState.amount,\n      currency: finalState.currency,\n      resultKey: `tg|b1|result|${chatId}|${Date.now()}`\n    }\n  }];\n}\n\n// fallback (если state сломан/пустой)\nreturn [{\n  json: {\n    chatId,\n    action: 'menu',\n    menuText: 'Выберите действие:',\n    buttonB1: BUTTON_B1,\n    stateKey,\n    done: false\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        912
+      ],
+      "id": "25daec55-0f72-437a-adba-54fdd17680ff",
+      "name": "Router (menu / B1)"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "menu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e6d31050-8f37-4444-8b71-a903c401ffed"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "b1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "57528dc3-0768-4d5b-8b51-22a985ae0f17"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "b1"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "b1_done",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ac884542-7e03-48c1-8046-0297419730c3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "b1_done"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        800
+      ],
+      "id": "75e443d5-0d0c-4a21-90cd-e5901b73befb",
+      "name": "Switch by action"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.replyText }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        720
+      ],
+      "id": "9649ba54-97bd-421e-9b69-6a506285b829",
+      "name": "TG: Send question",
+      "webhookId": "cf6dd1c2-ca5a-4752-8ed1-6050e7168fe3",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.stateKey }}",
+            "value": "={{ JSON.stringify($json.nextState) }}",
+            "name_workflow": "={{ $workflow.id }}",
+            "options": "b1"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        96,
+        896
+      ],
+      "id": "bf1d4338-0d75-4ded-9548-115460de87ca",
+      "name": "DT: Upsert B1 state"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.replyText }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        1056
+      ],
+      "id": "2d76df85-3c50-47bc-bd70-8ca00db4253f",
+      "name": "TG: Send done",
+      "webhookId": "144e3e34-5c9d-43f7-ad9b-08a993e200dd",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "name_workflow",
+              "keyValue": "={{ $workflow.id}}"
+            },
+            {
+              "keyName": "options",
+              "keyValue": "b1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        512,
+        1056
+      ],
+      "id": "24c9790e-f52a-4932-b916-ed2332aef3ce",
+      "name": "DT: Delete B1 state",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    deal: $json.deal,\n    service: $json.service,\n    amount: $json.amount,\n    currency: $json.currency,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        1056
+      ],
+      "id": "aeedf92d-a895-4216-93e5-ff8c8605791d",
+      "name": "FINAL: Output JSON"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $('Switch by action').item.json.stateKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "value": "={{ JSON.stringify({ deal: $json.deal, service: $json.service, amount: $json.amount, currency: $json.currency }) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        272,
+        1056
+      ],
+      "id": "8e69cc78-d1d2-4f86-9994-25cd5593bd9b",
+      "name": "Upsert row(s)"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Welcome to Iris Finance assistant! Please choose options below and push the button! ",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=B1 request",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "CUST-HAN inv",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "return",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true,
+          "one_time_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        64
+      ],
+      "id": "76d0ca87-2b56-429d-a54b-caeef78c139c",
+      "name": "TG: Send_initial_menu",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=push the button!",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=get b1 form",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "upload b1 form",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "manual ",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "return",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true,
+          "one_time_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        336
+      ],
+      "id": "3def96fc-8e86-43e7-88f9-f6670a31084e",
+      "name": "send_b1_sub_menu",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "при нажатии пользователем кнопки b1 request выдает новое меню",
+        "height": 256,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        240
+      ],
+      "id": "8377a940-d329-461a-8ba8-c95f52591d51",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "первый вход или отработка кнопки \"return to main manu\"- \nвыдача сартового меню\nсмена статуса в HEE_teams колонки Iris_finace_state на \"menu\"",
+        "height": 240,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -16
+      ],
+      "id": "5a9c69b4-0d6c-4d24-8d7b-f7a1e9a6a2df",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $json.result.chat.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_finance_state": "menu"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        64
+      ],
+      "id": "4e640126-b837-4602-922c-f429f825bc4d",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Iris_finance_state }}",
+                    "rightValue": "null",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    },
+                    "id": "d0fe53bf-8a12-453b-869c-f07f5af260ab"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "null"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "68aab4c5-c4b9-4d2f-9be9-07fb249ea514",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "=B1 request",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "B1 request"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "97b93a92-de0c-4220-96f6-5f601086b7bf",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "return",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "return"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8f429ba0-b71c-4367-84d3-e9866a45ca75",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "get b1 form",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "get b1 form"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1072,
+        944
+      ],
+      "id": "6b4b0d66-f31f-47f7-b343-5c69a9e6b465",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $json.message.chat.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1744,
+        544
+      ],
+      "id": "61e2ab32-16b2-4752-8012-b64ac85c5e01",
+      "name": "manager identification"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f577f4e7-f717-443c-8727-dcf711f35cd1",
+              "leftValue": "={{ $json.Iris_finance_state }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "29ebb27e-858d-407f-bb0e-66a5bc183f28",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "rightValue": "=return",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1488,
+        544
+      ],
+      "id": "47a53023-757d-473a-a3b8-342512a390dc",
+      "name": "term - initial or return to main menu"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f577f4e7-f717-443c-8727-dcf711f35cd1",
+              "leftValue": "={{ $json.Iris_finance_state }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "29ebb27e-858d-407f-bb0e-66a5bc183f28",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "rightValue": "=B1 request",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1312,
+        672
+      ],
+      "id": "fbe39ab5-cf61-467b-a9e1-6abce5549eab",
+      "name": "term- B1 button pressed"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0788b33b-07a7-43c9-b076-6635776bafd7"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c6ce0f12-86da-46ec-a762-896e91f5e018",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "da01a589-5ad9-436c-806a-19b8d322b7e6",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4f9d7716-f7fa-4791-9831-90444547cf52",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        624
+      ],
+      "id": "fbda4c3e-4383-4fe2-ad40-7742165b4e58",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "beb5b222-e4f5-4243-b74e-53709f33a709",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1136,
+        800
+      ],
+      "id": "3f45bf3d-8fd5-4a30-9190-ca108dcc077d",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "manager identification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize update": {
+      "main": [
+        [
+          {
+            "node": "DT: Get B1 state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DT: Get B1 state": {
+      "main": [
+        [
+          {
+            "node": "Router (menu / B1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router (menu / B1)": {
+      "main": [
+        [
+          {
+            "node": "Switch by action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch by action": {
+      "main": [
+        [],
+        [
+          {
+            "node": "TG: Send question",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DT: Upsert B1 state",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TG: Send done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send question": {
+      "main": [
+        []
+      ]
+    },
+    "TG: Send done": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DT: Delete B1 state": {
+      "main": [
+        [
+          {
+            "node": "FINAL: Output JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert row(s)": {
+      "main": [
+        [
+          {
+            "node": "DT: Delete B1 state",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send_initial_menu": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "manager identification": {
+      "main": [
+        [
+          {
+            "node": "term - initial or return to main menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "term - initial or return to main menu": {
+      "main": [
+        [
+          {
+            "node": "TG: Send_initial_menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "term- B1 button pressed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "term- B1 button pressed": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "61fab6a8-9a7c-4a31-ad57-414ca187e96e",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "goCJhXpCkCSbLilu"
+}

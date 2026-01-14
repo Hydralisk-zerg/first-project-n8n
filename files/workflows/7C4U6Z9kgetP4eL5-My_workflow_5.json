@@ -1,0 +1,141 @@
+{
+  "name": "My workflow 5",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ffd4eba1-f340-48e5-b4f3-108117fe7e3b",
+      "name": "Telegram Trigger",
+      "webhookId": "1de9ef9c-695b-4985-851e-1e2f34e7b69a",
+      "credentials": {
+        "telegramApi": {
+          "id": "NqsMltZr1rFKXmf0",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Вот мой экспертный ответ {{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "7448d82c-8fee-448b-82d2-1201de2d2201",
+      "name": "Send a text message",
+      "webhookId": "5ce701f7-fa87-43ea-859d-a1697a8ed02e",
+      "credentials": {
+        "telegramApi": {
+          "id": "NqsMltZr1rFKXmf0",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "ты помошник по матиматике ученика 6 класса очень любишь шутить. Выдавай только чистые ответы с сильным чувством юмора "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ec639e13-d954-4221-9036-76b8e373a2fd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        208
+      ],
+      "id": "9110abca-8c5a-42ac-8141-6807aea1564c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "DATqFrWITE7gF4TX",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "00d7f8e9-e713-47c5-a772-7bdb232547b8",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "7C4U6Z9kgetP4eL5"
+}

@@ -1,0 +1,2134 @@
+{
+  "name": "Iris_task_manager",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        608
+      ],
+      "id": "b748159f-6b80-4653-add7-1dedb84afe4b",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "DATqFrWITE7gF4TX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Входные данные:\n- user_message: {{ $json.user_request }}\n- owner_tg_id: {{ $('Telegram Trigger1').item.json.message.chat.id }}\n- now_datetime: {{ $now }}\n- tools : Get row(s) in Data table \n\n\nИзвлеки параметры всех задач из сообщения пользователя.\n\nТы — модуль извлечения параметров задач из пользовательского запроса.\nВерни строго JSON-массив задач (без текста и без Markdown).\n\nВходные данные\n\nТебе всегда передаются:\n\nowner_tg_id — Telegram-ID отправителя сообщения (постановщик)\nизвлеки имя owner из прикрепленной базы данных one_c_name\n\nnow_datetime — актуальные дата/время\n\nВАЖНО (жёсткие правила, без исключений)\n\n\nНикогда не определяй owner из текста.\n\nНикогда не меняй owner_tg_id.\n\nЛюбые имена в тексте относятся только к assignee или к контексту.\n\nЕсли невозможно однозначно определить исполнителя → assignee = owner.\n\nДля status=\"done\" всегда assignee = owner (кто отчитался о выполнении).\n\nДля выполненных задач (status=\"done\") task_description = весь исходный текст, но с исправлением грамматики (смысл/факты/имена/цифры/коды/@упоминания не менять).\n\nПоля в каждом объекте\n\nowner_tg_id\n\nowner_name\n\nassignee_tg_id\n\nassignee_name\n\ntask_description\n\ndeadline\n\ndeadline_source\n\nstatus (\"assigned\" или \"done\")\n\n📌 Определение owner_name (только по owner_tg_id)\n\nИспользуй Get row(s) in Data table:\n\nищи строку, где tg_account = owner_tg_id\n\nесли найдена → owner_name = one_c_name\n\nесли нет → owner_name = \"Неизвестный пользователь\"\n\n📌 Определение status\n\nЕсли текст содержит признаки выполненного действия → status = \"done\", иначе → status = \"assigned\".\n\nПризнаки выполненной задачи:\n\nслова: «выполнил», «сделано», «готово», «завершено», «закрыл», «решено» и подобные\n\nконструкции «я + прошедшее действие»: «я сделал», «я позвонил», «я написал», «я отправил», «я согласовал», «я оплатил», «я решил» и т.п.\n\n📌 Определение assignee\n\nЕсли status = \"done\":\n\nassignee_tg_id = owner_tg_id\n\nassignee_name = owner_name\n\nЕсли status = \"assigned\":\n\nесли исполнитель явно указан (имя/ник/@упоминание) → найди через Get row(s) in Data table по one_c_name\n\nесли найден → assignee_tg_id = tg_account, assignee_name = one_c_name\n\nесли не найден / неоднозначно → assignee = owner\n\nесли исполнитель не указан → assignee = owner\n\n📌 task_description\n\nЕсли status = \"done\":\n\nвозьми полный исходный текст запроса\n\nисправь грамматические ошибки, не меняя смысл, факты, имена, числа, даты, номера, ссылки, коды, @упоминания\n\nЕсли status = \"assigned\":\n\nудали служебные фразы: «поставь задачу», «создай», «запиши», «надо», «нужно», «прошу», «давай» и т.п.\n\nоставь только суть задачи\n\n📌 Дедлайн (deadline)\n\nИспользуй now_datetime. Понимай разговорные фразы.\n\nСтандартные времена:\n\nутро = 10:00\n\nдо обеда = 12:00\n\nдень = 15:00\n\nвечер = 19:00\n\nЕсли дедлайн указан → вычисли deadline, deadline_source = исходная фраза.\nЕсли нет → deadline = now_datetime + 5 рабочих дней,\ndeadline_source = \"по умолчанию: +5 рабочих дней\".\n\n📌 Формат ответа\n\nВерни строго JSON-массив:\n\n[\n{\n\"owner_tg_id\": \"...\",\n\"owner_name\": \"...\",\n\"assignee_tg_id\": \"...\",\n\"assignee_name\": \"...\",\n\"task_description\": \"...\",\n\"deadline\": \"YYYY-MM-DDTHH:MM:SS\",\n\"deadline_source\": \"...\",\n\"status\": \"assigned\"\n}\n]",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        304,
+        352
+      ],
+      "id": "74d19edd-7be5-4121-a5b4-bea294eef4e2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}"
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        448,
+        592
+      ],
+      "id": "e96867a6-736c-4982-8a83-ffd2494a6e72",
+      "name": "Get row(s) in Data table"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse and Split Tasks').item.json.assignee_tg_id }}",
+        "text": "=Привіт! И тебе є нова задача від {{ $('Parse and Split Tasks').item.json.owner_name }}. Задача - {{ $('Parse and Split Tasks').item.json.task_description }}. \nDeadline {{ $('Parse and Split Tasks').item.json.deadline }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=Accept",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.uuid }}|Acepted|{{ $('Telegram Trigger1').item.json.message.message_id }}"
+                    }
+                  },
+                  {
+                    "text": "Decline",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.uuid }}|Declined|{{ $('Telegram Trigger1').item.json.message.message_id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1664,
+        448
+      ],
+      "id": "3e035a10-d836-4240-8635-e72aeebe8ddd",
+      "name": "Send a text message",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "550ac5c2-a24a-47c6-9e79-24ecdd16409a",
+              "leftValue": "={{ $json.callback_query.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1120,
+        144
+      ],
+      "id": "66057024-7c4a-44bd-948f-268d49a52d6b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Assigned",
+            "assignee_name": "={{ $('Parse and Split Tasks').item.json.assignee_name }}",
+            "task": "={{ $('Parse and Split Tasks').item.json.task_description }}",
+            "Deadline": "={{ $('Parse and Split Tasks').item.json.deadline }}",
+            "owner_name": "={{ $('Parse and Split Tasks').item.json.owner_name }}",
+            "uuid": "={{ $json.uuid }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        448
+      ],
+      "id": "5a2e1e9e-01ca-437e-940f-cf7c0a817880",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "OtoOS2LU1CVmxqJx",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/niPhVwYWBe0yptTg/datatables/OtoOS2LU1CVmxqJx"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $('Code in JavaScript').item.json.uuid }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Code in JavaScript').item.json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        112,
+        144
+      ],
+      "id": "c9c176f2-981b-4464-9c60-4bffa95e7ce2",
+      "name": "Update row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw =  $input.first().json.callback_query.data;\nconst [uuid,status,message_id] = raw.split('|');\n\nreturn [{\n  json: {\n    uuid, \n  status,\n  message_id}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        128
+      ],
+      "id": "fb98e25e-22a8-4cb2-867c-606f58fb34f5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "12b346fd-fd6c-422f-bf2a-4ebd0a3411ea",
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "done",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        352
+      ],
+      "id": "28f6c6b8-30be-42b0-8f5a-3a8dc4f3f347",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "OtoOS2LU1CVmxqJx",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/niPhVwYWBe0yptTg/datatables/OtoOS2LU1CVmxqJx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "assignee_name": "={{ $json.assignee_name }}",
+            "task": "={{ $json.task_description }}",
+            "owner_name": "={{ $json.owner_name }}",
+            "uuid": "={{ $json.task_uuid }}",
+            "Deadline": "={{ $json.deadline }}",
+            "Status": "={{ $json.Status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        272
+      ],
+      "id": "df5238bf-5a4f-4645-937a-69bb0160adc7",
+      "name": "Insert row1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse and Split Tasks').item.json.assignee_tg_id }}",
+        "text": "=Выполенная задача залогирована\nuuid: {{ $('Parse and Split Tasks').item.json.task_uuid }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1664,
+        272
+      ],
+      "id": "8d9acd1f-b62a-40a2-ac4c-e0ce7204351c",
+      "name": "Send a text message1",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Telegram Trigger1').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        496
+      ],
+      "id": "69db259c-43fd-47d0-95f5-849d31b2f38e",
+      "name": "Get a file",
+      "webhookId": "5e3f0421-8988-4866-8e61-c3ce300c8df1",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        496
+      ],
+      "id": "2dbce6af-b3b3-484e-8d7e-4747f69d1004",
+      "name": "Send a chat action1",
+      "webhookId": "84bf4d89-a4fe-4dcb-93c7-b6755f513aa8",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        352
+      ],
+      "id": "84787fe2-0907-443d-993a-ac4a0674d24c",
+      "name": "Send a chat action2",
+      "webhookId": "84bf4d89-a4fe-4dcb-93c7-b6755f513aa8",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -160,
+        496
+      ],
+      "id": "200faaa4-f77a-43a7-979c-65559c74c1e9",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "DATqFrWITE7gF4TX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f764a380-9610-430c-a487-f8429c397748",
+              "name": "user_request",
+              "value": "={{ $('Telegram Trigger1').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        352
+      ],
+      "id": "5184df3a-8176-47ad-a376-cc3c240cf909",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "abf01f37-e88b-4856-8ebd-b2f5a0455aba",
+              "name": "user_request",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        496
+      ],
+      "id": "761c1e5c-c529-4808-8675-0d8cff93e237",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "691d863e-2f61-4cc9-9dc8-8d724b976e2c",
+              "name": "=user_request",
+              "value": "={{ $json.user_request }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        352
+      ],
+      "id": "3438242d-0b19-4819-abbf-60f0b6e610ef",
+      "name": "combined request"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "713396f8-dea9-4564-b1c8-16d6669b5f7a",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "61545ec9-d261-4b6e-8df9-62db1c635376"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "bf8dff15-fbed-4de8-a4e5-9effcd0fe506",
+                    "leftValue": "={{ $json.message.document.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "document"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -720,
+        480
+      ],
+      "id": "a414572e-2d62-4cb4-8d6e-f9d21dcceb38",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1344,
+        144
+      ],
+      "id": "f5551eb4-096b-4604-994b-45fe9bd32de6",
+      "name": "Telegram Trigger1",
+      "webhookId": "ffaad190-fd59-4c06-91cb-be6125ffff27",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "assignee_name": "={{ $json.assignee_name }}",
+            "task": "={{ $json.task }}",
+            "Deadline": "={{ $json.Deadline }}",
+            "owner_name": "={{ $json.owner_name }}",
+            "uuid": "={{ $json.uuid }}",
+            "createdAt": "={{  $now.year }}.{{  $now.month }}.{{  $now.day }}/{{  $now.hour }}:{{  $now.minute }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        448
+      ],
+      "id": "3c5834a9-39e8-4cf5-80e2-1e5feeba1c57",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "assignee_name": "={{ $json.assignee_name }}",
+            "task": "={{ $json.task }}",
+            "Deadline": "={{ $json.Deadline }}",
+            "owner_name": "={{ $json.owner_name }}",
+            "uuid": "={{ $json.uuid }}",
+            "createdAt": "={{  $now.year }}.{{  $now.month }}.{{  $now.day }}/{{  $now.hour }}:{{  $now.minute }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        272
+      ],
+      "id": "b37223f8-d2d5-4a43-b292-c716c2474f70",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "uuid": "={{ $json.uuid }}"
+          },
+          "matchingColumns": [
+            "uuid"
+          ],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        144
+      ],
+      "id": "bc9d48dc-8322-4234-af5a-c0c3ee825b35",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger1').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger1').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        144
+      ],
+      "id": "bdb6cc93-46fb-4706-b7c3-3b9e2f2ca82c",
+      "name": "Delete a chat message",
+      "webhookId": "875f8ec4-7528-49cf-ab05-671ba8404991",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7e35c605-913f-4b2f-85b2-c80eaea42e2a",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "Done",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        128
+      ],
+      "id": "4d6e299b-fa5f-4aa8-b62b-bc319c935eaf",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.callback_query.message.chat.id }}",
+        "text": "=Please confirm",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=Done",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.uuid }}|Done|{{ $('Telegram Trigger1').item.json.callback_query.message.message_id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        144
+      ],
+      "id": "16350be0-3a4e-441c-be57-a873d676eae0",
+      "name": "Send a text message2",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger1').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger1').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "bbf9156a-b095-4797-8d54-d70696a3f31d",
+      "name": "Delete a chat message1",
+      "webhookId": "875f8ec4-7528-49cf-ab05-671ba8404991",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "OtoOS2LU1CVmxqJx",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/niPhVwYWBe0yptTg/datatables/OtoOS2LU1CVmxqJx"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $('Code in JavaScript').item.json.uuid }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Code in JavaScript').item.json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        112,
+        0
+      ],
+      "id": "e49c9e54-3d22-4bff-90d9-ad4387050fd3",
+      "name": "Update row(s)1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "uuid": "={{ $json.uuid }}"
+          },
+          "matchingColumns": [
+            "uuid"
+          ],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        0
+      ],
+      "id": "5446fc16-38fd-4cc1-9e20-1d5efe0b2a56",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\nlet tasksArray;\n\ntry {\n  // Remove markdown code blocks if present\n  const cleanOutput = aiOutput.replace(/```json\\n?|```\\n?/g, '').trim();\n  tasksArray = JSON.parse(cleanOutput);\n  \n  // Ensure it's an array\n  if (!Array.isArray(tasksArray)) {\n    tasksArray = [tasksArray];\n  }\n} catch (error) {\n  throw new Error('Failed to parse AI Agent output: ' + error.message);\n}\n\n// Return each task as a separate item with UUID, all fields plus created_at timestamp\nreturn tasksArray.map(task => ({\n  json: {\n    owner_tg_id: task.owner_tg_id,\n    owner_name: task.owner_name,\n    assignee_tg_id: task.assignee_tg_id,\n    assignee_name: task.assignee_name,\n    task_description: task.task_description,\n    deadline: task.deadline,\n    deadline_source: task.deadline_source,\n    created_at: new Date(),\n    Status:task.status\n    \n  }\n}));"
+      },
+      "id": "2fedd5c6-2787-4b71-93b7-6e55b143fa4b",
+      "name": "Parse and Split Tasks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate UUID without crypto module using timestamp and random numbers\nfunction generateUUID() {\n  const timestamp = Date.now().toString(16);\n  const random1 = Math.random().toString(16).substring(2, 10);\n  const random2 = Math.random().toString(16).substring(2, 10);\n  const random3 = Math.random().toString(16).substring(2, 10);\n  \n  return `${timestamp.substring(0, 8)}-${random1.substring(0, 4)}-${random1.substring(4, 8)}-${random2.substring(0, 4)}-${random2.substring(4, 8)}${random3.substring(0, 4)}`;\n}\n\nconst uuid = generateUUID();\n\n// Return as item data\nreturn [\n  {\n    json: { uuid },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        272
+      ],
+      "id": "45c1844f-54db-4be7-91cc-d5fab64a276e",
+      "name": "UUID_Gen2"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "OtoOS2LU1CVmxqJx",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/niPhVwYWBe0yptTg/datatables/OtoOS2LU1CVmxqJx"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "assignee_name": "={{ $json.assignee_name }}",
+            "task": "={{ $json.task_description }}",
+            "owner_name": "={{ $json.owner_name }}",
+            "uuid": "={{ $json.task_uuid }}",
+            "Deadline": "={{ $json.deadline }}",
+            "Status": "={{ $json.Status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        272
+      ],
+      "id": "9fc30569-9d64-41a7-ad03-405e0c09896a",
+      "name": "Insert row2"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UUID": "={{ $('UUID_Gen1').item.json.uuid }}",
+            "task_owner": "={{ $('If1').item.json.owner_name }}",
+            "task_assignee": "={{ $('If1').item.json.assignee_name }}",
+            "task_type": "Exclusive",
+            "task_group": "n/a",
+            "task_description": "={{ $('If1').item.json.task_description }}",
+            "status": "={{ $('If1').item.json.Status }}",
+            "date_time_assigned": "={{ $now.plus(25200000).format('yyyy-MM-dd/HH:mm')}} "
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1856,
+        448
+      ],
+      "id": "f8d67f39-ed35-4994-af15-e68031d3a1ea",
+      "name": "Insert row3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate UUID without crypto module using timestamp and random numbers\nfunction generateUUID() {\n  const timestamp = Date.now().toString(16);\n  const random1 = Math.random().toString(16).substring(2, 10);\n  const random2 = Math.random().toString(16).substring(2, 10);\n  const random3 = Math.random().toString(16).substring(2, 10);\n  \n  return `${timestamp.substring(0, 8)}-${random1.substring(0, 4)}-${random1.substring(4, 8)}-${random2.substring(0, 4)}-${random2.substring(4, 8)}${random3.substring(0, 4)}`;\n}\n\nconst uuid = generateUUID();\n\n// Return as item data\nreturn [\n  {\n    json: { uuid },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        448
+      ],
+      "id": "b4da8f63-f60a-4521-9032-3866c9eef56b",
+      "name": "UUID_Gen1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse and Split Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "UUID_Gen2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UUID_Gen1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action1": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "combined request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "combined request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "combined request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a chat action2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a chat action1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message1": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Insert row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse and Split Tasks": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UUID_Gen2": {
+      "main": [
+        [
+          {
+            "node": "Insert row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Insert row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UUID_Gen1": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b5da599-1e5c-4c8c-aa54-814330e2204c",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "yvnQ57mDkmNtcgGe"
+}

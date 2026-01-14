@@ -1,0 +1,158 @@
+{
+  "name": "Telegram: JSON -> Excel reply",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "cd05db6b-af44-45fe-a37e-928970bda84c",
+      "name": "Telegram Trigger",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "xD3HGL0soBI3karm",
+          "name": "Big brother is ...."
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mode: Run once for all items, Outputs: 2\nconst item = items[0] || {};\nconst msg = item.json?.message || {};\nconst chatId = msg.chat?.id || '';\n\nconst out = [];\nconst errors = [];\nconst addError = (m) => errors.push({ json: { chatId, error: m } });\n\nif (!chatId) {\n  addError('chatId is missing');\n  return [out, errors];\n}\n\nconst text = String(msg.text || msg.caption || '').trim();\n\n// подхватываем первый бинарный блок (document/photo/etc)\nconst binKeys = Object.keys(item.binary || {});\nconst bin = binKeys.length ? item.binary[binKeys[0]] : undefined;\n\nlet raw = text;\n\nif (bin?.data) {\n  try {\n    raw = Buffer.from(bin.data, 'base64').toString('utf8').trim();\n  } catch (e) {\n    addError('Cannot decode file: ' + e.message);\n    return [out, errors];\n  }\n}\n\nif (!raw) {\n  addError('Send JSON in message text/caption or attach JSON file');\n  return [out, errors];\n}\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  addError('Invalid JSON: ' + err.message);\n  return [out, errors];\n}\n\nconst rows = Array.isArray(parsed) ? parsed : [parsed];\nif (!rows.length) {\n  addError('JSON is empty');\n  return [out, errors];\n}\n\nrows.forEach((row, idx) => {\n  if (row === null || typeof row !== 'object' || Array.isArray(row)) {\n    addError('Each item must be an object. Problem at index ' + idx);\n    return;\n  }\n  out.push({ json: { ...row, chatId } });\n});\n\nreturn [out, errors];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "7036206b-51bd-468f-a4e0-edac0882e5e8",
+      "name": "Parse JSON",
+      "alwaysOutputData": true,
+      "outputs": 2,
+      "outputNames": [
+        "Valid rows",
+        "Errors"
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "options": {
+          "fileName": "data.xlsx"
+        }
+      },
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        0
+      ],
+      "id": "e6260414-fe22-477b-a9bd-2d975b4c2be9",
+      "name": "Build Excel"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "осёчки ",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1408,
+        0
+      ],
+      "id": "e8d80227-6bfe-4f37-8783-1a5998ff006a",
+      "name": "Send Excel",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "xD3HGL0soBI3karm",
+          "name": "Big brother is ...."
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "Не удалось разобрать JSON. Отправьте корректный JSON.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        224
+      ],
+      "id": "ac802729-5120-471f-b50b-cc09311f8eba",
+      "name": "Reply on error",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Build Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Excel": {
+      "main": [
+        [
+          {
+            "node": "Send Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4422fc18-9fae-4392-b646-ed008def8e76",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "9OBz0gW5pe1rJl0I"
+}

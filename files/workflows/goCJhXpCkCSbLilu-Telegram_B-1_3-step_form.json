@@ -1,0 +1,1107 @@
+{
+  "name": "Telegram B-1 3-step form",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": null\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -992,
+        256
+      ],
+      "id": "e1eb95ab-f4d4-4777-9472-f62df33a3a75",
+      "name": "When Executed by Another Workflow",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[0].text }}",
+                    "additionalFields": {
+                      "callback_data": "=/update_booking"
+                    }
+                  },
+                  {
+                    "text": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].text }}",
+                    "additionalFields": {
+                      "callback_data": "={{ $json.inlineKeyboard.rows[0].row.buttons[1].additionalFields.callback_data }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        256
+      ],
+      "id": "6a3fee2f-9f9d-42f4-a6be-d89ab5c3640b",
+      "name": "Send a text message",
+      "webhookId": "3d7258e9-7793-4086-935b-8239d3ca6899",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Supports inputs:\n// 1) items[0].json.data = [ { chatId, text, reply_markup: { inline_keyboard: [...] }, ... }, ... ]\n// 2) items[0].json.thisFieldAcceptsAnyType = [ { ok:true, result:{ chat:{id}, text, reply_markup } }, ... ]\n// Output: many items: { chatId, text, inlineKeyboard }\n\nfunction tryParseJson(s) {\n  if (typeof s !== 'string') return null;\n  try { return JSON.parse(s); } catch { return null; }\n}\n\nfunction getPayload(json) {\n  // NEW: data array\n  if (Array.isArray(json?.data)) return json.data;\n  const parsedData = tryParseJson(json?.data);\n  if (Array.isArray(parsedData)) return parsedData;\n\n  // OLD: thisFieldAcceptsAnyType array\n  if (Array.isArray(json?.thisFieldAcceptsAnyType)) return json.thisFieldAcceptsAnyType;\n  const parsedAny = tryParseJson(json?.thisFieldAcceptsAnyType);\n  if (Array.isArray(parsedAny)) return parsedAny;\n\n  // fallback: if workflow passed multiple items directly\n  if (Array.isArray(items) && items.length > 1) return items.map(i => i.json);\n\n  return [];\n}\n\nfunction normalizeChatId(v) {\n  const s = String(v ?? '').trim();\n  if (!s) return null;\n  // Telegram chat id обычно число, но можно оставить строкой\n  return s;\n}\n\nfunction telegramMarkupToN8nInlineKeyboard(replyMarkup) {\n  const ik = replyMarkup?.inline_keyboard;\n  if (!Array.isArray(ik) || !ik.length) return null;\n\n  return {\n    rows: ik.map(rowArr => ({\n      row: {\n        buttons: (Array.isArray(rowArr) ? rowArr : []).map(btn => ({\n          text: String(btn?.text ?? ''),\n          additionalFields: {\n            callback_data: String(btn?.callback_data ?? ''),\n          },\n        })).filter(b => b.text),\n      },\n    })),\n  };\n}\n\nconst root = items?.[0]?.json ?? {};\nconst arr = getPayload(root);\n\n// default keyboard (если вдруг reply_markup нет)\nconst defaultInlineKeyboard = {\n  rows: [\n    {\n      row: {\n        buttons: [\n          { text: 'Accept', additionalFields: { callback_data: 'accept' } },\n          { text: 'Cancel', additionalFields: { callback_data: 'cancel' } },\n        ],\n      },\n    },\n  ],\n};\n\nconst out = [];\n\nfor (const entry of arr) {\n  // поддержка старого формата { ok, result: {...} }\n  const src = entry?.result ? entry.result : entry;\n\n  const chatId = normalizeChatId(src?.chat?.id ?? src?.chatId);\n  const text = String(src?.text ?? '').trim();\n\n  if (!chatId || !text) continue;\n\n  const inlineKeyboard =\n    telegramMarkupToN8nInlineKeyboard(src?.reply_markup) || defaultInlineKeyboard;\n\n  out.push({\n    json: {\n      chatId,\n      text,\n      inlineKeyboard,\n    },\n  });\n}\n\nreturn out.length\n  ? out\n  : [{ json: { error: 'No valid items in input (need chatId + text)' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -768,
+        256
+      ],
+      "id": "f57bacbc-73a2-4c40-a6c0-897d952a102e",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "WXvMlwb6IO3hXORM",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/WXvMlwb6IO3hXORM"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user": "={{ $json.callback_query.message.chat.id }}",
+            "event": "Cancel",
+            "description": "=The employee with the ID: {{ $json.callback_query.message.chat.id }} refused to perform the procedure - {{ $json.callback_query.message.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user",
+              "displayName": "user",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        544
+      ],
+      "id": "a67b8e50-2dea-4f70-a944-8a21a1167665",
+      "name": "Insert row2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "68GlEI8ygwenPt66",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/68GlEI8ygwenPt66"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id_after_hash }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "last_started_at": "={{ $now }}",
+            "status": "cancelled"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "enabled",
+              "displayName": "enabled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "workflow_id",
+              "displayName": "workflow_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "tg_id_usera",
+              "displayName": "tg_id_usera",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "timezone",
+              "displayName": "timezone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "time_to_complete_the_procedure",
+              "displayName": "time_to_complete_the_procedure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_time",
+              "displayName": "start_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "days_of_week",
+              "displayName": "days_of_week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "data_of_the_month",
+              "displayName": "data_of_the_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "month",
+              "displayName": "month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "last_started_at",
+              "displayName": "last_started_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "completed",
+              "displayName": "completed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        544
+      ],
+      "id": "5629c392-cd86-441a-8d89-5a5e248fe2a2",
+      "name": "Update row(s)1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ifItem = ($items('Telegram Trigger', 0, 0) || [])[0];\nconst text = String(ifItem?.json?.callback_query?.message?.text ?? '').trim();\n\nconst m = text.match(/#\\s*(\\d+)/);\n\nreturn [\n  {\n    json: {\n      id_after_hash: m ? Number(m[1]) : null,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -832,
+        544
+      ],
+      "id": "02cebb49-934d-447c-b0af-0da1b7db231f",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        544
+      ],
+      "id": "55364e88-962b-45f2-bf53-d7bb0bb11832",
+      "name": "Delete a chat message3",
+      "webhookId": "5e779f40-4188-4387-9d3a-69af1d098880",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.from.id }}",
+        "text": "Отказался принимать задачу в финансовом боте",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -352,
+        544
+      ],
+      "id": "b656a00e-20db-404e-8318-923f3816f3b1",
+      "name": "Send a text message2",
+      "webhookId": "45dbc8ff-0214-4a1e-af7d-2907fbbb3aa8",
+      "credentials": {
+        "telegramApi": {
+          "id": "xD3HGL0soBI3karm",
+          "name": "Big brother is ...."
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "*"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        32
+      ],
+      "id": "fb9b7711-c638-4731-9860-e75f402daede",
+      "name": "Telegram Trigger",
+      "webhookId": "e1dcd54b-5ad4-40e0-b110-a3044acea56d",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const u = $json;\n\nconst chatId =\n  u.message?.chat?.id ??\n  u.callback_query?.message?.chat?.id ??\n  u.message?.from?.id;\n\nconst text = (u.message?.text ?? '').toString().trim();\nconst cb = (u.callback_query?.data ?? '').toString().trim();\n\nreturn [{ json: { chatId, text, cb } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "b41ae18a-aef9-48ea-a184-31816b9f4455",
+      "name": "Normalize update"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "Заявка Б-1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "start"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cancel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "Заявка Б-1",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json.text }}",
+                    "rightValue": "cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "answer"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        16
+      ],
+      "id": "2405ea49-0034-4272-a9de-39aecdd0aa40",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.from.id }}",
+        "text": "чЁ хошь",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Заявка Б-1",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true,
+          "one_time_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        -96
+      ],
+      "id": "1423efd2-ee5c-4783-8560-63fc8c81e195",
+      "name": "First noda",
+      "webhookId": "824f3aa0-e185-45fe-9715-d5dceea7b64b",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ 'dealB1_state|' + $json.chatId }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ 'dealB1_state|' + $json.chatId }}",
+            "value": "={{ JSON.stringify({ step: 1 }) }}",
+            "name_workflow": "={{ $workflow.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        384,
+        -304
+      ],
+      "id": "5514b845-fe65-4afa-b03f-2050cbb6cd1f",
+      "name": "State: Upsert step="
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "1/3 Введите номер сделки (Deals):",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        624,
+        -304
+      ],
+      "id": "41505ceb-c8c6-48ac-a9b7-78c0f995190f",
+      "name": "TG: Ask deal no1",
+      "webhookId": "eadbc014-a802-493b-9e60-4c2451c6b197",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        320,
+        288
+      ],
+      "id": "3fec07d6-8f64-4cdf-8c1d-42c8dea0988b",
+      "name": "State: Get1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $('Normalize update').item.json.chatId;\nconst text = ($('Normalize update').item.json.text ?? '').trim();\n\n// Data Table \"getAll\" обычно вернёт массив строк.\n// Попробуем взять первую строку.\nconst row = Array.isArray($json) ? $json[0] : ($json.data?.[0] ?? $json);\nconst rawState = row?.value ?? null;\n\nlet state = null;\ntry {\n  state = rawState ? JSON.parse(rawState) : null;\n} catch {\n  state = null;\n}\n\nif (!state || !state.step) {\n  return [{\n    json: {\n      chatId,\n      replyText: 'Нажмите \"Заявка Б-1\" чтобы начать.',\n      nextState: null,\n      done: false\n    }\n  }];\n}\n\nif (state.step === 1) {\n  const nextState = { step: 2, dealNo: text };\n  return [{ json: { chatId, replyText: '2/3 Введите сумму:', nextState, done: false } }];\n}\n\nif (state.step === 2) {\n  const nextState = { ...state, step: 3, amount: text };\n  return [{ json: { chatId, replyText: '3/3 Введите валюту (USD/EUR/UAH):', nextState, done: false } }];\n}\n\nif (state.step === 3) {\n  const finalState = { ...state, currency: text };\n  return [{\n    json: {\n      chatId,\n      replyText: `Готово. Deals=${finalState.dealNo}, сумма=${finalState.amount}, валюта=${finalState.currency}`,\n      nextState: null,\n      done: true,\n      dealNo: finalState.dealNo,\n      amount: finalState.amount,\n      currency: finalState.currency\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    chatId,\n    replyText: 'Состояние диалога сломано. Нажмите \"Заявка Б-1\" заново.',\n    nextState: null,\n    done: false\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        288
+      ],
+      "id": "bf668a59-ea04-467d-9bf1-1496c20a35aa",
+      "name": "Advance form1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.replyText }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        272
+      ],
+      "id": "c34f9f0e-8e07-4852-85f4-cf7b3c828430",
+      "name": "TG: Reply1",
+      "webhookId": "66ee6cd9-8682-491e-be75-f1e276eae4e5",
+      "credentials": {
+        "telegramApi": {
+          "id": "PAf1U85q6D5q4WLK",
+          "name": "Iris Finance bot  ILA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.nextState !== null }}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        112
+      ],
+      "id": "5134cac7-eeee-4f86-a413-d87b24e24ad7",
+      "name": "Has nextState?1"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ 'dealB1_state|' + $json.chatId }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ 'dealB1_state|' + $json.chatId }}",
+            "value": "={{ JSON.stringify($json.nextState) }}",
+            "name_workflow": "={{ $workflow.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "type": "string",
+              "readOnly": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "type": "string",
+              "readOnly": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "type": "string",
+              "readOnly": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "f79a99fd-bb4e-4f64-babe-bced4c83135e",
+      "name": "State: Upsert1"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        208
+      ],
+      "id": "83542353-d31c-40e6-b8b9-24c1da6a04cb",
+      "name": "State: Delete1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.done === true }}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        496
+      ],
+      "id": "a2409f5f-8173-4c60-8776-23cf61f367a4",
+      "name": "Done?1"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ 'dealB1_result|' + $json.chatId + '|' + Date.now() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ 'dealB1_result|' + $json.chatId + '|' + Date.now() }}",
+            "value": "={{ JSON.stringify({ dealNo: $json.dealNo, amount: $json.amount, currency: $json.currency }) }}",
+            "name_workflow": "={{ $workflow.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "type": "string",
+              "readOnly": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "type": "string",
+              "readOnly": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "type": "string",
+              "readOnly": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        496
+      ],
+      "id": "796e9f2b-26b9-4228-82b0-fe2fd54ad99e",
+      "name": "Result: Upsert1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message2": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize update": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "State: Upsert step=",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "First noda",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "State: Get1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State: Upsert step=": {
+      "main": [
+        [
+          {
+            "node": "TG: Ask deal no1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "State: Get1": {
+      "main": [
+        [
+          {
+            "node": "Advance form1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Advance form1": {
+      "main": [
+        [
+          {
+            "node": "TG: Reply1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has nextState?1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Done?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has nextState?1": {
+      "main": [
+        [
+          {
+            "node": "State: Upsert1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "State: Delete1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Done?1": {
+      "main": [
+        [
+          {
+            "node": "Result: Upsert1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a4f07880-fbd6-49c6-8d1b-14bd3b5d4bfd",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "goCJhXpCkCSbLilu"
+}

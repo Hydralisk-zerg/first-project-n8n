@@ -1,0 +1,4003 @@
+{
+  "name": "WF_002_Iris_task_manager",
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "={{ $('manager identification').item.json.tg_account }}",
+        "text": "=Выполенная задача успешно залогирована\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        1152
+      ],
+      "id": "8d9acd1f-b62a-40a2-ac4c-e0ce7204351c",
+      "name": "Send a text message1",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2848,
+        48
+      ],
+      "id": "f5551eb4-096b-4604-994b-45fe9bd32de6",
+      "name": "Telegram Trigger1",
+      "webhookId": "ffaad190-fd59-4c06-91cb-be6125ffff27",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "assignee_name": "={{ $json.assignee_name }}",
+            "task": "={{ $json.task }}",
+            "Deadline": "={{ $json.Deadline }}",
+            "owner_name": "={{ $json.owner_name }}",
+            "uuid": "={{ $json.uuid }}",
+            "createdAt": "={{  $now.year }}.{{  $now.month }}.{{  $now.day }}/{{  $now.hour }}:{{  $now.minute }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -912,
+        1152
+      ],
+      "id": "b37223f8-d2d5-4a43-b292-c716c2474f70",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate UUID without crypto module using timestamp and random numbers\nfunction generateUUID() {\n  const timestamp = Date.now().toString(16);\n  const random1 = Math.random().toString(16).substring(2, 10);\n  const random2 = Math.random().toString(16).substring(2, 10);\n  const random3 = Math.random().toString(16).substring(2, 10);\n  \n  return `${timestamp.substring(0, 8)}-${random1.substring(0, 4)}-${random1.substring(4, 8)}-${random2.substring(0, 4)}-${random2.substring(4, 8)}${random3.substring(0, 4)}`;\n}\n\nconst uuid = generateUUID();\n\n// Return as item data\nreturn [\n  {\n    json: { uuid },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        1152
+      ],
+      "id": "45c1844f-54db-4be7-91cc-d5fab64a276e",
+      "name": "UUID_Gen2"
+    },
+    {
+      "parameters": {
+        "content": "Логирование выполенных задач",
+        "height": 272,
+        "width": 2144,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        1056
+      ],
+      "id": "8c6dac97-0d4f-4c4d-980c-97ab571ff943",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "uuid": "={{ $json.uuid }}",
+            "Deadline": "={{ $now.format('yyyy-MM-dd/HH:mm')}} ",
+            "Status": "Done ",
+            "owner_name": "={{ $('manager identification').item.json.one_c_name }}",
+            "task": "={{ $('Telegram Trigger1').item.json.message.text }}",
+            "assignee_name": "={{ $('manager identification').item.json.one_c_name }}",
+            "owner_tg_id": "={{ $('manager identification').item.json.tg_account }}",
+            "assignee_tg_id": "={{ $('manager identification').item.json.tg_account }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_tg_id",
+              "displayName": "assignee_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        1152
+      ],
+      "id": "df5238bf-5a4f-4645-937a-69bb0160adc7",
+      "name": "Task_log update"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UUID": "={{ $('UUID_Gen2').item.json.uuid }}",
+            "task_owner": "={{ $('manager identification').item.json.one_c_name }}",
+            "task_assignee": "={{ $('manager identification').item.json.one_c_name }}",
+            "task_type": "Exclusive",
+            "task_group": "n/a",
+            "task_description": "=Exclusive task ",
+            "status": "=Done",
+            "date_time_assigned": "={{ $now.plus(25200000).format('yyyy-MM-dd/HH:mm')}} ",
+            "WF_name": "WF_002_Iris_task_manager"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "WF_name",
+              "displayName": "WF_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        1152
+      ],
+      "id": "1cd8742a-677f-4997-835b-58f9dd04efba",
+      "name": "WF_execution_log update task is done"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "=Welcome to Iris Task Bot! Please choose options below or wait for your colleagues tasks ;)",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Executed task log",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "New task",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Return / Cancel",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1872,
+        544
+      ],
+      "id": "067668a6-cc89-4fba-9b89-10e920228038",
+      "name": "TG: Send_initial_menu",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Блок обработкаи постановки и выполенния задач   ",
+        "height": 736,
+        "width": 2128
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        -272
+      ],
+      "id": "b9f45b0f-7502-492a-8556-17f5128edac2",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f577f4e7-f717-443c-8727-dcf711f35cd1",
+              "leftValue": "={{ $json.Iris_task_state }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2416,
+        560
+      ],
+      "id": "c8fcaec3-6380-4b04-824c-dedbcbb42cc6",
+      "name": "term - initial or return to main menu"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $json.message.chat.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -2624,
+        560
+      ],
+      "id": "cf4ef1bf-bd88-4e6e-b812-12326c182327",
+      "name": "manager identification"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_task_state": "menu"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        544
+      ],
+      "id": "1a8106a5-df90-4e11-b8a0-865b4ea95af6",
+      "name": "Update row(s)3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_task_state": "=Executed task log"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        848
+      ],
+      "id": "cefa5867-8682-4ca4-9607-538ba93a7514",
+      "name": "Update row(s)4"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('manager identification').item.json.tg_account }}",
+        "text": "=Введите в текстовом поле выполненную задачу ",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1856,
+        848
+      ],
+      "id": "0ba95a28-219c-4b7c-ad39-a0b3bc286c9b",
+      "name": "Send a text message3",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_task_state": "menu"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        1152
+      ],
+      "id": "ab4ac934-8ff3-4088-a435-ab6a8aca4c52",
+      "name": "Update row(s)5"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1856,
+        1152
+      ],
+      "id": "02bbf348-ea8e-4c31-9b34-b22730b32ed9",
+      "name": "Send a chat action3",
+      "webhookId": "84bf4d89-a4fe-4dcb-93c7-b6755f513aa8",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}"
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        1584
+      ],
+      "id": "52934aa4-8a2d-47bf-8845-320af4010788",
+      "name": "Get row(s) in Data table1"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1872,
+        1392
+      ],
+      "id": "715f27c7-9b2d-4945-b3c3-3f40096b3ed9",
+      "name": "Send a chat action4",
+      "webhookId": "84bf4d89-a4fe-4dcb-93c7-b6755f513aa8",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Входные данные:\n- user_message: {{ $('Telegram Trigger1').item.json.message.text }} \n- now_datetime: {{ $now }}\n- tools : Get row(s) in Data table \n\n\nИзвлеки параметры всех задач из сообщения пользователя.\n\nТы — модуль извлечения параметров задач из пользовательского запроса.\nВерни строго JSON-массив задач (без текста и без Markdown).\n\nВходные данные\n\nТебе всегда передаются:\n\nowner_tg_id — Telegram-ID отправителя сообщения (постановщик)\nизвлеки имя owner из прикрепленной базы данных one_c_name\n\nnow_datetime — актуальные дата/время\n\nВАЖНО (жёсткие правила, без исключений)\n\n\nНикогда не определяй owner из текста.\n\nНикогда не меняй owner_tg_id.\n\nЛюбые имена в тексте относятся только к assignee или к контексту.\n\nЕсли невозможно однозначно определить исполнителя → assignee = owner.\n\nДля status=\"done\" всегда assignee = owner (кто отчитался о выполнении).\n\nДля выполненных задач (status=\"done\") task_description = весь исходный текст, но с исправлением грамматики (смысл/факты/имена/цифры/коды/@упоминания не менять).\n\nПоля в каждом объекте\n\nowner_tg_id\n\nowner_name\n\nassignee_tg_id\n\nassignee_name\n\ntask_description\n\ndeadline\n\ndeadline_source\n\nstatus (\"assigned\" или \"done\")\n\n📌 Определение owner_name (только по owner_tg_id)\n\nИспользуй Get row(s) in Data table:\n\nищи строку, где tg_account = owner_tg_id\n\nесли найдена → owner_name = one_c_name\n\nесли нет → owner_name = \"Неизвестный пользователь\"\n\n📌 Определение status\n\nЕсли текст содержит признаки выполненного действия → status = \"done\", иначе → status = \"assigned\".\n\nПризнаки выполненной задачи:\n\nслова: «выполнил», «сделано», «готово», «завершено», «закрыл», «решено» и подобные\n\nконструкции «я + прошедшее действие»: «я сделал», «я позвонил», «я написал», «я отправил», «я согласовал», «я оплатил», «я решил» и т.п.\n\n📌 Определение assignee\n\nЕсли status = \"done\":\n\nassignee_tg_id = owner_tg_id\n\nassignee_name = owner_name\n\nЕсли status = \"assigned\":\n\nесли исполнитель явно указан (имя/ник/@упоминание) → найди через Get row(s) in Data table по one_c_name\n\nесли найден → assignee_tg_id = tg_account, assignee_name = one_c_name\n\nесли не найден / неоднозначно → assignee = owner\n\nесли исполнитель не указан → assignee = owner\n\n📌 task_description\n\nЕсли status = \"done\":\n\nвозьми полный исходный текст запроса\n\nисправь грамматические ошибки, не меняя смысл, факты, имена, числа, даты, номера, ссылки, коды, @упоминания\n\nЕсли status = \"assigned\":\n\nудали служебные фразы: «поставь задачу», «создай», «запиши», «надо», «нужно», «прошу», «давай» и т.п.\n\nоставь только суть задачи\n\n📌 Дедлайн (deadline)\n\nИспользуй now_datetime. Понимай разговорные фразы.\n\nСтандартные времена:\n\nутро = 10:00\n\nдо обеда = 12:00\n\nдень = 15:00\n\nвечер = 19:00\n\nЕсли дедлайн указан → вычисли deadline, deadline_source = исходная фраза.\nЕсли нет → deadline = now_datetime + 5 рабочих дней,\ndeadline_source = \"по умолчанию: +5 рабочих дней\".\n\n📌 Формат ответа\n\nВерни строго JSON-массив:\n\n[\n{\n\"owner_tg_id\": {{ $('Telegram Trigger1').item.json.message.chat.id }}\n\"owner_name\": {{ $('manager identification').item.json.one_c_name }}\n\"assignee_tg_id\": изв\n\"assignee_name\": \"...\",\n\"task_description\": {{ $('Telegram Trigger1').item.json.message.text }}\n\"deadline\": \"YYYY-MM-DDTHH:MM:SS\",\n\"deadline_source\": \"...\",\n\"status\": \"assigned\"\n}\n]",
+        "options": {
+          "systemMessage": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1680,
+        1392
+      ],
+      "id": "40256ae9-77f1-4121-ad6c-36ee3d003d91",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1680,
+        1568
+      ],
+      "id": "dc516092-04cd-4aac-a7a6-4f0218646cd2",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "DATqFrWITE7gF4TX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_task_state": "=New task"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        880
+      ],
+      "id": "6becc84d-15a7-45df-994a-78308ecf705c",
+      "name": "Update row(s)6"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('manager identification').item.json.tg_account }}",
+        "text": "=Опишите ниже, кому вы ставите задачу, что за задача и дедайн (по умолчанию 3 дня)",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1248,
+        880
+      ],
+      "id": "cde29441-9212-4eac-82ce-b1039dff28d6",
+      "name": "Send a text message4",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json.output;\nlet tasksArray;\n\ntry {\n  // Remove markdown code blocks if present\n  const cleanOutput = aiOutput.replace(/```json\\n?|```\\n?/g, '').trim();\n  tasksArray = JSON.parse(cleanOutput);\n  \n  // Ensure it's an array\n  if (!Array.isArray(tasksArray)) {\n    tasksArray = [tasksArray];\n  }\n} catch (error) {\n  throw new Error('Failed to parse AI Agent output: ' + error.message);\n}\n\n// Return each task as a separate item with UUID, all fields plus created_at timestamp\nreturn tasksArray.map(task => ({\n  json: {\n    owner_tg_id: task.owner_tg_id,\n    owner_name: task.owner_name,\n    assignee_tg_id: task.assignee_tg_id,\n    assignee_name: task.assignee_name,\n    task_description: task.task_description,\n    deadline: task.deadline,\n    deadline_source: task.deadline_source,\n    created_at: new Date(),\n    Status:task.status\n    \n  }\n}));"
+      },
+      "id": "eafac618-b1b6-4e01-b612-31a914cb49a1",
+      "name": "Parse and Split Tasks1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1392,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "550ac5c2-a24a-47c6-9e79-24ecdd16409a",
+              "leftValue": "={{ $json.callback_query.message.reply_markup.inline_keyboard[0][0].callback_data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2656,
+        48
+      ],
+      "id": "457560ef-ba18-4cfc-8b87-635307ed9670",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw =  $input.first().json.callback_query.data;\nconst [uuid,status,message_id] = raw.split('|');\n\nreturn [{\n  json: {\n    uuid, \n  status,\n  message_id}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        32
+      ],
+      "id": "d156dc70-af96-46c8-bba8-7363e348945a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Assigned",
+            "assignee_name": "={{ $('Parse and Split Tasks1').item.json.assignee_name }}",
+            "task": "={{ $('Parse and Split Tasks1').item.json.task_description }}",
+            "Deadline": "={{ $('Parse and Split Tasks1').item.json.deadline }}",
+            "owner_name": "={{ $('Parse and Split Tasks1').item.json.owner_name }}",
+            "uuid": "={{ $json.uuid }}",
+            "owner_tg_id": "={{ $('Parse and Split Tasks1').item.json.owner_tg_id }}",
+            "assignee_tg_id": "={{ $('Parse and Split Tasks1').item.json.assignee_tg_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_tg_id",
+              "displayName": "assignee_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        1392
+      ],
+      "id": "d3863d7f-a550-4b19-a1fe-6b23acb208aa",
+      "name": "Insert row1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse and Split Tasks1').item.json.assignee_tg_id }}",
+        "text": "=Привіт! И тебе є нова задача від {{ $('Parse and Split Tasks1').item.json.owner_name }}. Задача - {{ $('Parse and Split Tasks1').item.json.task_description }}\nDeadline {{ $('Parse and Split Tasks1').item.json.deadline }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=Accept",
+                    "additionalFields": {
+                      "callback_data": "={{ $('UUID Gen1').item.json.uuid }}|Acepted|{{ $('Telegram Trigger1').item.json.message.message_id }}"
+                    }
+                  },
+                  {
+                    "text": "Decline",
+                    "additionalFields": {
+                      "callback_data": "={{ $('UUID Gen1').item.json.uuid }}|Declined|{{ $('Telegram Trigger1').item.json.message.message_id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        1392
+      ],
+      "id": "6ea251af-9c89-40e1-9407-90d7daec689b",
+      "name": "Send a message to assignee1",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse and Split Tasks1').item.json.owner_tg_id }}",
+        "text": "=Задача ==>\n{{ $json.task }}\n------------\nпоставлена {{ $json.assignee_name }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        1392
+      ],
+      "id": "d2e8a437-9445-499d-a38c-d93f1de77b89",
+      "name": "Send a message to owner1",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "assignee_name": "={{ $json.assignee_name }}",
+            "task": "={{ $json.task }}",
+            "Deadline": "={{ $json.Deadline }}",
+            "owner_name": "={{ $json.owner_name }}",
+            "uuid": "={{ $('UUID Gen1').item.json.uuid }}",
+            "createdAt": "={{  $now.year }}.{{  $now.month }}.{{  $now.day }}/{{  $now.hour }}:{{  $now.minute }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -896,
+        1392
+      ],
+      "id": "0f387cb6-115b-47c6-815b-c2381f497d59",
+      "name": "Append row in my_To_Do google sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "4GSKuEvYZhmWFbNZ",
+          "mode": "list",
+          "cachedResultName": "WF_execution_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/4GSKuEvYZhmWFbNZ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "UUID": "={{ $('UUID Gen1').item.json.uuid }}",
+            "task_owner": "={{ $('Parse and Split Tasks1').item.json.owner_name }}",
+            "task_assignee": "={{ $('Parse and Split Tasks1').item.json.assignee_name }}",
+            "task_type": "Exclusive",
+            "task_group": "n/a",
+            "task_description": "=Exclusive task ",
+            "status": "={{ $('Parse and Split Tasks1').item.json.Status }}",
+            "date_time_assigned": "={{ $now.plus(25200000).format('yyyy-MM-dd/HH:mm')}} ",
+            "WF_name": "WF_002_Iris_task_manager"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "UUID",
+              "displayName": "UUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "WF_name",
+              "displayName": "WF_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_owner",
+              "displayName": "task_owner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_assignee",
+              "displayName": "task_assignee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_type",
+              "displayName": "task_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_group",
+              "displayName": "task_group",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task_description",
+              "displayName": "task_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_assigned",
+              "displayName": "date_time_assigned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_declined",
+              "displayName": "date_time_declined",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_accepted",
+              "displayName": "date_time_accepted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "date_time_done",
+              "displayName": "date_time_done",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        1392
+      ],
+      "id": "966c0477-7c29-4459-8236-23b21f055902",
+      "name": "WF_execution_log update - task assigned1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate UUID without crypto module using timestamp and random numbers\nfunction generateUUID() {\n  const timestamp = Date.now().toString(16);\n  const random1 = Math.random().toString(16).substring(2, 10);\n  const random2 = Math.random().toString(16).substring(2, 10);\n  const random3 = Math.random().toString(16).substring(2, 10);\n  \n  return `${timestamp.substring(0, 8)}-${random1.substring(0, 4)}-${random1.substring(4, 8)}-${random2.substring(0, 4)}-${random2.substring(4, 8)}${random3.substring(0, 4)}`;\n}\n\nconst uuid = generateUUID();\n\n// Return as item data\nreturn [\n  {\n    json: { uuid },\n  },\n];"
+      },
+      "id": "3c25d696-1981-424c-ba51-d4a1c77fbf45",
+      "name": "UUID Gen1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "=Welcome back!",
+        "replyMarkup": "replyKeyboard",
+        "replyKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Executed task log",
+                    "additionalFields": {}
+                  },
+                  {
+                    "text": "New task",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            },
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Return / Cancel",
+                    "additionalFields": {}
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "replyKeyboardOptions": {
+          "resize_keyboard": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        912
+      ],
+      "id": "b6ff11b9-0e64-4241-a3c9-a3c0161e6c70",
+      "name": "TG: Send_initial_menu1",
+      "webhookId": "98fefa0c-d3d8-4f25-a252-146a65b2efac",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('manager identification').item.json.tg_account }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_task_state": "menu"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -496,
+        912
+      ],
+      "id": "a50a60d1-f0f4-41cf-91c7-b21626ec2f1b",
+      "name": "Update row(s)7"
+    },
+    {
+      "parameters": {
+        "content": "Обработка кнопок",
+        "height": 240,
+        "width": 2144,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        800
+      ],
+      "id": "6a38125e-b42e-44c1-8b96-8ef44b5f47f7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "постановка новых задач",
+        "height": 400,
+        "width": 2144,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        1344
+      ],
+      "id": "8a3a9226-7113-4908-8831-be3e5ce96a52",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Для тех, кто тут впервые - стартовое меню",
+        "height": 304,
+        "width": 2128,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1936,
+        480
+      ],
+      "id": "1c73da83-187c-4614-abda-dbff3824706e",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $('Code in JavaScript1').item.json.uuid }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Code in JavaScript1').item.json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "assignee_tg_id",
+              "displayName": "assignee_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        32
+      ],
+      "id": "6ec48748-3f0f-4080-9230-0cd1ce460e04",
+      "name": "Update row(s)8"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "uuid": "={{ $json.uuid }}"
+          },
+          "matchingColumns": [
+            "uuid"
+          ],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -800,
+        32
+      ],
+      "id": "b56af07d-d477-499b-9074-3cc5b31aba8a",
+      "name": "Append or update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger1').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger1').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        32
+      ],
+      "id": "cd7b320d-9156-426a-a6e7-29be188b8588",
+      "name": "Delete a chat message3",
+      "webhookId": "875f8ec4-7528-49cf-ab05-671ba8404991",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('данные с архива задач1').item.json.owner_tg_id }}",
+        "text": "=Задача ==> \n{{ $('данные с архива задач1').item.json.task }}\nвыполена менеджером\n{{ $('данные с архива задач1').item.json.assignee_name }}",
+        "replyMarkup": "inlineKeyboard",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        32
+      ],
+      "id": "dea79614-3f7e-4585-a2ef-f675198d5164",
+      "name": "Send a text message5",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger1').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger1').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        -176
+      ],
+      "id": "493c4053-eda9-4102-9562-0d5b673be1eb",
+      "name": "Delete a chat message4",
+      "webhookId": "875f8ec4-7528-49cf-ab05-671ba8404991",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $json.uuid }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "=Accepted"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "assignee_tg_id",
+              "displayName": "assignee_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        -176
+      ],
+      "id": "ca18a24a-6857-44c6-b4eb-dd0ae620b73e",
+      "name": "Update row(s)9"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "=Acepted",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "dc1cfc23-e79c-4080-8c02-689768171063"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Accepted"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b0b7072a-741b-4c3c-99f3-70c57322be7c",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Done",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Done"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "96ccf22b-adb5-46b4-a49b-196d82eee4f9",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "Declined",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1872,
+        16
+      ],
+      "id": "1985079e-6481-4034-921e-88591bf60c78",
+      "name": "Switch4"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('данные с архива задач').item.json.assignee_tg_id }}",
+        "text": "=Задача от  ==> \n{{ $('данные с архива задач').item.json.task }}\nподвердить выполение ",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=Done",
+                    "additionalFields": {
+                      "callback_data": "={{ $('данные с архива задач').item.json.uuid }}|Done|{{ $('Telegram Trigger1').item.json.callback_query.message.message_id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        -176
+      ],
+      "id": "2bd77f60-b22d-4106-8765-0f08babd721e",
+      "name": "Accepted - message to assignee1",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('данные с архива задач').item.json.owner_tg_id }}",
+        "text": "=Задача ==> \n{{ $('данные с архива задач').item.json.task }}\nпринята в работу менеджером\n{{ $('данные с архива задач').item.json.assignee_name }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {}
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        -176
+      ],
+      "id": "b162205f-a593-4e1b-9506-1c98504a1cfc",
+      "name": "Accepted - message to owner1",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger1').item.json.callback_query.message.chat.id }}",
+        "messageId": "={{ $('Telegram Trigger1').item.json.callback_query.message.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        224
+      ],
+      "id": "ef69b8da-86d7-43e6-a3f0-b6685a198ed8",
+      "name": "Delete a chat message5",
+      "webhookId": "875f8ec4-7528-49cf-ab05-671ba8404991",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $('Code in JavaScript').item.json.uuid }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $('Code in JavaScript').item.json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_tg_id",
+              "displayName": "owner_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "assignee_tg_id",
+              "displayName": "assignee_tg_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        224
+      ],
+      "id": "df25164c-925a-4137-b784-3aa68fc8828a",
+      "name": "Update row(s)10"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q",
+          "mode": "list",
+          "cachedResultName": "my_To_Do",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CMhsVB7XOrsqLcD73JRTCE2yDJHyPjEnIy0W5ySS7-Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "={{ $json.Status }}",
+            "uuid": "={{ $json.uuid }}"
+          },
+          "matchingColumns": [
+            "uuid"
+          ],
+          "schema": [
+            {
+              "id": "createdAt",
+              "displayName": "createdAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assignee_name",
+              "displayName": "assignee_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "task",
+              "displayName": "task",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deadline",
+              "displayName": "Deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "uuid",
+              "displayName": "uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -800,
+        224
+      ],
+      "id": "18ac138e-e693-450d-b968-b287d5c3d01c",
+      "name": "Append or update row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Wvs2Pgmcim9xK8CD",
+          "name": "AR Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('данные с архива задач2').item.json.owner_tg_id }}",
+        "text": "=!!! менеджер {{ $('данные с архива задач2').item.json.assignee_name }}\nотказал в выполении задачи ==> {{ $('данные с архива задач2').item.json.task }}",
+        "replyMarkup": "inlineKeyboard",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        224
+      ],
+      "id": "f305e380-67b9-44d8-bd7e-b3b47edceee0",
+      "name": "Send a text message6",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "Executed task log",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5b5dd23b-dcce-41fd-85a0-f688516a7526"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Executed task log"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0d76746c-a277-4a9f-b603-34a3427ffe8d",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "New task",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "New task"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "622581fb-33e6-46a8-b30a-7d7084ce81b8",
+                    "leftValue": "={{ $('Telegram Trigger1').item.json.message.text }}",
+                    "rightValue": "Return / Cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Return / Cancel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1706a347-af3c-4a6a-9dd0-28128a3e5300",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "other"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2400,
+        864
+      ],
+      "id": "6fd20f12-0919-4455-98d0-f72487ac8cb7",
+      "name": "обработка кнопок"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('manager identification').item.json.Iris_task_state }}",
+                    "rightValue": "Executed task log",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d4a9c481-8bfd-49e8-a4ce-4324a6666657"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Executed task log"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cbaee7c4-c652-4077-ada4-ccc4f17fd8f6",
+                    "leftValue": "={{ $('manager identification').item.json.Iris_task_state }}",
+                    "rightValue": "New task",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "New task"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -2096,
+        1168
+      ],
+      "id": "9e31a5cf-62e6-40c6-9b29-cdb14ff3ad0e",
+      "name": "обработка текста"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $('Code in JavaScript1').item.json.uuid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        -176
+      ],
+      "id": "484495f9-f77b-43f2-ab3c-69a3907ae062",
+      "name": "данные с архива задач"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $json.uuid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        32
+      ],
+      "id": "75731d35-3343-4d46-b763-36e37d9f72e8",
+      "name": "данные с архива задач1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tg_account",
+              "keyValue": "={{ $('Code in JavaScript1').item.json.owner_tg_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Iris_task_state": "menu"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tg_account",
+              "displayName": "tg_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "user_name",
+              "displayName": "user_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "one_c_name",
+              "displayName": "one_c_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "sales_department",
+              "displayName": "sales_department",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "fin_report",
+              "displayName": "fin_report",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "task_manager",
+              "displayName": "task_manager",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_finance_state",
+              "displayName": "Iris_finance_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Iris_task_state",
+              "displayName": "Iris_task_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Iris_general",
+              "displayName": "Iris_general",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        32
+      ],
+      "id": "5e2919b8-507e-44fe-bada-5eaa80e4c379",
+      "name": "сброс статуса бота"
+    },
+    {
+      "parameters": {
+        "content": " Обработка входных данных и маршрутизация ",
+        "height": 2000,
+        "width": 1072,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        -256
+      ],
+      "id": "316fa90f-2ecf-47c6-be82-a043a3b2b846",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "0YuqQFice7tFfZkq",
+          "mode": "list",
+          "cachedResultName": "tasks_log",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/0YuqQFice7tFfZkq"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "uuid",
+              "keyValue": "={{ $json.uuid }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        224
+      ],
+      "id": "f52b5781-3258-40a8-8b0d-2c0376f3966b",
+      "name": "данные с архива задач2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('данные с архива задач1').item.json.assignee_tg_id }}",
+        "text": "=Задача ==> \n{{ $('данные с архива задач1').item.json.task }}\nвыполена менеджером\n{{ $('данные с архива задач1').item.json.assignee_name }}",
+        "replyMarkup": "inlineKeyboard",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        32
+      ],
+      "id": "aaaf4cd8-e942-4267-ba04-e6d7192bd5bb",
+      "name": "Send a text message",
+      "webhookId": "cd89ddc9-c608-4c3e-b0ab-039de558b1ed",
+      "credentials": {
+        "telegramApi": {
+          "id": "DGAoZ0sjTHtfCfHb",
+          "name": "Iris_task"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UUID_Gen2": {
+      "main": [
+        [
+          {
+            "node": "Task_log update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "WF_execution_log update task is done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task_log update": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "manager identification": {
+      "main": [
+        [
+          {
+            "node": "term - initial or return to main menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "term - initial or return to main menu": {
+      "main": [
+        [
+          {
+            "node": "TG: Send_initial_menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "обработка кнопок",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send_initial_menu": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)4": {
+      "main": [
+        []
+      ]
+    },
+    "Send a text message3": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WF_execution_log update task is done": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action3": {
+      "main": [
+        [
+          {
+            "node": "UUID_Gen2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message4": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Parse and Split Tasks1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "manager identification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row1": {
+      "main": [
+        [
+          {
+            "node": "Append row in my_To_Do google sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message to assignee1": {
+      "main": [
+        [
+          {
+            "node": "WF_execution_log update - task assigned1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message to owner1": {
+      "main": [
+        [
+          {
+            "node": "Send a message to assignee1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in my_To_Do google sheets1": {
+      "main": [
+        [
+          {
+            "node": "Send a message to owner1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UUID Gen1": {
+      "main": [
+        [
+          {
+            "node": "Insert row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse and Split Tasks1": {
+      "main": [
+        [
+          {
+            "node": "UUID Gen1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TG: Send_initial_menu1": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)8": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message3": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message4": {
+      "main": [
+        [
+          {
+            "node": "Accepted - message to owner1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)9": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch4": {
+      "main": [
+        [
+          {
+            "node": "данные с архива задач",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "данные с архива задач1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "данные с архива задач2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accepted - message to owner1": {
+      "main": [
+        [
+          {
+            "node": "Accepted - message to assignee1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message5": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row(s)10": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Switch4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accepted - message to assignee1": {
+      "main": [
+        []
+      ]
+    },
+    "Send a text message5": {
+      "main": [
+        [
+          {
+            "node": "сброс статуса бота",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message6": {
+      "main": [
+        []
+      ]
+    },
+    "обработка кнопок": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TG: Send_initial_menu1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "обработка текста",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "обработка текста": {
+      "main": [
+        [
+          {
+            "node": "Send a chat action3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a chat action4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "данные с архива задач": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "данные с архива задач1": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "данные с архива задач2": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timezone": "Europe/Kyiv",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "0RGlvrib1pUh86ZP"
+  },
+  "versionId": "c3134c01-8c5c-420a-839a-75977f449732",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "yvnQ57mDkmNtcgGe"
+}

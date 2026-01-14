@@ -1,0 +1,123 @@
+{
+  "name": "iris_launcher",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "40e21d51-4b0c-43a1-9433-1d50ea915c52",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "173979d5-302c-489e-a896-da5ecf5655be",
+              "name": "owner_id",
+              "value": "156644104",
+              "type": "string"
+            },
+            {
+              "id": "904a8b96-985a-43b6-8593-ee033a05bed6",
+              "name": "owner_name",
+              "value": "Рыжов Алексей",
+              "type": "string"
+            },
+            {
+              "id": "08dbc78c-8178-4ece-8b9d-7afbf2e3b27e",
+              "name": "assignee_name",
+              "value": "Рыжов Алексей",
+              "type": "string"
+            },
+            {
+              "id": "fdebc8bb-cde0-4f6b-b6e2-4326008dd4f4",
+              "name": "assignee_tg_id",
+              "value": "156644104",
+              "type": "string"
+            },
+            {
+              "id": "c0b08ec0-0ee2-4264-9df3-e3bfaa7c61ac",
+              "name": "text: ",
+              "value": "Аексею Рыжову подвердить выдачу средств по форме B1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        0
+      ],
+      "id": "b6058bf3-88db-4b5a-b2c6-c14354aa9e29",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "70BJVqoz2Eee8PXY",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/70BJVqoz2Eee8PXY",
+          "cachedResultName": "Iris_task_sub"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "12c53a60-d2e1-4d01-aa9e-b84f6dced396",
+      "name": "Call 'Iris_task_sub'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Call 'Iris_task_sub'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "897db79d-224b-4ef6-aba3-659423272ff7",
+  "meta": null,
+  "id": "b0L8HwMgQcnbvMol"
+}

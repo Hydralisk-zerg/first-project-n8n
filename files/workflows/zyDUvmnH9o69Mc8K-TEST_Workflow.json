@@ -1,0 +1,81 @@
+{
+  "name": "TEST_Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        112
+      ],
+      "id": "790a0024-e8fa-4c55-9d22-52dc46aaec77",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "={{`<b>Сделка #11421</b>\\n<b>Букинг:</b> <code>177LBFBFN11K62A</code>\\n<b>POL:</b> Ningbo • <b>POD:</b> Klaipeda\\n<b>Клиент:</b> Sleep ID\\n<b>Контейнеров:</b> 1×40'\\n<b>Груз:</b> feather\\n<b>Судно:</b> MSC GIUSY • <b>Рейс:</b> <code>GL601W</code>\\n<b>ETD:</b> 10.01.2026 • <b>ETA:</b> 10.01.2026 `}}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "=Открыть карту",
+                    "additionalFields": {
+                      "url": "https://www.google.com/maps?q=5.42077174387067,100.36062240600586&z=9"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        112
+      ],
+      "id": "f72d4e7c-756d-4b2b-b671-a7424ee71088",
+      "name": "Send a text message",
+      "webhookId": "1df3fb2a-486e-4746-8f5f-343e96556130",
+      "credentials": {
+        "telegramApi": {
+          "id": "xD3HGL0soBI3karm",
+          "name": "Big brother is ...."
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "11c739a4-ad5a-4f32-81b2-9897f7ed409b",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "zyDUvmnH9o69Mc8K"
+}

@@ -1,0 +1,628 @@
+{
+  "name": "XLSX per manager (Spreadsheet File toFile) - minimal",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"anArray\": []\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "f63e02ee-844b-424b-8b3c-b2f4029d180a",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "send message  line up  report ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        240
+      ],
+      "id": "66791a9a-d33d-47ae-b22b-b61465a04e58",
+      "name": "Send a text message",
+      "webhookId": "ee46d2f3-87fd-4a35-b1c7-8e0a10b956d4",
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "xD3HGL0soBI3karm",
+          "name": "Big brother is ...."
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "827693c9-f1f3-49b4-80a4-8dc162f27228",
+              "leftValue": "={{ $json.value }}",
+              "rightValue": "2",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        0
+      ],
+      "id": "9c99c1e2-1e22-422c-bd8a-554258c22af3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ 'sending updated booking data|' + $now.toISODate() }}"
+            },
+            {
+              "keyName": "name_workflow",
+              "keyValue": "={{ $workflow.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ 'sending updated booking data|' + $now.toISODate() }}",
+            "name_workflow": "={{ $workflow.id }}",
+            "value": "={{ $json.nextValue }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name_workflow",
+              "displayName": "name_workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "options",
+              "displayName": "options",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "55ba9839-dc23-48ee-a81d-edf9a63bd0a1",
+      "name": "Upsert row(s)"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ 'sending updated booking data|' + $now.toISODate() }}"
+            },
+            {
+              "keyName": "name_workflow",
+              "keyValue": "={{ $workflow.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        16,
+        0
+      ],
+      "id": "1f199da3-fa61-4c22-8d4a-f56016d68fab",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// row из global variables (может не быть ни одной)\nconst row = $input.first()?.json ?? null;\n\nconst prev = Number(String(row?.value ?? '').trim());\nconst prevCount = Number.isFinite(prev) ? prev : 0;\n\nconst nextCount = prevCount + 1;\n\n// отправляем только на ВТОРОМ событии\nconst shouldSend = (nextCount === 2);\n\nreturn [{\n  json: {\n    nextValue: String(nextCount),  // это пойдёт в value\n    shouldSend,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        0
+      ],
+      "id": "342cd385-7ebc-4d75-870a-2faa8058c22e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ly1rKBXod90eQjlb",
+          "mode": "list",
+          "cachedResultName": "global variables",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/ly1rKBXod90eQjlb"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "key",
+              "keyValue": "={{ $('If').item.json.key }}"
+            },
+            {
+              "keyName": "name_workflow",
+              "keyValue": "={{ $json.name_workflow }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        944,
+        -16
+      ],
+      "id": "e91e3440-8993-479a-9009-e211bd624ecb",
+      "name": "Delete row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "Etz1zzjjSo70AMmQ",
+          "mode": "list",
+          "cachedResultName": "sea fright",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/Etz1zzjjSo70AMmQ"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -16
+      ],
+      "id": "4c2844fa-a065-465e-b68a-563767c6161a",
+      "name": "Get row(s)1"
+    },
+    {
+      "parameters": {
+        "jsCode": "function toStr(v) {\n  return (v === null || v === undefined) ? '' : String(v).trim();\n}\n\nfunction uniqKeepOrder(arr) {\n  const seen = new Set();\n  const out = [];\n  for (const v of arr) {\n    const s = toStr(v);\n    if (!s) continue;\n    if (seen.has(s)) continue;\n    seen.add(s);\n    out.push(s);\n  }\n  return out;\n}\n\n// 1) Забираем вход: либо items-строки, либо один item с массивом строк\nconst inputItems = $input.all();\n\nlet rows = [];\nfor (const item of inputItems) {\n  const j = item.json;\n  if (Array.isArray(j)) rows.push(...j);\n  else rows.push(j);\n}\n\n// Настройки (можно менять под себя)\nconst MANAGER_EMPTY = '(empty manager)';\nconst BOOKING_EMPTY = '(empty booking)';\n\n// 2) Структура: manager -> (booking -> rows[])\nconst managersMap = new Map();\n\nfor (const row of rows) {\n  if (!row || typeof row !== 'object') continue;\n\n  const manager = toStr(row.Manager) || MANAGER_EMPTY;\n  const booking = toStr(row.Booking_number) || BOOKING_EMPTY;\n\n  if (!managersMap.has(manager)) {\n    managersMap.set(manager, {\n      manager,\n      bookingsMap: new Map(),\n      managerRows: 0,\n    });\n  }\n\n  const mgr = managersMap.get(manager);\n\n  if (!mgr.bookingsMap.has(booking)) {\n    mgr.bookingsMap.set(booking, {\n      Booking_number: booking,\n      rows: [],\n      Deals: [],\n    });\n  }\n\n  const b = mgr.bookingsMap.get(booking);\n\n  // Кладём \"всю инфу\" по букингу: целиком строку\n  b.rows.push(row);\n\n  // Доп.агрегации по желанию (оставил Deals, часто удобно)\n  if (row.Deals !== undefined && row.Deals !== null && toStr(row.Deals) !== '') {\n    b.Deals.push(row.Deals);\n  }\n\n  mgr.managerRows += 1;\n}\n\n// 3) Выход: по одному item на менеджера, внутри массив bookings[]\nconst out = [];\n\nfor (const mgr of managersMap.values()) {\n  const bookings = [];\n  let totalBookingRows = 0;\n\n  for (const b of mgr.bookingsMap.values()) {\n    const dealsUniq = uniqKeepOrder(b.Deals);\n    totalBookingRows += b.rows.length;\n\n    bookings.push({\n      Booking_number: b.Booking_number,\n      rowCount: b.rows.length,\n      deals: dealsUniq,\n      dealsPipe: dealsUniq.join('|'),\n      rows: b.rows, // <-- здесь вся инфа по каждому \"букингу\"\n    });\n  }\n\n  out.push({\n    json: {\n      Manager: mgr.manager,\n      bookingCount: bookings.length,\n      totalRows: totalBookingRows,\n      bookings,\n    },\n  });\n}\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -16
+      ],
+      "id": "8d35e1f2-d6f9-4c57-a470-24b68997288e",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        48,
+        256
+      ],
+      "id": "3714c0ef-e668-40a6-8cee-f22a55710cbe",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "function safeStr(v) {\n  return (v === null || v === undefined) ? '' : String(v).trim();\n}\n\n// Иногда у тебя прилетает массив с 1 объектом менеджера\nconst inputJson = $input.first().json;\nconst managerItem = Array.isArray(inputJson) ? inputJson[0] : inputJson;\n\nconst manager = safeStr(managerItem.Manager);\nconst bookings = Array.isArray(managerItem.bookings) ? managerItem.bookings : [];\n\nconst out = [];\n\nfor (const booking of bookings) {\n  const bookingNumber = safeStr(booking.Booking_number);\n  const rows = Array.isArray(booking.rows) ? booking.rows : [];\n\n  for (const row of rows) {\n    out.push({\n      json: {\n        Manager: manager,\n        Booking_number: bookingNumber || safeStr(row.Booking_number),\n        ...row,\n      },\n    });\n  }\n}\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        368
+      ],
+      "id": "97477b4f-6775-470f-83f7-24ad2c3a6986",
+      "name": "Flatten rows for Excel"
+    },
+    {
+      "parameters": {
+        "jsCode": "const exclude = new Set(['Manager', 'createdAt', 'row_number', 'updatedAt', 'id', \"HBL\",  \"Invoice\", \"Profit_Share\", \"Telex_release\", \"DTHC\", \"Container_type\", 'Imp_exp', 'Agent', 'POL']);\n\nfunction stripFields(row) {\n  const out = {};\n  for (const [key, value] of Object.entries(row || {})) {\n    if (!exclude.has(key)) out[key] = value;\n  }\n  return out;\n}\n\nconst inputItems = $input.all();\n\n// Если уже пришли много items (каждый item = строка)\nif (inputItems.length > 1) {\n  return inputItems.map(i => ({ json: stripFields(i.json) }));\n}\n\n// Если пришёл один item\nconst first = inputItems[0]?.json;\n\n// Если внутри один item содержит массив строк\nif (Array.isArray(first)) {\n  return first.map(row => ({ json: stripFields(row) }));\n}\n\n// Иначе одна строка\nreturn [{ json: stripFields(first ?? {}) }];"
+      },
+      "id": "23368946-2d03-4e0f-b674-386895ef0b3f",
+      "name": "Sample Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        480,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "fileFormat": "xlsx",
+        "binaryPropertyName": "report",
+        "options": {
+          "fileName": "={{ ($('Flatten rows for Excel').item.json.Manager || 'manager').replace(/[\\\\/:*?\"<>|]/g, '_') + '.xlsx' }}",
+          "headerRow": true,
+          "sheetName": "Report"
+        }
+      },
+      "id": "0e5659ca-baa3-4172-9a84-3ab9ddc9aa99",
+      "name": "Spreadsheet File (XLSX)",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [
+        720,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "orvzFdhR7uCZR23l",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "one_c_name",
+              "keyValue": "={{ $('Flatten rows for Excel').first().json.Manager }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        928,
+        368
+      ],
+      "id": "98acf44c-7852-4942-b024-003a4ea671b4",
+      "name": "Employees: Get row(s)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const xlsxItem = $items('Spreadsheet File (XLSX)')[0];\n\nconst keys = Object.keys(xlsxItem.binary ?? {});\nif (keys.length === 0) throw new Error('Spreadsheet File (XLSX) не вернул binary');\n\nconst fileBinary = xlsxItem.binary[keys[0]]; // чаще всего это \"data\"\n\nreturn $input.all().map(emp => ({\n  json: {\n    one_c_name: emp.json.one_c_name,\n    email: emp.json.email,\n  },\n  binary: {\n    report: fileBinary, // делаем свой стабильный ключ\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        368
+      ],
+      "id": "c19e03ad-73ba-4b96-812b-0abb91844734",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}, aleksey.ilchenko.m@gmail.com",
+        "subject": "Line up report",
+        "message": "={{ `Good day, dear colleagues! \\n\\nAttached is a table with your updated line up report.`}}",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "report"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1344,
+        368
+      ],
+      "id": "beb96d65-771f-4f0b-9c9f-20bdc65617c0",
+      "name": "Send a message",
+      "webhookId": "317d05b0-f95d-4f27-826e-7e97eb7be0bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oPnH5wCJ3WGgQxCA",
+          "name": "AR Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "anArray": [
+            {
+              "Status": "Done",
+              "assignee_name": "veronika_ilc",
+              "task": "Update name & position vessel",
+              "Deadline": null,
+              "owner_name": "System",
+              "uuid": "13705",
+              "owner_tg_id": null,
+              "assignee_tg_id": "8041897638",
+              "id": 155,
+              "createdAt": "2026-01-06T14:59:31.038Z",
+              "updatedAt": "2026-01-06T14:59:31.038Z"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert row(s)": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete row(s)": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Flatten rows for Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten rows for Excel": {
+      "main": [
+        [
+          {
+            "node": "Sample Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample Rows": {
+      "main": [
+        [
+          {
+            "node": "Spreadsheet File (XLSX)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Spreadsheet File (XLSX)": {
+      "main": [
+        [
+          {
+            "node": "Employees: Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Employees: Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "600e11c9-8815-47aa-b6d6-41c4e58521be",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "WdBFt8lPIBefS4eK"
+}
