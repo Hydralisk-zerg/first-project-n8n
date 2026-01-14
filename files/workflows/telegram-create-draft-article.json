@@ -1,0 +1,580 @@
+{
+  "name": "Telegram - Create draft article (topic -> length -> AI)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "f0b3d3d4-0a87-4d0c-a5b9-5d316c0d18f1",
+      "name": "Telegram Trigger",
+      "webhookId": "707991b5-95fb-4865-aaae-bbde5479df9d",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Stateless conversation router for Telegram ForceReply\n// Flow: /create_a_draft -> topic -> length -> generate\n\nconst chatId = $json?.message?.chat?.id;\nconst text = String($json?.message?.text ?? '').trim();\nconst replyToText = String($json?.message?.reply_to_message?.text ?? '');\n\nif (!chatId) {\n  return [{ json: { action: 'ignore' } }];\n}\n\nif (text === '/create_a_draft') {\n  return [{ json: { action: 'ask_topic', chatId } }];\n}\n\n// Topic reply (reply to our prompt)\nif (replyToText && /Введи\\s+тему/i.test(replyToText)) {\n  const topic = text;\n  if (!topic) {\n    return [{ json: { action: 'ask_topic', chatId } }];\n  }\n  return [{ json: { action: 'ask_length', chatId, topic } }];\n}\n\nfunction parseTopicFromPrompt(prompt) {\n  // Prompt format we send: Тема: \"<topic>\"\\nВведи длину статьи ...\n  const m = String(prompt).match(/Тема:\\s*[\"“”]?([^\\n\\r\"”]+)[\"”]?/i);\n  return m ? m[1].trim() : '';\n}\n\n// Length reply\nif (replyToText && /(Введи\\s+длину\\s+статьи|кол-?во\\s*символ)/i.test(replyToText)) {\n  const topic = parseTopicFromPrompt(replyToText);\n  const raw = text.replace(/[^0-9]/g, '');\n  const length = parseInt(raw || '0', 10);\n\n  if (!topic) {\n    return [{ json: { action: 'ask_topic', chatId } }];\n  }\n\n  if (!Number.isFinite(length) || length <= 0) {\n    return [{ json: { action: 'ask_length_invalid', chatId, topic } }];\n  }\n\n  return [{ json: { action: 'generate', chatId, topic, length } }];\n}\n\nreturn [{ json: { action: 'ignore' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "0b84a7c2-d72e-47cc-b8a8-ff64f620b8f7",
+      "name": "Conversation Router"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a1",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_topic",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ask topic"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a2",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_length",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ask length"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a3",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_length_invalid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ask length invalid"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a4",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "generate",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "generate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "4b5c9f95-6fd0-47b1-85a5-1f03c8d1cde3",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Введи тему статьи",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        -220
+      ],
+      "id": "a7e78d49-62d3-4f63-8b3d-c9cf10f06c9c",
+      "name": "Ask topic",
+      "webhookId": "4e697746-8bde-4e6a-8451-a6a677a8f310",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Тема: \"{{ $json.topic }}\"\nВведи длину статьи (кол-во символов)",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "f4d04f79-9b86-4e10-a08f-4b47f5c0f2ad",
+      "name": "Ask length",
+      "webhookId": "cb4f03f7-fd9c-4ad6-b86b-e4a5b8e63f9f",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Тема: \"{{ $json.topic }}\"\nНужно число, например 1500. Введи длину статьи (кол-во символов)",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        160,
+        220
+      ],
+      "id": "c85c1ad8-a76f-4790-a7d7-4f3cbe8d0d89",
+      "name": "Ask length (invalid)",
+      "webhookId": "cb4f03f7-fd9c-4ad6-b86b-e4a5b8e63f9f",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "p1",
+              "name": "prompt",
+              "value": "=Напиши статью на тему: {{ $json.topic }}.\n\nТребования:\n- Длина: примерно {{ $json.length }} символов (без учета пробелов можно приблизительно).\n- Язык: русский.\n- Без Markdown и без лишних вступлений — просто текст статьи.\n\nСтиль (обязательно):\nИспользуй манеру, лексику, ритм и структуру автора из этого Style Guide (сгенерирован по примерам его текстов):\n{{ $json.style_guide }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        440
+      ],
+      "id": "4d8b8436-4762-48c5-8c2d-6f138c6d9f34",
+      "name": "Build prompt"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg",
+          "mode": "list",
+          "cachedResultName": "ila table",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VnmBL5OTy4i9VtQieMrniHxY5BVVTQp7m_54cahfvsg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "6c8b32c4-0d5f-4e63-8a36-3ad4f2d1e7a1",
+      "name": "Get ILA articles",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        400,
+        220
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "991PYCUP14NNEtho",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a compact corpus of the latest articles to learn the author's style\n// Expected columns in the sheet: topic, article, createdAt, updatedAt (optional)\n\nfunction parseDate(v) {\n  if (!v) return null;\n  const d = new Date(v);\n  return Number.isNaN(d.getTime()) ? null : d;\n}\n\nconst rows = items.map(i => i.json || {});\n\nrows.sort((a, b) => {\n  const da = parseDate(a.updatedAt) || parseDate(a.createdAt) || null;\n  const db = parseDate(b.updatedAt) || parseDate(b.createdAt) || null;\n  if (da && db) return db.getTime() - da.getTime();\n  if (da && !db) return -1;\n  if (!da && db) return 1;\n  const ia = Number(a.id ?? 0);\n  const ib = Number(b.id ?? 0);\n  if (Number.isFinite(ia) && Number.isFinite(ib) && ia !== ib) return ib - ia;\n  return 0;\n});\n\nconst MAX_ARTICLES = 6;\nconst MAX_CHARS = 9000;\n\nconst parts = [];\nlet used = 0;\n\nfor (const r of rows) {\n  const topic = String(r.topic ?? '').trim();\n  const article = String(r.article ?? '').trim();\n  if (!article) continue;\n\n  const block = `ТЕМА: ${topic || '(без темы)'}\nТЕКСТ:\n${article}`;\n  if (used + block.length + 6 > MAX_CHARS) break;\n  parts.push(block);\n  used += block.length + 6;\n  if (parts.length >= MAX_ARTICLES) break;\n}\n\nconst styleCorpus = parts.join(`\n\n---\n\n`);\n\n// Pull base params (chatId/topic/length) from the earlier router output\nconst baseItem = ($items('Conversation Router', 0, 0) || [])[0];\nconst base = baseItem?.json ?? {};\n\nreturn [{\n  json: {\n    chatId: base.chatId,\n    topic: base.topic,\n    length: base.length,\n    style_corpus: styleCorpus\n  }\n}];"
+      },
+      "id": "e1d6df2a-44e0-4f8c-9a8b-3f6d1f0f1bcb",
+      "name": "Build style corpus",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Проанализируй тексты автора и составь Style Guide для будущих статей.\n\nТексты автора (корпус):\n{{ $json.style_corpus }}\n\nФормат ответа:\n- 10–15 коротких правил (буллеты) о тоне, длине абзацев, ритме, лексике, структуре, риторических приемах\n- 3 запрета (чего НЕ делать, чтобы не выбиться из стиля)\n- 3 шаблонные фразы/оборота в стиле автора\n\nОтвет только как текст Style Guide, без вступлений.",
+        "options": {
+          "systemMessage": "Ты — редактор-стилист. Твоя задача — извлечь стиль автора из примеров и описать его как короткий Style Guide."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        880,
+        220
+      ],
+      "id": "3c0a6b9b-4d38-4fb8-a0bd-6a6df4c0f5c3",
+      "name": "AI Style Analyst"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "chatId",
+              "value": "={{ $('Build style corpus').item.json.chatId }}",
+              "type": "number"
+            },
+            {
+              "id": "s2",
+              "name": "topic",
+              "value": "={{ $('Build style corpus').item.json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "length",
+              "value": "={{ $('Build style corpus').item.json.length }}",
+              "type": "number"
+            },
+            {
+              "id": "s4",
+              "name": "style_guide",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        220
+      ],
+      "id": "22c62c7c-7a59-4c6b-9a24-6d9d6a2d9a1f",
+      "name": "Attach style guide"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Ты — помощник по написанию статей. Верни только чистый текст статьи."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        640,
+        440
+      ],
+      "id": "a1c53c6e-5023-4bd1-9a1e-6b4f7d3c89c7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        620
+      ],
+      "id": "9b25b4bb-9d8c-4d79-8b5c-6edc0b64e6c0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6o3E6CtmYsqbpVFq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        440
+      ],
+      "id": "e4c2d3df-9b4d-4c6d-9f1a-67b2d54f6e0c",
+      "name": "Send article",
+      "webhookId": "cb4f03f7-fd9c-4ad6-b86b-e4a5b8e63f9f",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Conversation Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Router": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Ask topic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask length",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask length (invalid)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get ILA articles",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Get ILA articles": {
+      "main": [
+        [
+          {
+            "node": "Build style corpus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build style corpus": {
+      "main": [
+        [
+          {
+            "node": "AI Style Analyst",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Style Analyst": {
+      "main": [
+        [
+          {
+            "node": "Attach style guide",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach style guide": {
+      "main": [
+        [
+          {
+            "node": "Build prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Style Analyst",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26e9dea1-e9f2-4490-8768-6516657ea3bd",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

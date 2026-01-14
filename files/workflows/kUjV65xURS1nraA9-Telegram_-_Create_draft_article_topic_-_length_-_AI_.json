@@ -1,0 +1,426 @@
+{
+  "name": "Telegram - Create draft article (topic -> length -> AI)",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// Stateless conversation router for Telegram ForceReply\n// Flow: /create_a_draft -> topic -> length -> generate\n\nconst chatId = $json?.message?.chat?.id;\nconst text = String($json?.message?.text ?? '').trim();\nconst replyToText = String($json?.message?.reply_to_message?.text ?? '');\n\nif (!chatId) {\n  return [{ json: { action: 'ignore' } }];\n}\n\nif (text === '/create_a_draft') {\n  return [{ json: { action: 'ask_topic', chatId } }];\n}\n\n// Topic reply (reply to our prompt)\nif (replyToText && /Введи\\s+тему/i.test(replyToText)) {\n  const topic = text;\n  if (!topic) {\n    return [{ json: { action: 'ask_topic', chatId } }];\n  }\n  return [{ json: { action: 'ask_length', chatId, topic } }];\n}\n\nfunction parseTopicFromPrompt(prompt) {\n  // Prompt format we send: Тема: \"<topic>\"\\nВведи длину статьи ...\n  const m = String(prompt).match(/Тема:\\s*[\"“”]?([^\\n\\r\"”]+)[\"”]?/i);\n  return m ? m[1].trim() : '';\n}\n\n// Length reply\nif (replyToText && /(Введи\\s+длину\\s+статьи|кол-?во\\s*символ)/i.test(replyToText)) {\n  const topic = parseTopicFromPrompt(replyToText);\n  const raw = text.replace(/[^0-9]/g, '');\n  const length = parseInt(raw || '0', 10);\n\n  if (!topic) {\n    return [{ json: { action: 'ask_topic', chatId } }];\n  }\n\n  if (!Number.isFinite(length) || length <= 0) {\n    return [{ json: { action: 'ask_length_invalid', chatId, topic } }];\n  }\n\n  return [{ json: { action: 'generate', chatId, topic, length } }];\n}\n\nreturn [{ json: { action: 'ignore' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -432
+      ],
+      "id": "8b43a770-417f-481a-bd9c-f3d098d678f4",
+      "name": "Conversation Router"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Введи тему статьи",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        -672
+      ],
+      "id": "6d11d0b4-4af2-4fe2-a6cb-0116d1801c99",
+      "name": "Ask topic",
+      "webhookId": "4e697746-8bde-4e6a-8451-a6a677a8f310",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Тема: \"{{ $json.topic }}\"\nВведи длину статьи (кол-во символов)",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        -448
+      ],
+      "id": "f8ef9622-dfca-4726-8dc9-8aac0ee46b75",
+      "name": "Ask length",
+      "webhookId": "cb4f03f7-fd9c-4ad6-b86b-e4a5b8e63f9f",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=Тема: \"{{ $json.topic }}\"\nНужно число, например 1500. Введи длину статьи (кол-во символов)",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        -256
+      ],
+      "id": "5e7a0aa8-4a04-41c0-943f-ff2337807e8e",
+      "name": "Ask length (invalid)",
+      "webhookId": "cb4f03f7-fd9c-4ad6-b86b-e4a5b8e63f9f",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "p1",
+              "name": "prompt",
+              "value": "=Напиши статью на тему: {{ $json.topic }}.\n\nТребования:\n- Длина: примерно {{ $json.length }} символов (без учета пробелов можно приблизительно).\n- Язык: Украинский.\n- Стиль: деловой, понятный, без воды.\n- Без Markdown и без лишних вступлений — просто текст статьи.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -144
+      ],
+      "id": "def1be9a-9f4d-4673-a9b3-d76d55073179",
+      "name": "Build prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "options": {
+          "systemMessage": "Ты — практикующий психолог и автор просветительских статей о психологии для широкой аудитории в гештальт-подходе. Пиши бережно, тепло и поддерживающе, с уважением к опыту человека, без давления и морализаторства. Опирайся на гештальт-оптику: осознавание, «здесь-и-сейчас», контакт, границы, потребности, эмоции и телесные ощущения, цикл контакта, прерывания контакта (интроекция, проекция, ретрофлексия, дефлексия, конфлюэнция), «незавершённые гештальты», семейные сценарии и повторяющиеся паттерны в отношениях.\n\nТематический фокус статьи по умолчанию: отношения (партнёрские и семейные), травмы в родительской семье, другие психологические травмы, кризисы и переходные периоды, самооценка и самоценность, семейное консультирование/пары.\n\nЭтика и безопасность:\n\nНе ставь диагнозы и не используй клинические ярлыки как утверждения о человеке.\nНе обещай результатов и не давай медицинских рекомендаций.\nНе обвиняй и не обесценивай; избегай категоричных формулировок («надо», «просто», «всегда/никогда»).\nЕсли по смыслу уместно, мягко предложи обратиться к психологу; если описывается риск самоповреждения/насилия — аккуратно подчеркни важность срочной помощи и обращения в экстренные службы/к ближайшим службам поддержки (без подробных инструкций).\nФормат ответа (строго):\n\nВерни только чистый текст статьи: без Markdown, без “Введение/Заключение” как заголовков, без списков с решётками, без мета-комментариев и объяснений процесса.\nЯзык: Украинский.\nСтиль: понятный, человечный, тёплый, профессиональный с умеренным чувством юмора; без «воды», без канцелярита.\nПиши нейтрально или от третьего лица; не веди диалог и не задавай читателю вопросы в стиле анкеты.\nСтруктура внутри обычного текста (без явных заголовков):\n\nКороткое объяснение темы простыми словами, с валидирующим тоном и умеренным чувством юмора.\nПсихообразование: как может формироваться переживание/паттерн (особенно через опыт в родительской семье, травматический опыт, нарушения границ, прерывания контакта, способы адаптации).\nПрактичные, безопасные шаги самопомощи: мягкие упражнения на осознавание, контакт с телом/эмоциями, бережные способы поддержать границы и диалог в отношениях; без «терапии на расстоянии» и без директивности.\nТёплое завершение: когда стоит обратиться к психологу/семейному консультанту, и что обычно помогает в терапии (прояснение потребностей, восстановление контакта, работа с границами и незавершёнными переживаниями).\nТон и язык:\n\nИспользуй сочувствие и уважение: «может быть трудно», «естественно», «понятно», «с этим не нужно оставаться одному».\nДелай акцент на бережности, выборе и постепенности, а не на “правильности”.\nПримеры приводи мягко и обобщённо, без драматизации и без триггерных деталей."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        480,
+        -144
+      ],
+      "id": "5e587cfa-1898-4e00-837c-3f9951089a21",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        48
+      ],
+      "id": "e13faa9b-f619-41c3-81c1-484276f11907",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "6o3E6CtmYsqbpVFq",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        -144
+      ],
+      "id": "c5aa0fcd-7d8e-4be5-ac09-ab8934857453",
+      "name": "Send article",
+      "webhookId": "cb4f03f7-fd9c-4ad6-b86b-e4a5b8e63f9f",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        256,
+        -432
+      ],
+      "id": "28eed0fe-ff18-4446-8573-7a3c187cf158",
+      "name": "Telegram Trigger1",
+      "webhookId": "707991b5-95fb-4865-aaae-bbde5479df9d",
+      "credentials": {
+        "telegramApi": {
+          "id": "u3aS20NcAV2qMvfO",
+          "name": "Sunny bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a1",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_topic",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ask topic"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a2",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_length",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ask length"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a3",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "ask_length_invalid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ask length invalid"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a4",
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "generate",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "generate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        -464
+      ],
+      "id": "479c5fda-d35d-4010-9960-c8a7739bd156",
+      "name": "Switch1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Conversation Router": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send article",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Conversation Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Ask topic",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask length",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask length (invalid)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0ebe80e6-84c9-430e-ac85-363b61aea282",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "kUjV65xURS1nraA9"
+}

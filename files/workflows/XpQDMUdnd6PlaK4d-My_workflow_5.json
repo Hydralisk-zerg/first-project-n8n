@@ -1,0 +1,63 @@
+{
+  "name": "My workflow 5",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "de23fb4e-7c2a-4c27-b250-d2768fdc5484",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "chatId": "544911412",
+        "text": "ку-ку",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0aa56fc0-76b2-4844-ae74-ba9e7c1e70ff",
+      "name": "Send a text message",
+      "webhookId": "b17748f4-005b-4fac-8875-6e0ad6fc5405",
+      "credentials": {
+        "telegramApi": {
+          "id": "tr6sdpVZ6vPF4MC1",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e230bd7e-c875-4991-a663-127d09a46a5b",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "XpQDMUdnd6PlaK4d"
+}

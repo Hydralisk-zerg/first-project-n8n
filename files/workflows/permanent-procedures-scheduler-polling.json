@@ -1,0 +1,319 @@
+{
+  "name": "Permanent procedures scheduler (polling)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -840,
+        -120
+      ],
+      "id": "f2de90ed-4210-45c7-8411-edadef045e2e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "7juzZIgCLicZLlci",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/7juzZIgCLicZLlci"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -120
+      ],
+      "id": "41dc4bea-1a15-4c72-8e34-8c1a74c94ec0",
+      "name": "Get row(s)",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expected columns in Data Table (recommended):\n// - job_id (string, unique)\n// - enabled (boolean)\n// - start_at (datetime/ISO string)\n// - status (string): planned | running | done | error\n// - workflow_id (string): n8n workflow ID to execute\n// - last_started_at (datetime/ISO string)\n// - last_finished_at (datetime/ISO string)\n// - last_error (string)\n\nconst now = new Date();\n\nfunction toBool(v) {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'number') return v !== 0;\n  if (typeof v === 'string') {\n    const s = v.trim().toLowerCase();\n    if (['true','yes','y','1','on','enabled'].includes(s)) return true;\n    if (['false','no','n','0','off','disabled'].includes(s)) return false;\n  }\n  return Boolean(v);\n}\n\nfunction pick(obj, keys) {\n  for (const k of keys) {\n    if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k];\n  }\n  return undefined;\n}\n\nconst due = [];\n\nfor (const item of items) {\n  const row = item.json || {};\n\n  const enabledRaw = pick(row, ['enabled', 'is_enabled', 'isEnabled', 'active', 'is_active']);\n  const enabled = enabledRaw === undefined ? true : toBool(enabledRaw);\n  if (!enabled) continue;\n\n  const statusRaw = pick(row, ['status']);\n  const status = (statusRaw ?? '').toString().trim().toLowerCase();\n  if (['running', 'started', 'done'].includes(status)) continue;\n\n  const startAtRaw = pick(row, ['start_at', 'startAt', 'start', 'start_time', 'start_datetime']);\n  if (!startAtRaw) continue;\n\n  const startAt = new Date(startAtRaw);\n  if (Number.isNaN(startAt.getTime())) continue;\n\n  if (startAt.getTime() > now.getTime()) continue;\n\n  const jobId = pick(row, ['job_id', 'procedure_id', 'id', 'row_number', 'name']);\n  const workflowId = pick(row, ['workflow_id', 'workflowId']);\n\n  if (!jobId || !workflowId) continue;\n\n  due.push({\n    json: {\n      job_id: jobId.toString(),\n      workflow_id: workflowId.toString(),\n      start_at: startAt.toISOString(),\n      now_iso: now.toISOString(),\n      run_key: `${jobId}:${startAt.toISOString()}`,\n      row\n    }\n  });\n}\n\nreturn due;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        -120
+      ],
+      "id": "b7b4eddb-7d8b-4c0d-85d0-80d5de7c2a35",
+      "name": "Pick due jobs"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "7juzZIgCLicZLlci",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/7juzZIgCLicZLlci"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "job_id",
+              "keyValue": "={{ $json.job_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "running",
+            "last_started_at": "={{ $json.now_iso }}",
+            "last_error": ""
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -120
+      ],
+      "id": "0c6be9aa-71e4-4f6a-9047-9f5f1b4b6b46",
+      "name": "Mark running",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": "={{ $json.workflow_id }}",
+        "waitForCompletion": true,
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job": "={{ $json }}"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        56,
+        -120
+      ],
+      "id": "4b4ed5c0-3a1a-4e1a-9828-2a4195b0b64a",
+      "name": "Execute procedure",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-error-empty",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        288,
+        -120
+      ],
+      "id": "a8c4a9c5-62b9-4d79-bb6a-0f0b09c2f5a8",
+      "name": "Execution ok?"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "7juzZIgCLicZLlci",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/7juzZIgCLicZLlci"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "job_id",
+              "keyValue": "={{ $('Pick due jobs').item.json.job_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "done",
+            "last_finished_at": "={{ $now.toISO() }}",
+            "last_error": ""
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -200
+      ],
+      "id": "5c8a6b28-1c08-4e7d-bd3f-0da3a763b7e2",
+      "name": "Mark done",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "7juzZIgCLicZLlci",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/7juzZIgCLicZLlci"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "job_id",
+              "keyValue": "={{ $('Pick due jobs').item.json.job_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "error",
+            "last_finished_at": "={{ $now.toISO() }}",
+            "last_error": "={{ ($json.error && ($json.error.message || $json.error)) ? ($json.error.message || $json.error) : 'Unknown error' }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -40
+      ],
+      "id": "c5a98d1b-2e22-4b5a-86b1-4b7db75b8d2b",
+      "name": "Mark error",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Pick due jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick due jobs": {
+      "main": [
+        [
+          {
+            "node": "Mark running",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark running": {
+      "main": [
+        [
+          {
+            "node": "Execute procedure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute procedure": {
+      "main": [
+        [
+          {
+            "node": "Execution ok?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execution ok?": {
+      "main": [
+        [
+          {
+            "node": "Mark done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "00000000-0000-0000-0000-000000000000",
+  "meta": {
+    "instanceId": "7400b7072ac0f6ac63375290db20fd0cc298e0f2e7f7c50582d5fb1a62caf28e"
+  },
+  "id": "permanent-procedures-scheduler-polling"
+}

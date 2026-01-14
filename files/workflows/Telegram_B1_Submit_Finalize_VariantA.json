@@ -1,0 +1,855 @@
+{
+  "name": "Telegram B-1 (Variant A): submit -> finalize in n8n",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "callbackQuery"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -940,
+        160
+      ],
+      "id": "c86f13e9-5ee5-41a6-9c0f-65c0df3b1b01",
+      "name": "Telegram Callback Trigger",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+      "onError": "continueRegularOutput",
+    {
+      "parameters": {
+        "jsCode": "// callback_data expected: B1_SUBMIT:<spreadsheetId>\nconst cb = $json.callback_query || {};\nconst data = String(cb.data || '');\nconst chatId = cb.message?.chat?.id;\nconst fromId = cb.from?.id;\n\nlet spreadsheetId = '';\nif (data.startsWith('B1_SUBMIT:')) spreadsheetId = data.split('B1_SUBMIT:')[1].trim();\n\nreturn [{\n  json: {\n    chatId,\n    fromId,\n    spreadsheetId,\n    rawCallbackData: data,\n    callbackQueryId: cb.id || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        160
+      ],
+      "id": "e3f77689-545c-43dd-8273-9831c3b44c9a",
+      "name": "Parse callback"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.spreadsheetId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "id": "cond-has-spreadsheet-id"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -520,
+        160
+      ],
+      "id": "7f19f52b-64d3-46dc-997c-6f26de5c2f4f",
+      "name": "Has spreadsheetId?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "Не могу определить spreadsheetId из кнопки. (callback_data пустой или неправильный)",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -280,
+        320
+      ],
+      "id": "be4ab0cb-2a95-4a6b-a0ae-4bb91d2d66a1",
+      "name": "Reply: invalid callback",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "formSheetName",
+              "value": "final_report"
+            },
+            {
+              "name": "formRange",
+              "value": "B3:F31"
+            },
+            {
+              "name": "doneCell",
+              "value": "B36"
+            },
+            {
+              "name": "finalFolderId",
+              "value": "PUT_FINAL_FOLDER_ID_HERE"
+            },
+            {
+              "name": "finalReportSpreadsheetId",
+              "value": "PUT_FINAL_REPORT_SPREADSHEET_ID_HERE"
+            },
+            {
+              "name": "finalReportSheetName",
+              "value": "final_report"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -280,
+        160
+      ],
+      "id": "0f23fdcc-5e19-4b5b-a34b-547c09c4a3f0",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "url": "={{ 'https://www.googleapis.com/drive/v3/files/' + $json.spreadsheetId + '?fields=' + encodeURIComponent('id,name,parents,webViewLink') }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -40,
+        160
+      ],
+      "id": "c4dfcbaf-5b55-49be-bc5c-2018f23f07f6",
+      "name": "Drive: Get file meta",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "url": "={{ 'https://sheets.googleapis.com/v4/spreadsheets/' + $node['Parse callback'].json.spreadsheetId + '/values:batchGet?ranges=' + encodeURIComponent($node['Config'].json.formSheetName + '!' + $node['Config'].json.formRange) + '&ranges=' + encodeURIComponent($node['Config'].json.formSheetName + '!' + $node['Config'].json.doneCell) + '&valueRenderOption=FORMATTED_VALUE' }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        200,
+        160
+      ],
+      "id": "109b607c-9778-4b56-9367-57d1a90a0227",
+      "name": "Sheets: Read form (values)",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: Drive meta in $node['Drive: Get file meta'].json, Sheets values in current $json\nconst drive = $node['Drive: Get file meta'].json || {};\nconst sheets = $json || {};\n\nconst valueRanges = Array.isArray(sheets.valueRanges) ? sheets.valueRanges : [];\nconst table = (valueRanges[0] && Array.isArray(valueRanges[0].values)) ? valueRanges[0].values : [];\nconst doneVal = (valueRanges[1] && Array.isArray(valueRanges[1].values) && valueRanges[1].values[0] && valueRanges[1].values[0][0]) ? String(valueRanges[1].values[0][0]) : '';\n\nconst nonEmpty = table.filter(r => Array.isArray(r) && r.some(c => String(c ?? '').trim() !== ''));\n\nconst submittedAt = new Date().toISOString();\nconst sourceId = String(drive.id || '');\nconst sourceName = String(drive.name || '');\nconst sourceUrl = sourceId ? ('https://docs.google.com/spreadsheets/d/' + sourceId + '/edit') : '';\n\nconst reportRows = nonEmpty.map(r => [\n  submittedAt,\n  sourceName,\n  sourceUrl,\n  String(r[0] ?? ''),\n  String(r[1] ?? ''),\n  String(r[2] ?? ''),\n  String(r[3] ?? ''),\n  String(r[4] ?? '')\n]);\n\nconst finalFolderId = $node['Config'].json.finalFolderId;\nconst parents = Array.isArray(drive.parents) ? drive.parents : [];\nconst removeParents = parents.filter(p => p && p !== finalFolderId).join(',');\n\nconst alreadyDone = /^DONE\b/i.test(doneVal.trim());\n\nreturn [{\n  json: {\n    ...$node['Config'].json,\n    chatId: $node['Parse callback'].json.chatId,\n    spreadsheetId: $node['Parse callback'].json.spreadsheetId,\n    sourceName,\n    sourceUrl,\n    webViewLink: String(drive.webViewLink || sourceUrl),\n    doneVal,\n    alreadyDone,\n    reportRows,\n    removeParents\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        160
+      ],
+      "id": "f0ea7df6-89f9-411c-9c3a-8a6825c1527f",
+      "name": "Build submission payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.alreadyDone }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals",
+                "singleValue": true
+              },
+              "id": "cond-already-done"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        160
+      ],
+      "id": "4d59d102-0040-4a64-af5a-231c4a4ed218",
+      "name": "Already DONE?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "Этот файл уже был отправлен ранее (DONE).",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        900,
+        320
+      ],
+      "id": "8e228dcd-d2c6-44f8-8d2d-7ef32d540d8a",
+      "name": "Reply: already done",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.reportRows || []).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt",
+                "singleValue": true
+              },
+              "id": "cond-has-rows"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        900,
+        120
+      ],
+      "id": "1f72d5c8-c679-4d62-bfac-2fc36c2d59e5",
+      "name": "Has rows to append?"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "В форме нет строк для отправки (пусто).",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1160,
+        260
+      ],
+      "id": "6e3d8cd5-4d61-4b62-84cd-451c306b77a4",
+      "name": "Reply: empty form",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "method": "POST",
+        "url": "={{ 'https://sheets.googleapis.com/v4/spreadsheets/' + $json.finalReportSpreadsheetId + '/values/' + encodeURIComponent($json.finalReportSheetName + '!A1') + ':append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS' }}",
+        "sendBody": true,
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "bodyContentType": "json",
+          "bodyParametersJson": "={{ JSON.stringify({ values: $json.reportRows }) }}"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1160,
+        120
+      ],
+      "id": "fb9a2a7e-9b49-448d-8ea3-5890c0b3c99b",
+      "name": "Sheets: Append to final report",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "method": "PATCH",
+        "url": "={{ 'https://www.googleapis.com/drive/v3/files/' + $node['Build submission payload'].json.spreadsheetId + '?addParents=' + encodeURIComponent($node['Build submission payload'].json.finalFolderId) + '&fields=' + encodeURIComponent('id,parents') }}",
+        "sendBody": true,
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "bodyContentType": "json",
+          "bodyParametersJson": "={{ JSON.stringify({}) }}"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1400,
+        120
+      ],
+      "id": "c6e90f72-5bf6-4e7a-85d6-9b05b9a5c9cf",
+      "name": "Drive: Add to final folder",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.removeParents }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "id": "cond-remove-parents-not-empty"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1640,
+        120
+      ],
+      "id": "7f0cf4e0-9a24-4b6f-9fba-8d2af79f1418",
+      "name": "Has parents to remove?"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "method": "PATCH",
+        "url": "={{ 'https://www.googleapis.com/drive/v3/files/' + $node['Build submission payload'].json.spreadsheetId + '?removeParents=' + encodeURIComponent($node['Build submission payload'].json.removeParents) + '&fields=' + encodeURIComponent('id,parents') }}",
+        "sendBody": true,
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "bodyContentType": "json",
+          "bodyParametersJson": "={{ JSON.stringify({}) }}"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1880,
+        40
+      ],
+      "id": "1a9c0c32-90f7-438d-93fd-7ab7ba7773e8",
+      "name": "Drive: Remove other parents (best-effort)",
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "url": "={{ 'https://sheets.googleapis.com/v4/spreadsheets/' + $node['Build submission payload'].json.spreadsheetId + '?fields=' + encodeURIComponent('sheets.properties(sheetId,title)') }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1880,
+        200
+      ],
+      "id": "f5035e5d-6783-4cb5-9f5b-bc3c22cb8b8e",
+      "name": "Sheets: Get sheetId",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const meta = $json || {};\nconst wantedTitle = $node['Build submission payload'].json.formSheetName;\nconst sheets = Array.isArray(meta.sheets) ? meta.sheets : [];\nconst found = sheets.map(s => s.properties).find(p => p && p.title === wantedTitle);\nif (!found || typeof found.sheetId !== 'number') {\n  return [{ json: { sheetId: null, error: 'sheetId-not-found', wantedTitle } }];\n}\nreturn [{ json: { sheetId: found.sheetId, wantedTitle } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2120,
+        200
+      ],
+      "id": "67ec2d2c-aeab-4bcb-87f1-7b4290e76fe4",
+      "name": "Pick sheetId"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.sheetId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "id": "cond-has-sheetId"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2360,
+        200
+      ],
+      "id": "9cb86f35-35a9-4f2e-9f58-6bf0c5c6f96f",
+      "name": "Can lock sheet?"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "method": "POST",
+        "url": "={{ 'https://sheets.googleapis.com/v4/spreadsheets/' + $node['Build submission payload'].json.spreadsheetId + ':batchUpdate' }}",
+        "sendBody": true,
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "bodyContentType": "json",
+          "bodyParametersJson": "={{ JSON.stringify({ requests: [ { addProtectedRange: { protectedRange: { range: { sheetId: $json.sheetId }, description: 'Locked after submit (n8n)', warningOnly: false } } } ] }) }}"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2600,
+        120
+      ],
+      "id": "4a2b4ff5-12e8-4c22-a0f3-26cde56705a1",
+      "name": "Sheets: Lock sheet (protect)",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "method": "PUT",
+        "url": "={{ 'https://sheets.googleapis.com/v4/spreadsheets/' + $node['Build submission payload'].json.spreadsheetId + '/values/' + encodeURIComponent($node['Build submission payload'].json.formSheetName + '!' + $node['Build submission payload'].json.doneCell) + '?valueInputOption=USER_ENTERED' }}",
+        "sendBody": true,
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "bodyContentType": "json",
+          "bodyParametersJson": "={{ JSON.stringify({ range: $node['Build submission payload'].json.formSheetName + '!' + $node['Build submission payload'].json.doneCell, majorDimension: 'ROWS', values: [[ 'DONE ' + new Date().toISOString() ]] }) }}"
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2600,
+        280
+      ],
+      "id": "fd1306bb-79c8-4fe8-9351-879741a6a13a",
+      "name": "Sheets: Mark DONE",
+      "credentials": {
+        "oAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node['Build submission payload'].json.chatId }}",
+        "text": "={{ 'Готово ✅\n\nОтправлено в отчёт и заархивировано.\nФайл: ' + ($node['Build submission payload'].json.webViewLink || $node['Build submission payload'].json.sourceUrl) }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2840,
+        200
+      ],
+      "id": "5e8b9acf-e68e-4a69-a79d-c40eaa2d255e",
+      "name": "Reply: success",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Callback Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse callback": {
+      "main": [
+        [
+          {
+            "node": "Has spreadsheetId?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has spreadsheetId?": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply: invalid callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Drive: Get file meta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive: Get file meta": {
+      "main": [
+        [
+          {
+            "node": "Sheets: Read form (values)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets: Read form (values)": {
+      "main": [
+        [
+          {
+            "node": "Build submission payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build submission payload": {
+      "main": [
+        [
+          {
+            "node": "Already DONE?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already DONE?": {
+      "main": [
+        [
+          {
+            "node": "Has rows to append?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply: already done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has rows to append?": {
+      "main": [
+        [
+          {
+            "node": "Sheets: Append to final report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply: empty form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets: Append to final report": {
+      "main": [
+        [
+          {
+            "node": "Drive: Add to final folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drive: Add to final folder": {
+      "main": [
+        [
+          {
+            "node": "Has parents to remove?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has parents to remove?": {
+      "main": [
+        [
+          {
+            "node": "Drive: Remove other parents (best-effort)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sheets: Get sheetId",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheets: Get sheetId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets: Get sheetId": {
+      "main": [
+        [
+          {
+            "node": "Pick sheetId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick sheetId": {
+      "main": [
+        [
+          {
+            "node": "Can lock sheet?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Can lock sheet?": {
+      "main": [
+        [
+          {
+            "node": "Sheets: Lock sheet (protect)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sheets: Mark DONE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sheets: Mark DONE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets: Lock sheet (protect)": {
+      "main": [
+        [
+          {
+            "node": "Reply: success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets: Mark DONE": {
+      "main": [
+        [
+          {
+            "node": "Reply: success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "REPLACE_ME",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

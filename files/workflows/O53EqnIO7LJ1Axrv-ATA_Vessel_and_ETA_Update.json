@@ -14,14 +14,24 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         -16,
         528
+=======
+        224,
+        128
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "af481634-2c3b-4f96-bb6c-17157826e3f3",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       }
     },
@@ -42,29 +52,48 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         1520,
         704
+=======
+        1760,
+        304
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "notesInFlow": false,
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       }
     },
     {
       "parameters": {
+<<<<<<< HEAD
         "jsCode": "const replyText = $json.message.reply_to_message?.text || '';\nconst input = ($json.message.text || '').trim();\n\n// 1) booking: сначала из replyText (\"букинга XXX\"), иначе из скобок в input \"(XXX)\"\nlet booking = '';\nconst mBookingFromReply = replyText.match(/букинга\\s+([^\\s)]+)/i);\nif (mBookingFromReply) booking = mBookingFromReply[1];\n\nif (!booking) {\n  const mBookingFromInput = input.match(/\\(\\s*([A-Za-z0-9]+)\\s*\\)/);\n  if (mBookingFromInput) booking = mBookingFromInput[1];\n}\n\n// 2) update_type: сначала по replyText (если есть), иначе по типу введённых данных\nlet updateType = '';\nif (/название\\s+судна/i.test(replyText)) updateType = 'Vessel';\nelse if (/ата/i.test(replyText)) updateType = 'ATA';\nelse if (/ета/i.test(replyText)) updateType = 'ETA';\n\n// 3) row_number из callback_data (если это ответ на сообщение с кнопкой)\nconst row = $json.message.reply_to_message?.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data\n  ?.split('|')?.[2] || '';\n\n// 4) валидация даты (ATA/ETA): формат + дата >= сегодня\nconst dateRegex = /^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;\n\nfunction dateOnlyUTC(d) {\n  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));\n}\n\nfunction parseYYYYMMDDtoUTC(s) {\n  const [y, m, d] = s.split('-').map(n => parseInt(n, 10));\n  return new Date(Date.UTC(y, m - 1, d));\n}\n\nlet valid_date = false;\n\n// Если replyText пустой и человек прислал НЕ дату — считаем это обновление Vessel\nif (!updateType) {\n  updateType = dateRegex.test(input) ? '' : 'Vessel';\n}\n\nif (updateType === 'Vessel') {\n  valid_date = true; // для Vessel всегда пропускаем\n} else if (updateType === 'ATA' || updateType === 'ETA') {\n  const isFormatValid = dateRegex.test(input);\n\n  if (isFormatValid) {\n    const inputDate = parseYYYYMMDDtoUTC(input);\n    const today = dateOnlyUTC(new Date());\n\n    const y = inputDate.getUTCFullYear();\n    const m = inputDate.getUTCMonth() + 1;\n    const d = inputDate.getUTCDate();\n    const reconstructed = `${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;\n    const isRealDate = reconstructed === input;\n\n    valid_date = isRealDate && (inputDate.getTime() >= today.getTime());\n  } else {\n    valid_date = false;\n  }\n}\n\n// (опционально) vessel_name отдельно\nconst vessel_name = input.replace(/\\(\\s*[A-Za-z0-9]+\\s*\\)/, '').trim();\n\nreturn [{\n  json: {\n    chat_id: $json.message.chat.id,\n    date: input,            // для ATA/ETA это дата, для Vessel это строка\n    vessel_name,            // удобно для Vessel\n    booking,\n    row_number: row,\n    update_type: updateType,\n    valid_date,\n  }\n}];"
+=======
+        "jsCode": "const text = $json.message.reply_to_message?.text || '';\nconst input = ($json.message.text || '').trim();\n\n// букинг из текста вопроса\nconst mBooking = text.match(/букинга\\s+([^\\s)]+)/i);\nconst booking = mBooking ? mBooking[1] : '';\n\n// тип обновления по вопросу\nlet updateType = /ата/i.test(text) ? 'ATA' : (/ета/i.test(text) ? 'ETA' : '');\n\n// Vessel-запрос: \"Добавте новое название судна для букинга ...\"\nconst vesselMatch = text.match(/название\\s+судна.*букинга\\s+([^\\s)]+)/i);\nif (vesselMatch) {\n  updateType = 'Vessel';\n}\n\n// row_number из callback_data\nconst row = $json.message.reply_to_message?.reply_markup?.inline_keyboard?.[0]?.[0]?.callback_data\n  ?.split('|')?.[2] || '';\n\n// валидация даты для ATA/ETA: формат + дата >= сегодня\nconst dateRegex = /^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;\n\nfunction dateOnlyUTC(d) {\n  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));\n}\n\nfunction parseYYYYMMDDtoUTC(s) {\n  // s must match regex\n  const [y, m, d] = s.split('-').map(n => parseInt(n, 10));\n  return new Date(Date.UTC(y, m - 1, d));\n}\n\nlet valid_date = false;\n\nif (updateType === 'Vessel') {\n  valid_date = true; // для Vessel пропускаем без проверки даты\n} else if (updateType === 'ATA' || updateType === 'ETA') {\n  const isFormatValid = dateRegex.test(input);\n\n  if (isFormatValid) {\n    const inputDate = parseYYYYMMDDtoUTC(input);\n    const today = dateOnlyUTC(new Date());\n\n    // на всякий: проверка что дата реально существует (29 Feb и т.п.)\n    const y = inputDate.getUTCFullYear();\n    const m = inputDate.getUTCMonth() + 1;\n    const d = inputDate.getUTCDate();\n    const reconstructed = `${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;\n    const isRealDate = reconstructed === input;\n\n    valid_date = isRealDate && (inputDate.getTime() >= today.getTime());\n  } else {\n    valid_date = false;\n  }\n}\n\nreturn [{\n  json: {\n    chat_id: $json.message.chat.id,\n    date: input,          // дата или текст (для Vessel – новое название судна)\n    booking,\n    row_number: row,\n    update_type: updateType,\n    valid_date\n  }\n}];"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       },
       "id": "bbbb8d87-12e5-4fc1-89bc-1dca518271a5",
       "name": "Extract ETA & booking",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         1056,
         304
+=======
+        1296,
+        -96
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ]
     },
     {
@@ -333,8 +362,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         2000,
         320
+=======
+        2240,
+        -80
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ]
     },
     {
@@ -344,8 +378,13 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         1056,
         736
+=======
+        1296,
+        336
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "797cd823-41c4-4b23-8237-b45e517099bc",
       "name": "Code in JavaScript"
@@ -378,8 +417,13 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
+<<<<<<< HEAD
         736,
         544
+=======
+        976,
+        144
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "1e9b37d6-baf1-49c2-9877-e1844a2467ee",
       "name": "If"
@@ -407,8 +451,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         1520,
         288
+=======
+        1760,
+        -112
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "7df0a873-ed38-41ed-9786-7cacfb14ce4a",
       "name": "Get row(s)",
@@ -423,8 +472,13 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         3072,
         112
+=======
+        3312,
+        -288
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "87d75284-9901-474e-9842-7d815d77bef5",
       "name": "Delete a chat message",
@@ -432,8 +486,13 @@
       "alwaysOutputData": false,
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       },
       "onError": "continueRegularOutput"
@@ -455,14 +514,24 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         1520,
         528
+=======
+        1760,
+        128
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       }
     },
@@ -732,8 +801,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         2000,
         112
+=======
+        2240,
+        -288
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ]
     },
     {
@@ -741,15 +815,26 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "orvzFdhR7uCZR23l",
           "mode": "list",
           "cachedResultName": "HEE_Team",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+=======
+          "value": "j5NbDkI54jGPEaG0",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/j5NbDkI54jGPEaG0"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
             {
+<<<<<<< HEAD
               "keyName": "=one_c_name",
+=======
+              "keyName": "one_c_name",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "keyValue": "={{ $json.Manager }}"
             }
           ]
@@ -758,8 +843,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         2272,
         -80
+=======
+        2512,
+        -480
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "5ce211e5-94d3-42d6-937c-6ab5bd6f982b",
       "name": "Get row(s)1"
@@ -775,16 +865,26 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         2464,
         -80
+=======
+        2704,
+        -480
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "3442fe98-1a43-455b-a3f6-c06276327d60",
       "name": "Извещение менеджеру о прибытии",
       "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "DGAoZ0sjTHtfCfHb",
           "name": "Iris_task"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       },
       "disabled": true
@@ -866,8 +966,13 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
+<<<<<<< HEAD
         1296,
         720
+=======
+        1536,
+        320
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "4303b6ec-24bb-4497-9c6c-dc863b072306",
       "name": "Switch"
@@ -949,8 +1054,13 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
+<<<<<<< HEAD
         1728,
         272
+=======
+        1968,
+        -128
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "72812422-ee09-4a62-a968-cbe690f4e62b",
       "name": "Switch1"
@@ -993,10 +1103,17 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
+<<<<<<< HEAD
         1296,
         304
       ],
       "id": "434aeaa5-87d3-4a4b-93fe-1bda3a37858b",
+=======
+        1536,
+        -96
+      ],
+      "id": "dbf61d50-f9d0-4f25-849a-da5e6c2bffbb",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "If1",
       "onError": "continueRegularOutput"
     },
@@ -1027,8 +1144,13 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
+<<<<<<< HEAD
         1296,
         544
+=======
+        1536,
+        144
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "f14ef9c0-1cd7-40cb-9d1d-99323b1c5689",
       "name": "If2"
@@ -1046,8 +1168,13 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         2464,
         112
+=======
+        2704,
+        -288
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
       "credentials": {
@@ -1071,8 +1198,13 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         2464,
         320
+=======
+        2704,
+        -80
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
       "credentials": {
@@ -1096,8 +1228,13 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         2464,
         752
+=======
+        2704,
+        352
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "49cf2f59-16c6-4606-a85a-e8e18957b11b",
       "credentials": {
@@ -1374,8 +1511,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         2000,
         528
+=======
+        2240,
+        128
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ]
     },
     {
@@ -1406,8 +1548,13 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
+<<<<<<< HEAD
         2848,
         320
+=======
+        3088,
+        -80
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "0079563b-ec5e-400f-803e-efca86b85778",
       "name": "If3"
@@ -1419,8 +1566,13 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         2640,
         320
+=======
+        2880,
+        -80
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "d46c9512-a500-43dd-8912-6cfb413c5401",
       "name": "Code in JavaScript1"
@@ -1430,15 +1582,26 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "orvzFdhR7uCZR23l",
           "mode": "list",
           "cachedResultName": "HEE_Team",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+=======
+          "value": "j5NbDkI54jGPEaG0",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/j5NbDkI54jGPEaG0"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
             {
+<<<<<<< HEAD
               "keyName": "=one_c_name",
+=======
+              "keyName": "one_c_name",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "keyValue": "={{ $('Update ETA').item.json.Manager }}"
             }
           ]
@@ -1447,8 +1610,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         3072,
         320
+=======
+        3312,
+        -80
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "9185f509-e5cf-473e-851a-c687f2657bd6",
       "name": "Get row(s)2"
@@ -1464,16 +1632,26 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         3264,
         320
+=======
+        3504,
+        -80
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "e948fa7c-d447-4dff-8360-0731bb032bb5",
       "name": "Извещение менеджеру о прибытии1",
       "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       }
     },
@@ -1534,8 +1712,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         1984,
         -256
+=======
+        2224,
+        -656
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "24051d85-03b6-4a55-894f-487dcd13fee0",
       "name": "Insert update log book"
@@ -1545,15 +1728,26 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "orvzFdhR7uCZR23l",
           "mode": "list",
           "cachedResultName": "HEE_Team",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/orvzFdhR7uCZR23l"
+=======
+          "value": "j5NbDkI54jGPEaG0",
+          "mode": "list",
+          "cachedResultName": "HEE_Team",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/j5NbDkI54jGPEaG0"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
             {
+<<<<<<< HEAD
               "keyName": "=one_c_name",
+=======
+              "keyName": "one_c_name",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "keyValue": "={{ $('Get row(s)').item.json.Manager }}"
             }
           ]
@@ -1562,8 +1756,13 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         2272,
         528
+=======
+        2512,
+        128
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "e8cad9b9-d6ec-4ec2-adcf-47854c69453a",
       "name": "Get row(s)3"
@@ -1579,16 +1778,26 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         2464,
         528
+=======
+        2704,
+        128
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "6d014693-7952-4509-bd25-2b952a4a7922",
       "name": "Извещение менеджеру о прибытии2",
       "webhookId": "cc422a6f-9818-4b21-ae9e-7ea4f307d1d1",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "DGAoZ0sjTHtfCfHb",
           "name": "Iris_task"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       },
       "disabled": true
@@ -1605,10 +1814,17 @@
         },
         "sheetName": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "sea",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=0"
+=======
+          "value": 950558363,
+          "mode": "list",
+          "cachedResultName": "test page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=950558363"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -1870,8 +2086,13 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
+<<<<<<< HEAD
         2272,
         752
+=======
+        2512,
+        352
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "70201231-3981-485a-8e8c-0401ce2a8a31",
       "name": "Update row in sheet",
@@ -1894,10 +2115,17 @@
         },
         "sheetName": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "sea",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=0"
+=======
+          "value": 950558363,
+          "mode": "list",
+          "cachedResultName": "test page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=950558363"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -2158,8 +2386,13 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
+<<<<<<< HEAD
         2272,
         320
+=======
+        2512,
+        -80
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "b69d16ba-9387-4a5a-8c22-f01a7f748374",
       "name": "Update row in sheet1",
@@ -2184,10 +2417,17 @@
         },
         "sheetName": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "sea",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=0"
+=======
+          "value": 950558363,
+          "mode": "list",
+          "cachedResultName": "test page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1m-oF0N69XeP7sn_Sm_ZpLFIC3KqgE9ssbRCsD2vzrnc/edit#gid=950558363"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -2448,8 +2688,13 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
+<<<<<<< HEAD
         2272,
         112
+=======
+        2512,
+        -288
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "id": "1a053145-dc00-4f6c-a017-eebc3051519f",
       "name": "Update row in sheet2",
@@ -2478,14 +2723,24 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         1520,
         912
+=======
+        1760,
+        512
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "eef6ba29-0753-4109-8961-d4c164b13f48",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       }
     },
@@ -2494,15 +2749,26 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "lrgWz7eowm3AHLkw",
           "mode": "list",
           "cachedResultName": "intermediate table",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/lrgWz7eowm3AHLkw"
+=======
+          "value": "zK3q573Om8t7SqyU",
+          "mode": "list",
+          "cachedResultName": "intermediate table",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
             {
+<<<<<<< HEAD
               "keyName": "=booking",
+=======
+              "keyName": "booking",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "keyValue": "={{ $('Extract ETA & booking').item.json.booking }}"
             }
           ]
@@ -2511,10 +2777,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         2848,
         112
       ],
       "id": "d66a62b9-bd86-40cf-b32e-b44183b84b08",
+=======
+        3088,
+        -288
+      ],
+      "id": "12996d0a-c9f0-4210-b015-df107ec6af27",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Get row(s)5",
       "alwaysOutputData": true
     },
@@ -2523,15 +2796,26 @@
         "operation": "deleteRows",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "lrgWz7eowm3AHLkw",
           "mode": "list",
           "cachedResultName": "intermediate table",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/lrgWz7eowm3AHLkw"
+=======
+          "value": "zK3q573Om8t7SqyU",
+          "mode": "list",
+          "cachedResultName": "intermediate table",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
             {
+<<<<<<< HEAD
               "keyName": "=booking",
+=======
+              "keyName": "booking",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "keyValue": "={{ $('Get row(s)5').item.json.booking }}"
             }
           ]
@@ -2541,10 +2825,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         3072,
         -128
       ],
       "id": "37670446-1cda-4cc5-8804-96551ae1ea60",
+=======
+        3312,
+        -528
+      ],
+      "id": "8380fc51-f1c4-4004-8b34-b903228d54f1",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Delete row(s)"
     },
     {
@@ -2552,16 +2843,27 @@
         "operation": "get",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "lrgWz7eowm3AHLkw",
           "mode": "list",
           "cachedResultName": "intermediate table",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/lrgWz7eowm3AHLkw"
+=======
+          "value": "zK3q573Om8t7SqyU",
+          "mode": "list",
+          "cachedResultName": "intermediate table",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "matchType": "allConditions",
         "filters": {
           "conditions": [
             {
+<<<<<<< HEAD
               "keyName": "=booking",
+=======
+              "keyName": "booking",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "keyValue": "={{ $json.booking }}"
             }
           ]
@@ -2570,10 +2872,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         1056,
         544
       ],
       "id": "62b7594f-eae6-4691-9ca3-b50fdb583280",
+=======
+        1296,
+        144
+      ],
+      "id": "37252d06-4a86-407f-9108-61a9f7221a65",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Get row(s)6",
       "alwaysOutputData": true
     },
@@ -2586,16 +2895,28 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         3264,
         112
       ],
       "id": "e723b165-3256-4a81-84f6-e1b315b724d7",
+=======
+        3504,
+        -288
+      ],
+      "id": "0adff97b-8fae-4ac9-8f46-7b5b62f8918a",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Delete a chat message1",
       "webhookId": "d7f75beb-8c44-4516-b129-8fc56cc53e61",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       },
       "onError": "continueRegularOutput"
@@ -2609,16 +2930,28 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         3456,
         112
       ],
       "id": "789590d2-2b92-4594-a7c6-b90eb6ea41f4",
+=======
+        3696,
+        -288
+      ],
+      "id": "03bd267f-1567-4695-bef7-cef0b732aff5",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Delete a chat message2",
       "webhookId": "2f2a832b-a14c-4cf5-9fe5-ad56ecf8a60a",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       },
       "onError": "continueRegularOutput"
@@ -2645,7 +2978,11 @@
             {
               "id": "c7cbbdd3-e200-4a05-991e-6a455b0bf4ce",
               "leftValue": "={{ $('Telegram Callback').item.json.callback_query.message.chat.id }}",
+<<<<<<< HEAD
               "rightValue": 8041897638,
+=======
+              "rightValue": 544911412,
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "operator": {
                 "type": "number",
                 "operation": "equals"
@@ -2656,27 +2993,47 @@
         },
         "options": {}
       },
+<<<<<<< HEAD
       "id": "05048133-0ec3-46f3-aa4c-5358e058c375",
+=======
+      "id": "4243cbf6-34da-4fb3-b160-57b8cd517973",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "If start from allowed user1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
+<<<<<<< HEAD
         544,
         528
+=======
+        784,
+        128
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ]
     },
     {
       "parameters": {
         "inputSource": "jsonExample",
+<<<<<<< HEAD
         "jsonExample": "{\n  \"thisFieldAcceptsAnyType\": null\n}"
+=======
+        "jsonExample": "[\n  {\n    \"data\": [\n      {\n        \"enabled\": true,\n        \"description\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\",\n        \"workflow_id\": \"O53EqnIO7LJ1Axrv\",\n        \"tg_id_usera\": \"544911412|8041897638\",\n        \"timezone\": \"Europe/Kyiv\",\n        \"time_to_complete_the_procedure\": \"\",\n        \"start_time\": \"17:11\",\n        \"days_of_week\": \"1|2|3|4|5|6|7\",\n        \"data_of_the_month\": null,\n        \"month\": null,\n        \"last_started_at\": \"5:11:14 pm\",\n        \"status\": \"\",\n        \"completed\": \"\",\n        \"id\": 1032,\n        \"createdAt\": \"2025-12-25T10:56:41.143Z\",\n        \"updatedAt\": \"2025-12-29T15:11:14.449Z\",\n        \"chatId\": \"544911412\",\n        \"text\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\\n\\n✅ #1032 — O53EqnIO7LJ1Axrv\\n⏰ 17:11 | 📅 каждый день | 🗓 без ограничений\\n🌍 TZ: Europe/Kyiv | ▶️ last: 5:11:20 pm\",\n        \"reply_markup\": {\n          \"inline_keyboard\": [\n            [\n              {\n                \"text\": \"Accept\",\n                \"callback_data\": \"accept\"\n              },\n              {\n                \"text\": \"Cancel\",\n                \"callback_data\": \"cancel\"\n              }\n            ]\n          ]\n        }\n      },\n      {\n        \"enabled\": true,\n        \"description\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\",\n        \"workflow_id\": \"O53EqnIO7LJ1Axrv\",\n        \"tg_id_usera\": \"544911412|8041897638\",\n        \"timezone\": \"Europe/Kyiv\",\n        \"time_to_complete_the_procedure\": \"\",\n        \"start_time\": \"17:11\",\n        \"days_of_week\": \"1|2|3|4|5|6|7\",\n        \"data_of_the_month\": null,\n        \"month\": null,\n        \"last_started_at\": \"5:11:14 pm\",\n        \"status\": \"\",\n        \"completed\": \"\",\n        \"id\": 1032,\n        \"createdAt\": \"2025-12-25T10:56:41.143Z\",\n        \"updatedAt\": \"2025-12-29T15:11:14.449Z\",\n        \"chatId\": \"8041897638\",\n        \"text\": \"Собрать пакет документов: ТТН/накладные/акты (слот 17:11)\\n\\n✅ #1032 — O53EqnIO7LJ1Axrv\\n⏰ 17:11 | 📅 каждый день | 🗓 без ограничений\\n🌍 TZ: Europe/Kyiv | ▶️ last: 5:11:20 pm\",\n        \"reply_markup\": {\n          \"inline_keyboard\": [\n            [\n              {\n                \"text\": \"Accept\",\n                \"callback_data\": \"accept\"\n              },\n              {\n                \"text\": \"Cancel\",\n                \"callback_data\": \"cancel\"\n              }\n            ]\n          ]\n        }\n      }\n    ]\n  }\n]"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
+<<<<<<< HEAD
         -320,
         112
       ],
       "id": "34b28937-72c0-44f7-b793-447c91398c95",
+=======
+        -80,
+        -288
+      ],
+      "id": "dd70f0fa-89fa-4aa1-aa9e-cb3f12929d16",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "When Executed by Another Workflow",
       "onError": "continueRegularOutput"
     },
@@ -2714,16 +3071,28 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         176,
         112
       ],
       "id": "94dfe47a-b4e7-4509-93cf-2041a71880ef",
+=======
+        416,
+        -288
+      ],
+      "id": "4b6533ad-9cc1-439d-b10c-16ebe1f33fa6",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Send a text message",
       "webhookId": "3d7258e9-7793-4086-935b-8239d3ca6899",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       },
       "onError": "continueRegularOutput"
@@ -2735,20 +3104,34 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         -80,
         112
       ],
       "id": "53c642b6-f67a-4401-bc96-906d3639543a",
+=======
+        160,
+        -288
+      ],
+      "id": "f5d756fe-1513-4a5d-b75d-2d5bb3e67d3c",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Code in JavaScript3"
     },
     {
       "parameters": {
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "WXvMlwb6IO3hXORM",
           "mode": "list",
           "cachedResultName": "log book",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/WXvMlwb6IO3hXORM"
+=======
+          "value": "5KMOZoRPuMNtm4c9",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/5KMOZoRPuMNtm4c9"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -2798,10 +3181,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         560,
         32
       ],
       "id": "e1d16ff7-5e5e-4721-877a-fd3ef645dd5f",
+=======
+        800,
+        -368
+      ],
+      "id": "2915f5cc-b4ce-4f24-b12a-1939c051497a",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Insert row1"
     },
     {
@@ -2809,10 +3199,17 @@
         "operation": "update",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "68GlEI8ygwenPt66",
           "mode": "list",
           "cachedResultName": "Start of permanent procedures",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/68GlEI8ygwenPt66"
+=======
+          "value": "2KUOy48aec2s67nQ",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/2KUOy48aec2s67nQ"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
@@ -2880,6 +3277,19 @@
               "removed": true
             },
             {
+<<<<<<< HEAD
+=======
+              "id": "time_to_complete_the_procedure",
+              "displayName": "time_to_complete_the_procedure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "id": "start_time",
               "displayName": "start_time",
               "required": false,
@@ -2900,8 +3310,13 @@
               "removed": true
             },
             {
+<<<<<<< HEAD
               "id": "start_date",
               "displayName": "start_date",
+=======
+              "id": "data_of_the_month",
+              "displayName": "data_of_the_month",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2910,8 +3325,13 @@
               "removed": true
             },
             {
+<<<<<<< HEAD
               "id": "end_date",
               "displayName": "end_date",
+=======
+              "id": "month",
+              "displayName": "month",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -2940,6 +3360,7 @@
               "removed": false
             },
             {
+<<<<<<< HEAD
               "id": "time_to_complete_the_procedure",
               "displayName": "time_to_complete_the_procedure",
               "required": false,
@@ -2950,6 +3371,8 @@
               "removed": true
             },
             {
+=======
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
               "id": "completed",
               "displayName": "completed",
               "required": false,
@@ -2968,10 +3391,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         1024,
         32
       ],
       "id": "6da253a0-3abe-4aca-a061-9a4022f22341",
+=======
+        1264,
+        -368
+      ],
+      "id": "40896bfb-5411-4e8a-94d4-cabfacc6c762",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Update row(s)"
     },
     {
@@ -2981,20 +3411,34 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         784,
         32
       ],
       "id": "d0bd86c0-8823-4514-b664-b607d90bfcc2",
+=======
+        1024,
+        -368
+      ],
+      "id": "dfa4ff85-aeb1-4c4d-83d2-3e0d0bbc1efa",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Code in JavaScript4"
     },
     {
       "parameters": {
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "WXvMlwb6IO3hXORM",
           "mode": "list",
           "cachedResultName": "log book",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/WXvMlwb6IO3hXORM"
+=======
+          "value": "5KMOZoRPuMNtm4c9",
+          "mode": "list",
+          "cachedResultName": "log book",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/5KMOZoRPuMNtm4c9"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -3044,10 +3488,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         208,
         944
       ],
       "id": "5c11a94c-b9a0-4139-8148-64b4d6544499",
+=======
+        448,
+        544
+      ],
+      "id": "f85aed03-b049-4394-a8f4-396b577d8234",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Insert row2"
     },
     {
@@ -3055,10 +3506,17 @@
         "operation": "update",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "68GlEI8ygwenPt66",
           "mode": "list",
           "cachedResultName": "Start of permanent procedures",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/68GlEI8ygwenPt66"
+=======
+          "value": "2KUOy48aec2s67nQ",
+          "mode": "list",
+          "cachedResultName": "Start of permanent procedures",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/2KUOy48aec2s67nQ"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
@@ -3214,10 +3672,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         688,
         944
       ],
       "id": "a6f1212f-ec63-46be-80ac-932f858c9d6c",
+=======
+        928,
+        544
+      ],
+      "id": "bf93e4c9-829c-4092-b8fc-ea8662ec465c",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Update row(s)1"
     },
     {
@@ -3227,10 +3692,17 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         448,
         944
       ],
       "id": "78f868e2-aa19-4789-a6af-d4ad4cbfac6e",
+=======
+        688,
+        544
+      ],
+      "id": "4310e412-5d30-49f8-8922-9afe6d7dbd8c",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Code in JavaScript5"
     },
     {
@@ -3242,16 +3714,28 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         928,
         944
       ],
       "id": "7a8d3e3a-142b-48fb-9485-a8b09a121ab9",
+=======
+        1168,
+        544
+      ],
+      "id": "4b5f348a-759f-43bd-9e83-be44c18c4903",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Delete a chat message3",
       "webhookId": "5e779f40-4188-4387-9d3a-69af1d098880",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       }
     },
@@ -3282,28 +3766,48 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
+<<<<<<< HEAD
         256,
         528
       ],
       "id": "baffe669-2e3a-4a33-93ca-0f86863a7096",
+=======
+        496,
+        128
+      ],
+      "id": "f6ee9346-341a-4623-801b-7bb021f8c957",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "If5"
     },
     {
       "parameters": {
         "jsCode": "const tz='Europe/Kyiv';const today=new Date().toLocaleDateString('en-CA',{timeZone:tz});return items.map(item=>{const src=item.json.updatedAt||item.json.createdAt;const local=src?new Date(src).toLocaleDateString('en-CA',{timeZone:tz}):'';return{json:{...item.json,updatedToday:local===today}};});"
       },
+<<<<<<< HEAD
       "id": "157632be-df7d-46e1-a356-674feea34e10",
+=======
+      "id": "95cfa002-7217-4d18-9b01-cdc78367e9a6",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Mark updatedToday",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         1408,
         -208
+=======
+        1648,
+        -608
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ]
     },
     {
       "parameters": {
+<<<<<<< HEAD
         "chatId": "={{ $('Telegram Callback').item.json.callback_query.message.chat.id }}",
+=======
+        "chatId": "544911412",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         "text": "=Нужно обновить дату прибыния по буккингу {{ $json.Booking_number }} по линии {{ $json.Shipping_line }} для {{ $json.Quantity }}",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
@@ -3339,19 +3843,33 @@
           "message_thread_id": 0
         }
       },
+<<<<<<< HEAD
       "id": "28720b10-7e74-4f9b-a5c3-7375e3550ec2",
+=======
+      "id": "45ab4894-12d0-478e-831a-e4e846c4dc24",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Send button",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         1648,
         -416
+=======
+        1888,
+        -816
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       ],
       "webhookId": "53fd9ee2-0d43-4faf-bf86-85151011b830",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       }
     },
@@ -3371,10 +3889,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         1184,
         -208
       ],
       "id": "7cbff603-fc53-4bf9-908f-d9f26e19d45b",
+=======
+        1424,
+        -608
+      ],
+      "id": "d85d81a4-24a5-4762-b594-46abe8aae357",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Get row(s)4"
     },
     {
@@ -3414,10 +3939,17 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
+<<<<<<< HEAD
         1648,
         -208
       ],
       "id": "3ad1c474-ba9f-490b-8da3-9bc2821b3ab0",
+=======
+        1888,
+        -608
+      ],
+      "id": "85154b81-90c8-40a5-9495-cba394889c23",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "If4"
     },
     {
@@ -3427,20 +3959,34 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         960,
         -208
       ],
       "id": "8f102059-a9d2-4fb6-9135-a1d42ab0ee4d",
+=======
+        1200,
+        -608
+      ],
+      "id": "592712b7-fc3e-42ab-ad28-e9749e6e1aaa",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Code in JavaScript2"
     },
     {
       "parameters": {
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "lrgWz7eowm3AHLkw",
           "mode": "list",
           "cachedResultName": "intermediate table",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/lrgWz7eowm3AHLkw"
+=======
+          "value": "zK3q573Om8t7SqyU",
+          "mode": "list",
+          "cachedResultName": "intermediate table",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -3512,10 +4058,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         1648,
         -608
       ],
       "id": "34e26577-3310-4d3d-a177-d4dd8823a68e",
+=======
+        1888,
+        -1008
+      ],
+      "id": "1eb92067-022f-4c2d-83dd-7a69fdae6c80",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Insert row"
     },
     {
@@ -3523,10 +4076,17 @@
         "operation": "deleteRows",
         "dataTableId": {
           "__rl": true,
+<<<<<<< HEAD
           "value": "lrgWz7eowm3AHLkw",
           "mode": "list",
           "cachedResultName": "intermediate table",
           "cachedResultUrl": "/projects/aYwTG2YSCDJ4D7Wf/datatables/lrgWz7eowm3AHLkw"
+=======
+          "value": "zK3q573Om8t7SqyU",
+          "mode": "list",
+          "cachedResultName": "intermediate table",
+          "cachedResultUrl": "/projects/glr3xuLfrcXRm0CR/datatables/zK3q573Om8t7SqyU"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         },
         "filters": {
           "conditions": [
@@ -3542,10 +4102,17 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         512,
         -208
       ],
       "id": "157b9bf4-5675-4738-9230-e2e984be5d46",
+=======
+        752,
+        -608
+      ],
+      "id": "b52c6929-d3e3-411a-9932-8777eb0fdfd9",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Delete row(s)2",
       "alwaysOutputData": true
     },
@@ -3557,10 +4124,17 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         736,
         -208
       ],
       "id": "6cb6a005-973d-4586-8f68-71147d594994",
+=======
+        976,
+        -608
+      ],
+      "id": "1b69c53f-1fdc-4f52-a45f-167b424c7ac9",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Aggregate"
     },
     {
@@ -3572,16 +4146,28 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
+<<<<<<< HEAD
         1856,
         -608
       ],
       "id": "79f03bd4-cceb-4011-a7ab-237a168e5b77",
+=======
+        2096,
+        -1008
+      ],
+      "id": "297a451c-2466-494e-9134-96da7576c518",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
       "name": "Delete a chat message4",
       "webhookId": "df1d4eca-9b14-474e-9ee7-90873915843d",
       "credentials": {
         "telegramApi": {
+<<<<<<< HEAD
           "id": "dSLl4ZLfj7JILfK6",
           "name": "Iris Tracking bot  ILA"
+=======
+          "id": "u4DjOQWxcRgXtX9k",
+          "name": "Hellmann_EEO_bot"
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
         }
       },
       "onError": "continueErrorOutput"
@@ -3934,6 +4520,30 @@
         ]
       ]
     },
+<<<<<<< HEAD
+=======
+    "Извещение менеджеру о прибытии1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Извещение менеджеру о прибытии2": {
+      "main": [
+        []
+      ]
+    },
+    "New Vessel name": {
+      "main": [
+        []
+      ]
+    },
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
     "Get row(s)5": {
       "main": [
         [
@@ -4034,6 +4644,14 @@
         ]
       ]
     },
+<<<<<<< HEAD
+=======
+    "Update row(s)": {
+      "main": [
+        []
+      ]
+    },
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
     "Code in JavaScript4": {
       "main": [
         [
@@ -4045,6 +4663,20 @@
         ]
       ]
     },
+<<<<<<< HEAD
+=======
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Update row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
     "Insert row2": {
       "main": [
         [
@@ -4067,6 +4699,7 @@
         ]
       ]
     },
+<<<<<<< HEAD
     "Code in JavaScript5": {
       "main": [
         [
@@ -4078,6 +4711,8 @@
         ]
       ]
     },
+=======
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
     "If5": {
       "main": [
         [
@@ -4151,6 +4786,7 @@
         ]
       ]
     },
+<<<<<<< HEAD
     "Insert row": {
       "main": [
         [
@@ -4162,6 +4798,8 @@
         ]
       ]
     },
+=======
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
     "Delete row(s)2": {
       "main": [
         [
@@ -4183,6 +4821,20 @@
           }
         ]
       ]
+<<<<<<< HEAD
+=======
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
     }
   },
   "active": true,
@@ -4192,7 +4844,11 @@
     "availableInMCP": false,
     "timeSavedMode": "fixed"
   },
+<<<<<<< HEAD
   "versionId": "2028555f-e4f1-47fd-8f8c-27b955fb5dd6",
+=======
+  "versionId": "25c881d2-cbe1-4652-a7bf-008b463f61fe",
+>>>>>>> eef7331857a4df5d328791e9daa3c19e625eb5df
   "meta": {
     "templateCredsSetupCompleted": true
   },

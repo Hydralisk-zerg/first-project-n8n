@@ -1,0 +1,165 @@
+{
+  "name": "Telegram: JSON -> Excel reply",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -680,
+        200
+      ],
+      "id": "telegram-trigger",
+      "name": "Telegram Trigger",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Run once for all items, single output\nconst item = items[0] || {};\nconst msg = item.json?.message || {};\nconst chatId = msg.chat?.id || '';\n\n// берем бинарь из триггера (data/document/первый ключ)\nconst bin = item.binary?.data || item.binary?.document || Object.values(item.binary || {})[0];\nif (!bin?.data) return [];\n\nlet raw;\ntry {\n  raw = Buffer.from(bin.data, 'base64').toString('utf8');\n} catch (e) {\n  return [];\n}\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return [];\n}\n\nconst rows = Array.isArray(parsed?.credit)\n  ? parsed.credit\n  : Array.isArray(parsed)\n    ? parsed\n    : [parsed];\n\nreturn rows\n  .filter(r => r && typeof r === 'object' && !Array.isArray(r))\n  .map(r => ({ json: { ...r, chatId } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        200
+      ],
+      "id": "parse-json",
+      "name": "Parse JSON",
+      "alwaysOutputData": false,
+      "outputs": 2,
+      "outputNames": [
+        "Valid rows",
+        "Errors"
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "options": {
+          "fileName": "data.xlsx",
+          "fileFormat": "xlsx",
+          "includeHeaders": true,
+          "binaryPropertyName": "data",
+          "useInputData": true,
+          "combineAllItems": true
+        }
+      },
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [
+        -140,
+        200
+      ],
+      "id": "make-xlsx",
+      "name": "Build Excel"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "document": "data",
+        "binaryPropertyName": "data",
+        "caption": "Ваш Excel файл",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        200
+      ],
+      "id": "send-excel",
+      "name": "Send Excel",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "Не удалось разобрать JSON. Отправьте корректный JSON.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -140,
+        360
+      ],
+      "id": "reply-error",
+      "name": "Reply on error",
+      "webhookId": "REPLACE_ME",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "REPLACE_ME"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Build Excel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply on error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Excel": {
+      "main": [
+        [
+          {
+            "node": "Send Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

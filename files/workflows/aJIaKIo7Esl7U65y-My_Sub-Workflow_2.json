@@ -1,5 +1,5 @@
 {
-  "name": "My Sub-Workflow 1",
+  "name": "My Sub-Workflow 2",
   "nodes": [
     {
       "parameters": {},
@@ -14,30 +14,6 @@
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "CpWS9XAd5y7g79xw",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/CpWS9XAd5y7g79xw",
-          "cachedResultName": "My workflow 2"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {}
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        720,
-        352
-      ],
-      "id": "51731cfe-600d-4ef5-82e4-a8dfc49d89ed",
-      "name": "Call 'My workflow 2'"
-    },
-    {
-      "parameters": {
         "chatId": "544911412",
         "text": "ky-ky",
         "additionalFields": {}
@@ -48,9 +24,9 @@
         480,
         352
       ],
-      "id": "53d29749-7cb2-4c68-ae67-cbb0e73ca5e8",
+      "id": "8551ec87-e6dd-407c-bec9-be88bfb76f5f",
       "name": "Send a text message",
-      "webhookId": "86cdf178-631f-4c42-ab22-b1e8fa2b6c46",
+      "webhookId": "96cb6ebc-0d89-460d-b6c3-229e159369aa",
       "credentials": {
         "telegramApi": {
           "id": "tr6sdpVZ6vPF4MC1",
@@ -71,26 +47,15 @@
           }
         ]
       ]
-    },
-    "Send a text message": {
-      "main": [
-        [
-          {
-            "node": "Call 'My workflow 2'",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "0a27e36a-ed5e-4aa3-9230-947ebeb4c452",
+  "versionId": "7fa286b7-b955-4cb5-a4b8-0677378621ae",
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "id": "wuX1782fc91yphLG"
+  "id": "aJIaKIo7Esl7U65y"
 }
